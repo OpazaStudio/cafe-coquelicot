@@ -1,0 +1,43 @@
+/* Back-office : Tailwind v4 SANS preflight (la CSS de marque reste intacte),
+   utilitaires scopés par classes — aucun style global ajouté hors .admin-root. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --color-wine: #870c20;
+  --color-wine-dark: #5e0816;
+  --color-linen: #f3ebe2;
+  --color-oak: #e0caaf;
+}
+
+/* Pas de grain papier ni de curseur boutique dans l'admin */
+body:has(.admin-root) .grain {
+  display: none;
+}
+
+@layer base {
+  /* Mini-reset scopé (globals.css ne neutralise pas les marges UA) */
+  .admin-root :is(h1, h2, h3, h4, p, ul, ol, table, figure, fieldset) {
+    margin: 0;
+    padding: 0;
+  }
+  .admin-root :is(ul, ol) {
+    list-style: none;
+  }
+  .admin-root table {
+    border-collapse: collapse;
+  }
+  .admin-root :is(input, select, textarea, button) {
+    font: inherit;
+    color: inherit;
+  }
+  .admin-root button {
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+  .admin-root :is(input, select, textarea) {
+    background: white;
+  }
+}
