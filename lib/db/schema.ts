@@ -28,6 +28,12 @@ export const orderStatus = pgEnum("order_status", [
 
 export const fulfillmentEnum = pgEnum("fulfillment", ["retrait", "poste"]);
 
+export const prepStatusEnum = pgEnum("prep_status", [
+  "todo",
+  "in_progress",
+  "done",
+]);
+
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
@@ -60,6 +66,9 @@ export const orders = pgTable("orders", {
   shippingCity: text("shipping_city"),
   shippingCountry: text("shipping_country"),
   trackingNumber: text("tracking_number"),
+  // Kanban de préparation (admin) — dimension séparée du statut commande.
+  prepStatus: prepStatusEnum("prep_status").notNull().default("todo"),
+  prepDoneAt: timestamp("prep_done_at", { withTimezone: true }),
   deliveryDate: date("delivery_date"),
   cardMessage: text("card_message"),
   subtotalCents: integer("subtotal_cents").notNull(),
@@ -95,3 +104,4 @@ export type NewOrderItemRow = typeof orderItems.$inferInsert;
 export type ProductCategory = (typeof productCategory.enumValues)[number];
 export type OrderStatus = (typeof orderStatus.enumValues)[number];
 export type Fulfillment = (typeof fulfillmentEnum.enumValues)[number];
+export type PrepStatus = (typeof prepStatusEnum.enumValues)[number];

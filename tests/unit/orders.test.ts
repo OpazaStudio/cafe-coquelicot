@@ -243,6 +243,16 @@ describe("updateOrderStatus (machine d'états)", () => {
   });
 });
 
+describe("statut de préparation (schéma)", () => {
+  it("toute nouvelle commande démarre en attente, sans date de fin", async () => {
+    const { order } = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    expect(order.prepStatus).toBe("todo");
+    expect(order.prepDoneAt).toBeNull();
+  });
+});
+
 describe("setTrackingNumber", () => {
   const posteCamille = {
     ...camille,

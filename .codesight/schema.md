@@ -25,6 +25,8 @@
 - shippingCity: text
 - shippingCountry: text
 - trackingNumber: text
+- prepStatus: prepStatusEnum (default, required)
+- prepDoneAt: timestamp
 - deliveryDate: date
 - cardMessage: text
 - subtotalCents: integer (required)

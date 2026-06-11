@@ -15,6 +15,13 @@
       "when": 1781163036027,
       "tag": "0001_fulfillment_postal",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781195696961,
+      "tag": "0002_prep_status",
+      "breakpoints": true
     }
   ]
 }

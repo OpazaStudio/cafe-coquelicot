@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 1 routes | 3 models | 50 components | 12 lib files | 15 env vars | 0 middleware | 50% test coverage
-> **Token savings:** this file is ~3,300 tokens. Without it, AI exploration would cost ~31,900 tokens. **Saves ~28,600 tokens per conversation.**
-> **Last scanned:** 2026-06-11 16:33 — re-run after significant changes
+> **Token savings:** this file is ~3,400 tokens. Without it, AI exploration would cost ~31,900 tokens. **Saves ~28,600 tokens per conversation.**
+> **Last scanned:** 2026-06-11 16:40 — re-run after significant changes
 
 ---
 
@@ -41,6 +41,8 @@
 - shippingCity: text
 - shippingCountry: text
 - trackingNumber: text
+- prepStatus: prepStatusEnum (default, required)
+- prepDoneAt: timestamp
 - deliveryDate: date
 - cardMessage: text
 - subtotalCents: integer (required)

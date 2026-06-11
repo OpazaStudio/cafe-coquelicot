@@ -35,6 +35,8 @@ pk: `id` (uuid) · fk: stripeSessionId
 - `shippingCity`: text
 - `shippingCountry`: text
 - `trackingNumber`: text
+- `prepStatus`: prepStatusEnum _(default, required)_
+- `prepDoneAt`: timestamp
 - `deliveryDate`: date
 - `cardMessage`: text
 - `subtotalCents`: integer _(required)_
