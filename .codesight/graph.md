@@ -2,7 +2,7 @@
 
 ## Most Imported Files (change these carefully)
 
-- `lib/db/schema.ts` — imported by **5** files
+- `lib/db/schema.ts` — imported by **6** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
 - `components/illustrations.tsx` — imported by **4** files
 - `lib/db/client.ts` — imported by **4** files
@@ -24,7 +24,7 @@
 
 ## Import Map (who imports what)
 
-- `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/stats.ts`
+- `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`
 - `lib/db/client.ts` ← `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/seed.ts`

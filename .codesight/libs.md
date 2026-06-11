@@ -44,6 +44,13 @@
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
   - function getOrderBySessionId: (db, stripeSessionId) => Promise<
   - _...7 more_
+- `lib/prep-status.ts`
+  - function isPrepStatus: (value) => value is PrepStatus
+  - function isOnBoard: (order, now) => boolean
+  - const PREP_ORDER
+  - const PREP_LABELS: Record<PrepStatus, string>
+  - const DONE_RETENTION_MS
+  - const BOARD_ORDER_STATUSES: readonly OrderStatus[]
 - `lib/products.ts`
   - function toShopProduct: (row) => ShopProduct
   - function getAllProductRows: () => Promise<ProductRow[]>

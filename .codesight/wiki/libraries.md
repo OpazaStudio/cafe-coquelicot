@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**12 library files** across 11 modules
+**13 library files** across 12 modules
 
 ## Auth (2 files)
 
@@ -28,6 +28,10 @@
 ## Orders.ts (1 files)
 
 - `lib/orders.ts` — generateOrderNumber, createPendingOrder, attachStripeSession, markOrderPaidBySession, cancelOrderBySession, getOrderBySessionId, …
+
+## Prep-status.ts (1 files)
+
+- `lib/prep-status.ts` — isPrepStatus, isOnBoard, PREP_ORDER, PREP_LABELS, DONE_RETENTION_MS, BOARD_ORDER_STATUSES
 
 ## Products.ts (1 files)
 
