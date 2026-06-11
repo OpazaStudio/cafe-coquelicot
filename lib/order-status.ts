@@ -48,7 +48,7 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
 
 // Graphe complet. Depuis `preparing`, le statut terminal dépend du mode :
 // utiliser statusTransitions(from, fulfillment) pour la liste réellement permise.
-export const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   pending: ["paid", "cancelled"],
   paid: ["preparing", "cancelled"],
   preparing: ["shipped", "picked_up", "cancelled"],
