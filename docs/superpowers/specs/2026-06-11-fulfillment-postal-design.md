@@ -18,8 +18,8 @@ distingue pas une commande expédiée d'une commande retirée.
 
 - **Frais postaux :** tarif fixe provisoire, constante configurable dans le
   code (montant réel inconnu à ce jour).
-- **Adresse :** champs structurés (rue, code postal, ville), France
-  métropolitaine uniquement.
+- **Adresse :** champs structurés (rue, code postal, ville, pays), envois
+  limités à la France et aux pays limitrophes.
 - **Date souhaitée :** conservée pour les deux modes, libellé contextuel.
 - **Statuts :** statuts terminaux distincts en base (`shipped` / `picked_up`),
   mode stocké explicitement, numéro de suivi optionnel côté admin.
@@ -28,7 +28,11 @@ distingue pas une commande expédiée d'une commande retirée.
 
 - `type Fulfillment = "retrait" | "poste"` (remplace `"livraison"`).
 - Checkout : « Envoi par la poste » remplace « Livraison à vélo », avec la
-  description « Colissimo, France métropolitaine — 7,90 € ».
+  description « Colissimo, France et pays limitrophes — 7,90 € ».
+- Pays acceptés (constante `SHIPPING_COUNTRIES`) : France, Belgique,
+  Luxembourg, Allemagne, Suisse, Italie, Espagne, Monaco, Andorre.
+  Codes ISO 3166-1 alpha-2 : `FR`, `BE`, `LU`, `DE`, `CH`, `IT`, `ES`,
+  `MC`, `AD`.
 - `SHIPPING_FEE_CENTS = 790` dans `lib/order-status.ts` (remplace
   `DELIVERY_FEE_CENTS = 900`). Valeur provisoire, à ajuster.
 - Le retrait reste gratuit.
@@ -36,10 +40,11 @@ distingue pas une commande expédiée d'une commande retirée.
 
 ## 2. Formulaire checkout (`components/checkout-form.tsx`)
 
-- Mode « poste » sélectionné → trois champs requis remplacent le textarea :
+- Mode « poste » sélectionné → quatre champs requis remplacent le textarea :
   - **Adresse** (rue + numéro), max 200 caractères ;
-  - **Code postal**, validé `^\d{5}$` ;
-  - **Ville**, max 100 caractères.
+  - **Code postal** : `^\d{5}$` si pays = France, sinon 2 à 10 caractères ;
+  - **Ville**, max 100 caractères ;
+  - **Pays** : select limité à `SHIPPING_COUNTRIES`, France présélectionnée.
 - Mode « retrait » → aucun champ d'adresse (inchangé).
 - Champ date conservé pour les deux modes, optionnel, libellé contextuel :
   - retrait : « Date de retrait souhaitée » ;
@@ -54,9 +59,12 @@ Sur `orders` :
 
 - Nouvelle colonne `fulfillment` : enum Postgres `fulfillment`
   (`retrait` | `poste`), `not null`.
-- `delivery_address` remplacée par trois colonnes nullable :
-  `shipping_address`, `shipping_postal_code`, `shipping_city`
-  (renseignées uniquement pour `poste`).
+- `delivery_address` remplacée par quatre colonnes nullable :
+  `shipping_address`, `shipping_postal_code`, `shipping_city`,
+  `shipping_country` (code ISO alpha-2, renseignées uniquement pour
+  `poste`). La validation des pays autorisés vit dans le code
+  (`SHIPPING_COUNTRIES`), pas en contrainte SQL, pour pouvoir élargir la
+  liste sans migration.
 - Nouvelle colonne `tracking_number` (text, nullable).
 - `delivery_date` et `delivery_fee_cents` conservées telles quelles
   (le nom de colonne ne change pas pour limiter le churn).
@@ -69,7 +77,8 @@ Migration des données existantes (dev uniquement) :
 
 - `fulfillment` ← `poste` si `delivery_address` non nulle, sinon `retrait` ;
 - `delivered` → `shipped` si adresse présente, sinon `picked_up` ;
-- `delivery_address` recopiée dans `shipping_address` avant suppression.
+- `delivery_address` recopiée dans `shipping_address` avant suppression,
+  `shipping_country` ← `FR` pour ces lignes.
 
 ## 4. Machine d'états (`lib/order-status.ts`, `lib/orders.ts`)
 
@@ -103,9 +112,11 @@ Libellés : `shipped` → « Expédiée », `picked_up` → « Retirée ».
 
 ## 6. Hors périmètre
 
-- Calcul des frais au poids ou par transporteur.
+- Calcul des frais au poids, par transporteur ou par pays (tarif unique
+  provisoire ; le pays étant stocké, un barème par zone pourra s'ajouter
+  plus tard).
 - Suivi Colissimo automatisé / emails d'expédition.
-- Livraison internationale ou DOM-TOM.
+- Envois hors France et pays limitrophes (DOM-TOM inclus).
 - Affichage du numéro de suivi côté client.
 
 ## 7. Tests
@@ -115,7 +126,8 @@ Libellés : `shipped` → « Expédiée », `picked_up` → « Retirée ».
   `fulfillment` ; cohérence statut/mode dans `updateOrderStatus` ; frais
   postaux appliqués pour `poste`, nuls pour `retrait`.
 - **E2E** (`tests/e2e/05-checkout.spec.ts`) :
-  - mode poste → champs adresse/CP/ville visibles et requis, total avec
-    frais ;
+  - mode poste → champs adresse/CP/ville/pays visibles et requis, total
+    avec frais ;
   - mode retrait → pas de champs adresse, total sans frais ;
-  - validation du code postal (5 chiffres).
+  - validation du code postal (5 chiffres pour la France) ;
+  - le select pays ne propose que les pays autorisés.
