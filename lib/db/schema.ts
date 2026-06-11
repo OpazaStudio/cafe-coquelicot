@@ -21,9 +21,12 @@ export const orderStatus = pgEnum("order_status", [
   "pending",
   "paid",
   "preparing",
-  "delivered",
+  "shipped",
+  "picked_up",
   "cancelled",
 ]);
+
+export const fulfillmentEnum = pgEnum("fulfillment", ["retrait", "poste"]);
 
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -51,7 +54,12 @@ export const orders = pgTable("orders", {
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerPhone: text("customer_phone"),
-  deliveryAddress: text("delivery_address"),
+  fulfillment: fulfillmentEnum("fulfillment").notNull(),
+  shippingAddress: text("shipping_address"),
+  shippingPostalCode: text("shipping_postal_code"),
+  shippingCity: text("shipping_city"),
+  shippingCountry: text("shipping_country"),
+  trackingNumber: text("tracking_number"),
   deliveryDate: date("delivery_date"),
   cardMessage: text("card_message"),
   subtotalCents: integer("subtotal_cents").notNull(),
@@ -86,3 +94,4 @@ export type NewOrderItemRow = typeof orderItems.$inferInsert;
 
 export type ProductCategory = (typeof productCategory.enumValues)[number];
 export type OrderStatus = (typeof orderStatus.enumValues)[number];
+export type Fulfillment = (typeof fulfillmentEnum.enumValues)[number];
