@@ -9,6 +9,10 @@ import {
   CheckoutError,
 } from "@/lib/orders";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
+import {
+  isShippingCountry,
+  type ShippingCountryCode,
+} from "@/lib/order-status";
 
 const ItemsSchema = z
   .array(
@@ -29,19 +33,54 @@ const CheckoutSchema = z
       .max(120),
     email: z.email({ error: "Adresse email invalide." }),
     phone: z.string().trim().max(25).optional(),
-    fulfillment: z.enum(["retrait", "livraison"], {
-      error: "Choisissez retrait ou livraison.",
+    fulfillment: z.enum(["retrait", "poste"], {
+      error: "Choisissez retrait ou envoi postal.",
     }),
-    address: z.string().trim().max(300).optional(),
+    shippingAddress: z.string().trim().max(200).optional(),
+    shippingPostalCode: z.string().trim().max(10).optional(),
+    shippingCity: z.string().trim().max(100).optional(),
+    shippingCountry: z.string().trim().optional(),
     deliveryDate: z
       .union([z.literal(""), z.iso.date({ error: "Date invalide." })])
       .optional(),
     cardMessage: z.string().trim().max(300, { error: "300 caractères max." }).optional(),
   })
-  .refine(
-    (v) => v.fulfillment === "retrait" || (v.address ?? "").length >= 5,
-    { error: "Adresse de livraison requise.", path: ["address"] },
-  );
+  .superRefine((v, ctx) => {
+    if (v.fulfillment !== "poste") return;
+    if ((v.shippingAddress ?? "").length < 5) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Adresse d'expédition requise.",
+        path: ["shippingAddress"],
+      });
+    }
+    const country = v.shippingCountry ?? "";
+    if (!isShippingCountry(country)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Pays de destination non desservi.",
+        path: ["shippingCountry"],
+      });
+      return; // la validation du code postal dépend du pays
+    }
+    const pc = v.shippingPostalCode ?? "";
+    const pcOk =
+      country === "FR" ? /^\d{5}$/.test(pc) : pc.length >= 2 && pc.length <= 10;
+    if (!pcOk) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Code postal invalide.",
+        path: ["shippingPostalCode"],
+      });
+    }
+    if (!(v.shippingCity ?? "").trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Ville requise.",
+        path: ["shippingCity"],
+      });
+    }
+  });
 
 export type CheckoutState = { error: string } | undefined;
 
@@ -61,7 +100,10 @@ export async function startCheckout(
     email: formData.get("email"),
     phone: formData.get("phone") ?? "",
     fulfillment: formData.get("fulfillment"),
-    address: formData.get("address") ?? "",
+    shippingAddress: formData.get("shippingAddress") ?? "",
+    shippingPostalCode: formData.get("shippingPostalCode") ?? "",
+    shippingCity: formData.get("shippingCity") ?? "",
+    shippingCountry: formData.get("shippingCountry") ?? "",
     deliveryDate: formData.get("deliveryDate") ?? "",
     cardMessage: formData.get("cardMessage") ?? "",
   });
@@ -79,7 +121,12 @@ export async function startCheckout(
         email: parsed.data.email,
         phone: parsed.data.phone,
         fulfillment: parsed.data.fulfillment,
-        address: parsed.data.address,
+        shippingAddress: parsed.data.shippingAddress,
+        shippingPostalCode: parsed.data.shippingPostalCode,
+        shippingCity: parsed.data.shippingCity,
+        shippingCountry: parsed.data.shippingCountry as
+          | ShippingCountryCode
+          | undefined,
         deliveryDate: parsed.data.deliveryDate || undefined,
         cardMessage: parsed.data.cardMessage,
       },
@@ -111,7 +158,7 @@ export async function startCheckout(
                 price_data: {
                   currency: "eur",
                   unit_amount: order.deliveryFeeCents,
-                  product_data: { name: "Livraison à vélo — La Rochelle" },
+                  product_data: { name: "Envoi postal — Colissimo" },
                 },
               },
             ]
