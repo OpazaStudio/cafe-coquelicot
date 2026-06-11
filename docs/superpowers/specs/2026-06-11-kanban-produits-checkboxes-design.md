@@ -1,7 +1,7 @@
 # Design — Cartes kanban : produits, checkboxes par unité, colonne « À expédier »
 
 **Date :** 2026-06-11
-**Statut :** validé
+**Statut :** implémenté
 **Fait évoluer :** [2026-06-11-kanban-commandes-design.md](./2026-06-11-kanban-commandes-design.md)
 
 ## Contexte
@@ -66,7 +66,7 @@ chaque bouquet préparé et voir la carte avancer toute seule.
 
 ## 3. Cycle de vie (`lib/orders.ts`)
 
-- **`setItemPreparedQty(db, orderItemId, preparedQty, now)`** :
+- **`setItemPreparedQty(db, orderItemId, preparedQty)`** :
   - article introuvable → « Article introuvable. » ;
   - commande hors board (`pending` / `cancelled`) → même refus que
     `setPrepStatus` ;
