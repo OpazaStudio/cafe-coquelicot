@@ -1,6 +1,6 @@
 // Statistiques back-office : tout est agrégé en SQL sur orders/order_items,
 // aucune table dédiée. Le CA ne compte que les commandes encaissées
-// (paid → preparing → delivered) — jamais pending ni cancelled.
+// (paid → preparing → shipped/picked_up) — jamais pending ni cancelled.
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "./db/client";
 import { orderItems, orders, type OrderStatus } from "./db/schema";
@@ -8,7 +8,8 @@ import { orderItems, orders, type OrderStatus } from "./db/schema";
 export const REVENUE_STATUSES: OrderStatus[] = [
   "paid",
   "preparing",
-  "delivered",
+  "shipped",
+  "picked_up",
 ];
 
 export type Kpis = {
