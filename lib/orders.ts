@@ -257,9 +257,17 @@ export async function updateOrderStatus(
       `Transition impossible : ${order.status} → ${to}.`,
     );
   }
+  // La préparation est forcément finie quand la commande part ou est retirée.
+  const finishesPrep =
+    (to === "shipped" || to === "picked_up") && order.prepStatus !== "done";
   const [updated] = await db
     .update(orders)
-    .set({ status: to })
+    .set({
+      status: to,
+      ...(finishesPrep
+        ? { prepStatus: "done" as const, prepDoneAt: new Date() }
+        : {}),
+    })
     .where(eq(orders.id, orderId))
     .returning();
   return updated;

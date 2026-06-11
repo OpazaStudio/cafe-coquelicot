@@ -243,6 +243,48 @@ describe("updateOrderStatus (machine d'états)", () => {
       (await updateOrderStatus(db, poste.order.id, "cancelled")).status,
     ).toBe("cancelled");
   });
+
+  it("retirée/expédiée → la carte kanban passe en terminée", async () => {
+    const retrait = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    await updateOrderStatus(db, retrait.order.id, "paid");
+    await updateOrderStatus(db, retrait.order.id, "preparing");
+    const pickedUp = await updateOrderStatus(db, retrait.order.id, "picked_up");
+    expect(pickedUp.prepStatus).toBe("done");
+    expect(pickedUp.prepDoneAt).not.toBeNull();
+
+    const poste = await createPendingOrder(
+      db,
+      {
+        ...camille,
+        fulfillment: "poste",
+        shippingAddress: "3 quai Valin",
+        shippingPostalCode: "17000",
+        shippingCity: "La Rochelle",
+        shippingCountry: "FR",
+      },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    await updateOrderStatus(db, poste.order.id, "paid");
+    await updateOrderStatus(db, poste.order.id, "preparing");
+    const shipped = await updateOrderStatus(db, poste.order.id, "shipped");
+    expect(shipped.prepStatus).toBe("done");
+    expect(shipped.prepDoneAt).not.toBeNull();
+  });
+
+  it("ne réécrase pas une date de fin de préparation déjà posée", async () => {
+    const { order } = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    await updateOrderStatus(db, order.id, "paid");
+    await updateOrderStatus(db, order.id, "preparing");
+    const t0 = new Date("2026-06-10T08:00:00Z");
+    await setPrepStatus(db, order.id, "done", t0);
+    const final = await updateOrderStatus(db, order.id, "picked_up");
+    expect(final.prepStatus).toBe("done");
+    expect(final.prepDoneAt).toEqual(t0);
+  });
 });
 
 describe("statut de préparation (schéma)", () => {
