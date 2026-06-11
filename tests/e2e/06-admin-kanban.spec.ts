@@ -35,6 +35,7 @@ test("une commande payée apparaît en « En attente »", async ({
 test("le bouton déplace la carte vers « En cours de traitement »", async ({
   page,
 }) => {
+  expect(fresh.number, "le test de seed doit passer d'abord").toMatch(/^CQ-/);
   await adminLogin(page);
   await page.goto("/admin/commandes");
   await page
@@ -51,6 +52,7 @@ test("le bouton déplace la carte vers « En cours de traitement »", async ({
 });
 
 test("le drag-and-drop termine la carte", async ({ page }) => {
+  expect(fresh.number, "le test de seed doit passer d'abord").toMatch(/^CQ-/);
   await adminLogin(page);
   await page.goto("/admin/commandes");
   const card = page.getByTestId(`kanban-card-${fresh.number}`);
@@ -63,11 +65,13 @@ test("le drag-and-drop termine la carte", async ({ page }) => {
 });
 
 test("bascule kanban ↔ tableau", async ({ page }) => {
+  expect(fresh.number, "le test de seed doit passer d'abord").toMatch(/^CQ-/);
   await adminLogin(page);
   await page.goto("/admin/commandes");
-  await page.getByRole("link", { name: "Tableau" }).click();
+  const vues = page.getByRole("navigation", { name: "Vue des commandes" });
+  await vues.getByRole("link", { name: "Tableau" }).click();
   await expect(page.getByTestId(`order-row-${fresh.number}`)).toBeVisible();
-  await page.getByRole("link", { name: "Kanban" }).click();
+  await vues.getByRole("link", { name: "Kanban" }).click();
   await expect(page.getByTestId("kanban-col-done")).toContainText(fresh.number);
 });
 
@@ -75,6 +79,7 @@ test("terminée depuis plus de 48h : hors du board, toujours dans le tableau", a
   page,
   request,
 }) => {
+  expect(fresh.number, "le test de seed doit passer d'abord").toMatch(/^CQ-/);
   const old = await seedOrder(request, {
     name: "Vieille Terminée",
     items: [{ slug: "estran", qty: 1 }],
@@ -84,7 +89,9 @@ test("terminée depuis plus de 48h : hors du board, toujours dans le tableau", a
   });
   await adminLogin(page);
   await page.goto("/admin/commandes");
-  await expect(page.getByTestId("kanban-col-done")).toBeVisible();
+  // Ancre positive : la carte du test précédent prouve que le board est
+  // rendu avec ses données avant d'affirmer une absence.
+  await expect(page.getByTestId("kanban-col-done")).toContainText(fresh.number);
   await expect(page.locator("main")).not.toContainText(old.number);
   await page.goto("/admin/commandes?vue=tableau");
   await expect(page.getByTestId(`order-row-${old.number}`)).toBeVisible();
