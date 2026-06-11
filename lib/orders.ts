@@ -17,6 +17,7 @@ import {
   type Fulfillment,
   type ShippingCountryCode,
 } from "./order-status";
+import { BOARD_ORDER_STATUSES, type PrepStatus } from "./prep-status";
 
 export { SHIPPING_FEE_CENTS, type Fulfillment };
 
@@ -229,6 +230,36 @@ export async function updateOrderStatus(
   const [updated] = await db
     .update(orders)
     .set({ status: to })
+    .where(eq(orders.id, orderId))
+    .returning();
+  return updated;
+}
+
+/**
+ * Statut de préparation (kanban admin). Navigation libre entre colonnes,
+ * réservée aux commandes payées non annulées. Entrer dans `done` pose la
+ * date (base de la fenêtre 48h du board), en sortir l'efface.
+ */
+export async function setPrepStatus(
+  db: Db,
+  orderId: string,
+  to: PrepStatus,
+  now = new Date(),
+): Promise<OrderRow> {
+  const found = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+  const order = found[0];
+  if (!order) throw new Error("Commande introuvable.");
+  if (!BOARD_ORDER_STATUSES.includes(order.status)) {
+    throw new Error("Commande hors du kanban (non payée ou annulée).");
+  }
+  if (order.prepStatus === to) return order;
+  const [updated] = await db
+    .update(orders)
+    .set({ prepStatus: to, prepDoneAt: to === "done" ? now : null })
     .where(eq(orders.id, orderId))
     .returning();
   return updated;

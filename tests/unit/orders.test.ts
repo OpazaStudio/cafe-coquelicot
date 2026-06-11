@@ -12,6 +12,7 @@ import {
   generateOrderNumber,
   getOrderBySessionId,
   markOrderPaidBySession,
+  setPrepStatus,
   setTrackingNumber,
   updateOrderStatus,
 } from "@/lib/orders";
@@ -285,6 +286,64 @@ describe("setTrackingNumber", () => {
     );
     await expect(
       setTrackingNumber(db, "00000000-0000-0000-0000-000000000000", "X1"),
+    ).rejects.toThrow(/introuvable/);
+  });
+});
+
+describe("setPrepStatus (kanban de préparation)", () => {
+  async function paidOrder() {
+    const { order } = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    return updateOrderStatus(db, order.id, "paid");
+  }
+
+  it("déplace une commande payée et pose la date d'entrée en done", async () => {
+    const order = await paidOrder();
+    const now = new Date("2026-06-11T10:00:00Z");
+    const moved = await setPrepStatus(db, order.id, "in_progress", now);
+    expect(moved.prepStatus).toBe("in_progress");
+    expect(moved.prepDoneAt).toBeNull();
+    const done = await setPrepStatus(db, order.id, "done", now);
+    expect(done.prepStatus).toBe("done");
+    expect(done.prepDoneAt).toEqual(now);
+  });
+
+  it("efface la date en sortant de done (la carte redevient permanente)", async () => {
+    const order = await paidOrder();
+    await setPrepStatus(db, order.id, "done");
+    const back = await setPrepStatus(db, order.id, "in_progress");
+    expect(back.prepStatus).toBe("in_progress");
+    expect(back.prepDoneAt).toBeNull();
+  });
+
+  it("no-op sur la colonne courante (date conservée)", async () => {
+    const order = await paidOrder();
+    const t0 = new Date("2026-06-11T10:00:00Z");
+    await setPrepStatus(db, order.id, "done", t0);
+    const again = await setPrepStatus(
+      db,
+      order.id,
+      "done",
+      new Date("2026-06-11T11:00:00Z"),
+    );
+    expect(again.prepDoneAt).toEqual(t0);
+  });
+
+  it("refuse les commandes hors board (pending, cancelled, inconnue)", async () => {
+    const { order } = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    await expect(setPrepStatus(db, order.id, "in_progress")).rejects.toThrow(
+      /hors du kanban/,
+    );
+    // pending → cancelled est une transition valide (checkout abandonné)
+    await updateOrderStatus(db, order.id, "cancelled");
+    await expect(setPrepStatus(db, order.id, "in_progress")).rejects.toThrow(
+      /hors du kanban/,
+    );
+    await expect(
+      setPrepStatus(db, "00000000-0000-0000-0000-000000000000", "done"),
     ).rejects.toThrow(/introuvable/);
   });
 });
