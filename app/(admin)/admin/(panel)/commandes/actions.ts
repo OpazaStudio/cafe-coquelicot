@@ -4,8 +4,12 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod";
 import { verifySession } from "@/lib/auth/dal";
 import { getDb } from "@/lib/db/client";
-import { orderStatus } from "@/lib/db/schema";
-import { setTrackingNumber, updateOrderStatus } from "@/lib/orders";
+import { orderStatus, prepStatusEnum } from "@/lib/db/schema";
+import {
+  setPrepStatus,
+  setTrackingNumber,
+  updateOrderStatus,
+} from "@/lib/orders";
 
 const InputSchema = z.object({
   orderId: z.uuid(),
@@ -59,6 +63,31 @@ export async function saveTrackingNumber(
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Erreur inconnue." };
   }
+  revalidatePath(`/admin/commandes/${orderId}`);
+  return undefined;
+}
+
+const PrepSchema = z.object({
+  orderId: z.uuid(),
+  to: z.enum(prepStatusEnum.enumValues),
+});
+
+export async function changePrepStatus(
+  orderId: string,
+  to: string,
+): Promise<StatusActionState> {
+  await verifySession();
+  const parsed = PrepSchema.safeParse({ orderId, to });
+  if (!parsed.success) {
+    return { error: "Requête invalide." };
+  }
+  try {
+    const db = await getDb();
+    await setPrepStatus(db, parsed.data.orderId, parsed.data.to);
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Erreur inconnue." };
+  }
+  revalidatePath("/admin/commandes");
   revalidatePath(`/admin/commandes/${orderId}`);
   return undefined;
 }
