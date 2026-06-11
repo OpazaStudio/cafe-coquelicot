@@ -19,6 +19,7 @@ import {
 } from "./order-status";
 import {
   BOARD_ORDER_STATUSES,
+  derivePrepStatus,
   DONE_RETENTION_MS,
   type PrepStatus,
 } from "./prep-status";
@@ -301,6 +302,58 @@ export async function setPrepStatus(
     .where(eq(orders.id, orderId))
     .returning();
   return updated;
+}
+
+/**
+ * Cases de préparation (kanban admin) : pose le nombre d'unités préparées
+ * d'un article (borné à [0, qty]) puis recalcule le statut de la carte
+ * depuis l'ensemble des articles — symétrique : tout coché → ready,
+ * partiel → in_progress, rien → todo. Refusé sur une carte terminée
+ * (cases gelées) ; `prep_done_at` n'est jamais touché ici.
+ */
+export async function setItemPreparedQty(
+  db: Db,
+  orderItemId: string,
+  preparedQty: number,
+): Promise<OrderRow> {
+  return db.transaction(async (tx) => {
+    const found = await tx
+      .select({ item: orderItems, order: orders })
+      .from(orderItems)
+      .innerJoin(orders, eq(orderItems.orderId, orders.id))
+      .where(eq(orderItems.id, orderItemId))
+      .limit(1);
+    const row = found[0];
+    if (!row) throw new Error("Article introuvable.");
+    if (!BOARD_ORDER_STATUSES.includes(row.order.status)) {
+      throw new Error("Commande hors du kanban (non payée ou annulée).");
+    }
+    if (row.order.prepStatus === "done") {
+      throw new Error("Préparation déjà terminée.");
+    }
+
+    const clamped = Math.min(Math.max(preparedQty, 0), row.item.qty);
+    await tx
+      .update(orderItems)
+      .set({ preparedQty: clamped })
+      .where(eq(orderItems.id, orderItemId));
+
+    const items = await tx
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, row.order.id));
+    const preparedTotal = items.reduce((sum, i) => sum + i.preparedQty, 0);
+    const totalQty = items.reduce((sum, i) => sum + i.qty, 0);
+    const derived = derivePrepStatus(preparedTotal, totalQty);
+    if (derived === row.order.prepStatus) return row.order;
+
+    const [updated] = await tx
+      .update(orders)
+      .set({ prepStatus: derived })
+      .where(eq(orders.id, row.order.id))
+      .returning();
+    return updated;
+  });
 }
 
 /** N° de suivi (mode poste uniquement) : posé/effacé par l'admin, jamais côté client. */

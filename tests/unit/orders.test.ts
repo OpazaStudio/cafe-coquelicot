@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { orders, products } from "@/lib/db/schema";
+import { orderItems, orders, products } from "@/lib/db/schema";
 import { SHIPPING_FEE_CENTS } from "@/lib/order-status";
 import {
   cancelOrderBySession,
@@ -13,6 +13,7 @@ import {
   getOrderBySessionId,
   listBoardOrders,
   markOrderPaidBySession,
+  setItemPreparedQty,
   setPrepStatus,
   setTrackingNumber,
   updateOrderStatus,
@@ -388,6 +389,89 @@ describe("setPrepStatus (kanban de préparation)", () => {
     await expect(
       setPrepStatus(db, "00000000-0000-0000-0000-000000000000", "done"),
     ).rejects.toThrow(/introuvable/);
+  });
+});
+
+describe("setItemPreparedQty (cases de préparation)", () => {
+  async function paidOrderWithItems(items: { slug: string; qty: number }[]) {
+    const created = await createPendingOrder(db, camille, items);
+    const order = await updateOrderStatus(db, created.order.id, "paid");
+    return { order, items: created.items };
+  }
+
+  it("borne la valeur dans [0, qty] (clamp silencieux)", async () => {
+    const { items } = await paidOrderWithItems([{ slug: "rivage", qty: 2 }]);
+    await setItemPreparedQty(db, items[0].id, 99);
+    let [row] = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.id, items[0].id));
+    expect(row.preparedQty).toBe(2);
+
+    await setItemPreparedQty(db, items[0].id, -5);
+    [row] = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.id, items[0].id));
+    expect(row.preparedQty).toBe(0);
+  });
+
+  it("transitions symétriques : todo → in_progress → ready → in_progress → todo", async () => {
+    const { items } = await paidOrderWithItems([
+      { slug: "rivage", qty: 2 },
+      { slug: "estran", qty: 1 },
+    ]);
+    const rivage = items.find((i) => i.nameSnapshot === "rivage")!;
+    const estran = items.find((i) => i.nameSnapshot === "estran")!;
+
+    let order = await setItemPreparedQty(db, rivage.id, 1); // 1/3
+    expect(order.prepStatus).toBe("in_progress");
+    order = await setItemPreparedQty(db, rivage.id, 2); // 2/3
+    expect(order.prepStatus).toBe("in_progress");
+    order = await setItemPreparedQty(db, estran.id, 1); // 3/3
+    expect(order.prepStatus).toBe("ready");
+    expect(order.prepDoneAt).toBeNull(); // ready n'est pas done
+
+    order = await setItemPreparedQty(db, rivage.id, 1); // 2/3
+    expect(order.prepStatus).toBe("in_progress");
+    order = await setItemPreparedQty(db, rivage.id, 0); // 1/3
+    expect(order.prepStatus).toBe("in_progress");
+    order = await setItemPreparedQty(db, estran.id, 0); // 0/3
+    expect(order.prepStatus).toBe("todo");
+  });
+
+  it("un drag manuel vers ready n'invente pas de cases cochées", async () => {
+    const { order, items } = await paidOrderWithItems([
+      { slug: "rivage", qty: 2 },
+    ]);
+    const moved = await setPrepStatus(db, order.id, "ready");
+    expect(moved.prepStatus).toBe("ready");
+    const [row] = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.id, items[0].id));
+    expect(row.preparedQty).toBe(0);
+  });
+
+  it("refuse hors board, carte terminée et article inconnu", async () => {
+    const created = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    await expect(
+      setItemPreparedQty(db, created.items[0].id, 1),
+    ).rejects.toThrow(/hors du kanban/);
+
+    const { order, items } = await paidOrderWithItems([
+      { slug: "estran", qty: 1 },
+    ]);
+    await setPrepStatus(db, order.id, "done");
+    await expect(setItemPreparedQty(db, items[0].id, 1)).rejects.toThrow(
+      /déjà terminée/,
+    );
+
+    await expect(
+      setItemPreparedQty(db, "00000000-0000-0000-0000-000000000000", 1),
+    ).rejects.toThrow(/Article introuvable/);
   });
 });
 

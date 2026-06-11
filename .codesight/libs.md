@@ -43,7 +43,7 @@
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?) => Promise<OrderRow | null>
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
   - function getOrderBySessionId: (db, stripeSessionId) => Promise<
-  - _...9 more_
+  - _...10 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
