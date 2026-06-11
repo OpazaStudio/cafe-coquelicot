@@ -66,7 +66,7 @@ export default async function CommandesPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-stone-600">
-                    {o.deliveryAddress ? "Livraison" : "Retrait"}
+                    {o.fulfillment === "poste" ? "Envoi postal" : "Retrait"}
                   </td>
                   <td className="px-4 py-3 font-medium">
                     {formatEuros(o.totalCents)}

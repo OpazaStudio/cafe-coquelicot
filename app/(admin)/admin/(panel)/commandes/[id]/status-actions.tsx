@@ -1,23 +1,26 @@
 "use client";
 
 import { useActionState } from "react";
-import type { OrderStatus } from "@/lib/db/schema";
-import { STATUS_LABELS, STATUS_TRANSITIONS } from "@/lib/order-status";
+import type { Fulfillment, OrderStatus } from "@/lib/db/schema";
+import { statusTransitions, STATUS_LABELS } from "@/lib/order-status";
 import { changeOrderStatus, type StatusActionState } from "../actions";
 
 const ACTION_LABELS: Partial<Record<OrderStatus, string>> = {
   paid: "Marquer payée",
   preparing: "Passer en préparation",
-  delivered: "Marquer livrée",
+  shipped: "Marquer expédiée",
+  picked_up: "Marquer retirée",
   cancelled: "Annuler la commande",
 };
 
 export function StatusActions({
   orderId,
   status,
+  fulfillment,
 }: {
   orderId: string;
   status: OrderStatus;
+  fulfillment: Fulfillment;
 }) {
   const [state, action, pending] = useActionState<
     StatusActionState,
@@ -26,7 +29,7 @@ export function StatusActions({
     return changeOrderStatus(orderId, String(formData.get("to")));
   }, undefined);
 
-  const targets = STATUS_TRANSITIONS[status];
+  const targets = statusTransitions(status, fulfillment);
   if (targets.length === 0) {
     return (
       <p className="text-sm text-stone-500">

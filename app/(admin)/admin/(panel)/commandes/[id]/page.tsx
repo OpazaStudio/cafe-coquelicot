@@ -4,8 +4,13 @@ import { verifySession } from "@/lib/auth/dal";
 import { getDb } from "@/lib/db/client";
 import { formatEuros } from "@/lib/money";
 import { getOrderWithItems } from "@/lib/orders";
+import {
+  SHIPPING_COUNTRY_LABELS,
+  isShippingCountry,
+} from "@/lib/order-status";
 import { StatusBadge } from "../status-badge";
 import { StatusActions } from "./status-actions";
+import { TrackingForm } from "./tracking-form";
 
 const dateFmt = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long",
@@ -68,7 +73,7 @@ export default async function CommandeDetailPage({
                 <dd>{formatEuros(order.subtotalCents)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-stone-500">Livraison</dt>
+                <dt className="text-stone-500">Expédition</dt>
                 <dd>
                   {order.deliveryFeeCents > 0
                     ? formatEuros(order.deliveryFeeCents)
@@ -86,7 +91,11 @@ export default async function CommandeDetailPage({
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
               Changer le statut
             </h2>
-            <StatusActions orderId={order.id} status={order.status} />
+            <StatusActions
+              orderId={order.id}
+              status={order.status}
+              fulfillment={order.fulfillment}
+            />
           </section>
         </div>
 
@@ -102,11 +111,20 @@ export default async function CommandeDetailPage({
             )}
             <div className="mt-4 border-t border-stone-200 pt-4">
               <p className="mb-1 font-medium">
-                {order.deliveryAddress ? "Livraison à vélo" : "Retrait atelier"}
+                {order.fulfillment === "poste"
+                  ? "Envoi par la poste"
+                  : "Retrait atelier"}
               </p>
-              {order.deliveryAddress && (
-                <p className="whitespace-pre-line text-stone-600">
-                  {order.deliveryAddress}
+              {order.fulfillment === "poste" && (
+                <p className="text-stone-600">
+                  {order.shippingAddress}
+                  <br />
+                  {order.shippingPostalCode} {order.shippingCity}
+                  {order.shippingCountry &&
+                    isShippingCountry(order.shippingCountry) &&
+                    order.shippingCountry !== "FR" && (
+                      <> — {SHIPPING_COUNTRY_LABELS[order.shippingCountry]}</>
+                    )}
                 </p>
               )}
               {order.deliveryDate && (
@@ -115,6 +133,15 @@ export default async function CommandeDetailPage({
                 </p>
               )}
             </div>
+            {order.fulfillment === "poste" && (
+              <div className="mt-4 border-t border-stone-200 pt-4">
+                <p className="mb-2 font-medium">Suivi Colissimo</p>
+                <TrackingForm
+                  orderId={order.id}
+                  trackingNumber={order.trackingNumber}
+                />
+              </div>
+            )}
             {order.cardMessage && (
               <div className="mt-4 border-t border-stone-200 pt-4">
                 <p className="mb-1 font-medium">Message pour la carte</p>
