@@ -1244,7 +1244,8 @@ button.product-card__add {
   color: var(--muted);
 }
 .form-field input,
-.form-field textarea {
+.form-field textarea,
+.form-field select {
   background: transparent;
   border: 0;
   border-bottom: 1px solid var(--line);
@@ -1257,7 +1258,8 @@ button.product-card__add {
   resize: vertical;
 }
 .form-field input:focus,
-.form-field textarea:focus {
+.form-field textarea:focus,
+.form-field select:focus {
   border-bottom-color: currentColor;
 }
 .form-field input::placeholder,

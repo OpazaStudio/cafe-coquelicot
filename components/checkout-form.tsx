@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { useCart } from "@/lib/cart/cart-context";
 import { formatEuros } from "@/lib/money";
-import { DELIVERY_FEE_CENTS, type Fulfillment } from "@/lib/order-status";
+import {
+  SHIPPING_COUNTRY_CODES,
+  SHIPPING_COUNTRY_LABELS,
+  SHIPPING_FEE_CENTS,
+  type Fulfillment,
+  type ShippingCountryCode,
+} from "@/lib/order-status";
 import { startCheckout, type CheckoutState } from "@/app/checkout/actions";
 import { ArrowRight } from "./illustrations";
 
@@ -17,6 +23,7 @@ function tomorrowISO(): string {
 export function CheckoutForm() {
   const { items, subtotalCents, ready } = useCart();
   const [fulfillment, setFulfillment] = useState<Fulfillment>("retrait");
+  const [country, setCountry] = useState<ShippingCountryCode>("FR");
   const [state, action, pending] = useActionState<CheckoutState, FormData>(
     startCheckout,
     undefined,
@@ -39,7 +46,7 @@ export function CheckoutForm() {
     );
   }
 
-  const feeCents = fulfillment === "livraison" ? DELIVERY_FEE_CENTS : 0;
+  const feeCents = fulfillment === "poste" ? SHIPPING_FEE_CENTS : 0;
   const itemsPayload = JSON.stringify(
     items.map((i) => ({ slug: i.slug, qty: i.qty })),
   );
@@ -72,7 +79,7 @@ export function CheckoutForm() {
         </fieldset>
 
         <fieldset className="checkout-fieldset">
-          <legend className="eyebrow">Retrait ou livraison</legend>
+          <legend className="eyebrow">Retrait ou envoi postal</legend>
           <div className="checkout-fulfillment" role="radiogroup">
             <label className={`checkout-choice${fulfillment === "retrait" ? " is-active" : ""}`}>
               <input
@@ -87,36 +94,80 @@ export function CheckoutForm() {
                 12 rue du Gabut, La Rochelle — gratuit
               </span>
             </label>
-            <label className={`checkout-choice${fulfillment === "livraison" ? " is-active" : ""}`}>
+            <label className={`checkout-choice${fulfillment === "poste" ? " is-active" : ""}`}>
               <input
                 type="radio"
                 name="fulfillment"
-                value="livraison"
-                checked={fulfillment === "livraison"}
-                onChange={() => setFulfillment("livraison")}
+                value="poste"
+                checked={fulfillment === "poste"}
+                onChange={() => setFulfillment("poste")}
               />
-              <span className="checkout-choice__title">Livraison à vélo</span>
+              <span className="checkout-choice__title">Envoi par la poste</span>
               <span className="checkout-choice__desc">
-                La Rochelle — {formatEuros(DELIVERY_FEE_CENTS)}
+                Colissimo, France et pays limitrophes —{" "}
+                {formatEuros(SHIPPING_FEE_CENTS)}
               </span>
             </label>
           </div>
 
-          {fulfillment === "livraison" && (
-            <label className="form-field">
-              <span>Adresse de livraison *</span>
-              <textarea
-                name="address"
-                required
-                rows={2}
-                placeholder="3 quai Valin, 17000 La Rochelle"
-              />
-            </label>
+          {fulfillment === "poste" && (
+            <>
+              <label className="form-field">
+                <span>Adresse d&apos;expédition *</span>
+                <input
+                  name="shippingAddress"
+                  required
+                  maxLength={200}
+                  autoComplete="street-address"
+                  placeholder="3 quai Valin"
+                />
+              </label>
+              <label className="form-field">
+                <span>Code postal *</span>
+                <input
+                  name="shippingPostalCode"
+                  required
+                  maxLength={10}
+                  autoComplete="postal-code"
+                  inputMode={country === "FR" ? "numeric" : "text"}
+                  pattern={country === "FR" ? "\\d{5}" : undefined}
+                  placeholder={country === "FR" ? "17000" : ""}
+                />
+              </label>
+              <label className="form-field">
+                <span>Ville *</span>
+                <input
+                  name="shippingCity"
+                  required
+                  maxLength={100}
+                  autoComplete="address-level2"
+                  placeholder="La Rochelle"
+                />
+              </label>
+              <label className="form-field">
+                <span>Pays *</span>
+                <select
+                  name="shippingCountry"
+                  value={country}
+                  onChange={(e) =>
+                    setCountry(e.target.value as ShippingCountryCode)
+                  }
+                >
+                  {SHIPPING_COUNTRY_CODES.map((code) => (
+                    <option key={code} value={code}>
+                      {SHIPPING_COUNTRY_LABELS[code]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
           )}
 
           <label className="form-field">
             <span>
-              Date souhaitée{" "}
+              {fulfillment === "poste"
+                ? "Date d'expédition souhaitée"
+                : "Date de retrait souhaitée"}{" "}
               <em>(optionnel — sous réserve de confirmation)</em>
             </span>
             <input type="date" name="deliveryDate" min={tomorrowISO()} />
@@ -153,7 +204,7 @@ export function CheckoutForm() {
           <span>{formatEuros(subtotalCents)}</span>
         </div>
         <div className="cart-summary__row">
-          <span>{fulfillment === "livraison" ? "Livraison" : "Retrait"}</span>
+          <span>{fulfillment === "poste" ? "Envoi postal" : "Retrait"}</span>
           <span>{feeCents === 0 ? "offert" : formatEuros(feeCents)}</span>
         </div>
         <div className="cart-summary__row cart-summary__row--total">
