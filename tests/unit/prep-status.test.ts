@@ -53,9 +53,10 @@ describe("isOnBoard", () => {
 
 describe("constantes du board", () => {
   it("colonnes ordonnées et libellées en français", () => {
-    expect(PREP_ORDER).toEqual(["todo", "in_progress", "done"]);
+    expect(PREP_ORDER).toEqual(["todo", "in_progress", "ready", "done"]);
     expect(PREP_LABELS.todo).toBe("En attente");
     expect(PREP_LABELS.in_progress).toBe("En cours de traitement");
+    expect(PREP_LABELS.ready).toBe("À expédier");
     expect(PREP_LABELS.done).toBe("Terminée");
   });
 

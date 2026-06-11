@@ -31,6 +31,7 @@ export const fulfillmentEnum = pgEnum("fulfillment", ["retrait", "poste"]);
 export const prepStatusEnum = pgEnum("prep_status", [
   "todo",
   "in_progress",
+  "ready",
   "done",
 ]);
 
@@ -92,6 +93,9 @@ export const orderItems = pgTable("order_items", {
   nameSnapshot: text("name_snapshot").notNull(),
   priceCentsSnapshot: integer("price_cents_snapshot").notNull(),
   qty: integer("qty").notNull(),
+  // Unités préparées (cases du kanban admin) : compteur 0..qty, borné côté
+  // application — les unités d'un même produit sont interchangeables.
+  preparedQty: integer("prepared_qty").notNull().default(0),
 });
 
 export type ProductRow = typeof products.$inferSelect;

@@ -9,12 +9,14 @@ export type { PrepStatus };
 export const PREP_ORDER = [
   "todo",
   "in_progress",
+  "ready",
   "done",
 ] as const satisfies readonly PrepStatus[];
 
 export const PREP_LABELS: Record<PrepStatus, string> = {
   todo: "En attente",
   in_progress: "En cours de traitement",
+  ready: "À expédier",
   done: "Terminée",
 };
 

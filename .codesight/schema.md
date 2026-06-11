@@ -42,4 +42,5 @@
 - nameSnapshot: text (required)
 - priceCentsSnapshot: integer (required)
 - qty: integer (required)
+- preparedQty: integer (default, required)
 - _relations_: orderId -> orders.id, productId -> products.id

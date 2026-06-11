@@ -55,6 +55,7 @@ pk: `id` (uuid) · fk: orderId, productId
 - `nameSnapshot`: text _(required)_
 - `priceCentsSnapshot`: integer _(required)_
 - `qty`: integer _(required)_
+- `preparedQty`: integer _(default, required)_
 - _relations_: orderId -> orders.id, productId -> products.id
 
 ## Schema Source Files
