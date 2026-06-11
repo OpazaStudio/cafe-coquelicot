@@ -76,7 +76,7 @@ export default async function ConfirmationPage({
                     ))}
                     {data.order.deliveryFeeCents > 0 && (
                       <li className="cart-summary__row">
-                        <span>Livraison à vélo</span>
+                        <span>Envoi postal</span>
                         <span>{formatEuros(data.order.deliveryFeeCents)}</span>
                       </li>
                     )}
@@ -88,8 +88,8 @@ export default async function ConfirmationPage({
                   <p className="cart-summary__note">
                     Un email de confirmation Stripe a été envoyé à{" "}
                     {data.order.customerEmail}.{" "}
-                    {data.order.deliveryAddress
-                      ? "On vous livre à vélo très vite."
+                    {data.order.fulfillment === "poste"
+                      ? "Votre commande partira par la poste très vite."
                       : "Votre commande vous attendra à l'atelier, 12 rue du Gabut."}
                   </p>
                 </div>
