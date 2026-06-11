@@ -1,0 +1,65 @@
+# Libraries
+
+- `lib/auth/dal.ts`
+  - function verifySession: () => Promise<SessionPayload>
+  - function checkCredentials: (email, password) => Promise<boolean>
+  - function createSession: (email) => Promise<void>
+  - function destroySession: () => Promise<void>
+  - const getSession
+- `lib/auth/session.ts`
+  - function encryptSession: (payload, expiresAt) => Promise<string>
+  - function decryptSession: (token) => Promise<SessionPayload | null>
+  - type SessionPayload
+  - const SESSION_COOKIE
+  - const SESSION_DURATION_MS
+- `lib/cart/cart.ts`
+  - function addItem: (cart, item, "qty">, qty) => Cart
+  - function removeItem: (cart, slug) => Cart
+  - function setQty: (cart, slug, qty) => Cart
+  - function cartCount: (cart) => number
+  - function cartSubtotalCents: (cart) => number
+  - function sanitizeCart: (value) => Cart
+  - _...3 more_
+- `lib/db/client.ts`
+  - function seedIfEmpty: (db) => Promise<boolean>
+  - function getDb: () => Promise<Db>
+  - type Db
+- `lib/money.ts`
+  - function formatEuros: (cents) => string
+  - function formatFromPrice: (cents) => string
+  - function parsePriceToCents: (price) => number
+- `lib/order-status.ts`
+  - function isShippingCountry: (code) => code is ShippingCountryCode
+  - function statusTransitions: (from, fulfillment) => OrderStatus[]
+  - function canTransition: (from, to, fulfillment) => boolean
+  - type ShippingCountryCode
+  - const SHIPPING_FEE_CENTS
+  - const SHIPPING_COUNTRY_CODES
+  - _...2 more_
+- `lib/orders.ts`
+  - function generateOrderNumber: (now) => void
+  - function createPendingOrder: (db, customer, items) => Promise<
+  - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
+  - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?) => Promise<OrderRow | null>
+  - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
+  - function getOrderBySessionId: (db, stripeSessionId) => Promise<
+  - _...7 more_
+- `lib/products.ts`
+  - function toShopProduct: (row) => ShopProduct
+  - function getAllProductRows: () => Promise<ProductRow[]>
+  - function getProductRow: (id) => Promise<ProductRow | null>
+  - type ShopProduct
+  - const getActiveProducts
+  - const getHomeProducts
+  - _...1 more_
+- `lib/slug.ts` — function slugify: (input) => string
+- `lib/stats.ts`
+  - function getKpis: (db) => Promise<Kpis>
+  - function getRevenueByDay: (db, days) => Promise<DayPoint[]>
+  - function getTopProducts: (db, limit) => Promise<TopProduct[]>
+  - function getRecentOrders: (db, limit) => void
+  - type Kpis
+  - type DayPoint
+  - _...2 more_
+- `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
+- `proxy.ts` — function proxy: (request) => void, const config
