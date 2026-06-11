@@ -66,18 +66,21 @@ test("paiement Stripe test → confirmation → commande payée", async ({
   await addToCart(page, "estran");
   await page.goto("/checkout");
 
-  // Formulaire : livraison (+9€) → total 101€
+  // Formulaire : envoi postal (+7,90€) → total 99,90€
   await page.getByLabel("Nom complet *").fill("Camille Martin");
   await page.getByLabel("Email *").fill("camille.test@exemple.fr");
   await page.getByLabel("Téléphone").fill("06 12 34 56 78");
-  await page.getByText("Livraison à vélo").click();
-  await page
-    .getByLabel("Adresse de livraison *")
-    .fill("3 quai Valin, 17000 La Rochelle");
+  await page.getByText("Envoi par la poste").click();
+  await page.getByLabel("Adresse d'expédition *").fill("3 quai Valin");
+  await page.getByLabel("Code postal *").fill("17000");
+  await page.getByLabel("Ville *").fill("La Rochelle");
+  // Le select pays ne propose que la France et ses voisins, France par défaut
+  await expect(page.getByLabel("Pays *")).toHaveValue("FR");
+  await expect(page.getByLabel("Pays *").locator("option")).toHaveCount(9);
   await page
     .getByLabel("Message pour la carte", { exact: false })
     .fill("Pour les tests, avec amour.");
-  await expect(page.getByTestId("checkout-total")).toHaveText("101€");
+  await expect(page.getByTestId("checkout-total")).toHaveText("99,90€");
 
   await page.getByRole("button", { name: "Payer avec Stripe" }).click();
   await page.waitForURL(/checkout\.stripe\.com/, { timeout: 60_000 });
@@ -89,7 +92,7 @@ test("paiement Stripe test → confirmation → commande payée", async ({
   await expect(confirmation).toBeVisible();
   await expect(confirmation).toContainText("payée");
   await expect(confirmation).toContainText("Total payé");
-  await expect(confirmation).toContainText("101€");
+  await expect(confirmation).toContainText("99,90€");
   await expect(confirmation).toContainText("rivage × 1");
   await expect(confirmation).toContainText("estran × 2");
 
@@ -113,32 +116,40 @@ test("la commande payée apparaît dans l'admin et suit ses statuts", async ({
   const row = page.getByTestId(`order-row-${orderNumber}`);
   await expect(row).toBeVisible();
   await expect(row).toContainText("Payée");
-  await expect(row).toContainText("101€");
-  await expect(row).toContainText("Livraison");
+  await expect(row).toContainText("99,90€");
+  await expect(row).toContainText("Envoi postal");
   await expect(row).toContainText("camille.test@exemple.fr");
 
   // Détail + transitions paid → preparing → delivered
   await row.getByRole("link", { name: "Détail" }).click();
   await expect(page.getByRole("heading", { name: `Commande ${orderNumber}` })).toBeVisible();
   await expect(page.getByText("quai Valin")).toBeVisible();
+  await expect(page.getByText("17000 La Rochelle")).toBeVisible();
+  await expect(page.getByText("Envoi par la poste")).toBeVisible();
   await expect(page.getByText("Pour les tests, avec amour.")).toBeVisible();
 
   await page.getByRole("button", { name: "Passer en préparation" }).click();
   await expect(page.getByText("En préparation").first()).toBeVisible();
-  await page.getByRole("button", { name: "Marquer livrée" }).click();
-  await expect(page.getByText("Livrée").first()).toBeVisible();
-  await expect(
-    page.getByText("Statut final — plus aucune transition possible."),
-  ).toBeVisible();
+
+  // N° de suivi Colissimo
+  await page.getByPlaceholder("N° de suivi Colissimo").fill("6A1234567890123");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await page.reload();
+  await expect(page.getByPlaceholder("N° de suivi Colissimo")).toHaveValue(
+    "6A1234567890123",
+  );
+
+  await page.getByRole("button", { name: "Marquer expédiée" }).click();
+  await expect(page.getByText("Expédiée").first()).toBeVisible();
 });
 
 test("le dashboard reflète la vente dans les KPIs", async ({ page }) => {
   expect(orderNumber, "le test de paiement doit passer d'abord").toMatch(/^CQ-/);
   await adminLogin(page);
 
-  await expect(page.getByTestId("kpi-revenue")).toHaveText("101€");
+  await expect(page.getByTestId("kpi-revenue")).toHaveText("99,90€");
   await expect(page.getByTestId("kpi-orders")).toHaveText("1");
-  await expect(page.getByTestId("kpi-aov")).toHaveText("101€");
+  await expect(page.getByTestId("kpi-aov")).toHaveText("99,90€");
   await expect(page.getByTestId("kpi-items")).toHaveText("3");
 
   const top = page.getByTestId("top-products");

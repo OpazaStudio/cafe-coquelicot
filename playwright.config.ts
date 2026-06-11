@@ -35,6 +35,27 @@ export default defineConfig({
       // pour les redirections success/cancel de Stripe.
       PGLITE_DATA_DIR: ".data/pglite-e2e",
       NEXT_PUBLIC_SITE_URL: baseURL,
+      // Transmettre les clés Stripe au processus serveur (le webServer.env
+      // remplace process.env, donc les variables chargées par loadEnvConfig
+      // ne sont pas héritées automatiquement).
+      ...(process.env.STRIPE_RESTRICTED_KEY
+        ? { STRIPE_RESTRICTED_KEY: process.env.STRIPE_RESTRICTED_KEY }
+        : {}),
+      ...(process.env.STRIPE_SECRET_KEY
+        ? { STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY }
+        : {}),
+      ...(process.env.STRIPE_WEBHOOK_SECRET
+        ? { STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET }
+        : {}),
+      ...(process.env.SESSION_SECRET
+        ? { SESSION_SECRET: process.env.SESSION_SECRET }
+        : {}),
+      ...(process.env.ADMIN_EMAIL
+        ? { ADMIN_EMAIL: process.env.ADMIN_EMAIL }
+        : {}),
+      ...(process.env.ADMIN_PASSWORD_HASH
+        ? { ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH }
+        : {}),
     },
   },
 });
