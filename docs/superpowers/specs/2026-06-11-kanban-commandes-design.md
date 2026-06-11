@@ -1,7 +1,7 @@
 # Design — Kanban de préparation des commandes (admin)
 
 **Date :** 2026-06-11
-**Statut :** validé (approche A)
+**Statut :** implémenté
 
 ## Contexte
 
