@@ -31,7 +31,7 @@
 
 ## Prep-status.ts (1 files)
 
-- `lib/prep-status.ts` — isPrepStatus, isOnBoard, PREP_ORDER, PREP_LABELS, DONE_RETENTION_MS, BOARD_ORDER_STATUSES
+- `lib/prep-status.ts` — isPrepStatus, derivePrepStatus, isOnBoard, PREP_ORDER, PREP_LABELS, DONE_RETENTION_MS, …
 
 ## Products.ts (1 files)
 

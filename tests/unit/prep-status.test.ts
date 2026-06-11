@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
+  derivePrepStatus,
   DONE_RETENTION_MS,
   isOnBoard,
   isPrepStatus,
@@ -63,5 +64,26 @@ describe("constantes du board", () => {
   it("isPrepStatus garde les valeurs inconnues", () => {
     expect(isPrepStatus("done")).toBe(true);
     expect(isPrepStatus("shipped")).toBe(false);
+  });
+});
+
+describe("derivePrepStatus", () => {
+  it("rien coché → en attente", () => {
+    expect(derivePrepStatus(0, 3)).toBe("todo");
+    expect(derivePrepStatus(-1, 3)).toBe("todo"); // défensif
+  });
+
+  it("partiellement coché → en cours de traitement", () => {
+    expect(derivePrepStatus(1, 3)).toBe("in_progress");
+    expect(derivePrepStatus(2, 3)).toBe("in_progress");
+  });
+
+  it("tout coché → à expédier", () => {
+    expect(derivePrepStatus(3, 3)).toBe("ready");
+    expect(derivePrepStatus(4, 3)).toBe("ready"); // défensif
+  });
+
+  it("zéro unité au total → en attente (défensif, panier vide impossible)", () => {
+    expect(derivePrepStatus(0, 0)).toBe("todo");
   });
 });

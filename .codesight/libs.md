@@ -46,11 +46,12 @@
   - _...9 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
+  - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
   - function isOnBoard: (order, now) => boolean
   - const PREP_ORDER
   - const PREP_LABELS: Record<PrepStatus, string>
   - const DONE_RETENTION_MS
-  - const BOARD_ORDER_STATUSES: readonly OrderStatus[]
+  - _...1 more_
 - `lib/products.ts`
   - function toShopProduct: (row) => ShopProduct
   - function getAllProductRows: () => Promise<ProductRow[]>

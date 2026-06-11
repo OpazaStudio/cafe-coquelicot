@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 2 routes | 3 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 60% test coverage
-> **Token savings:** this file is ~3,600 tokens. Without it, AI exploration would cost ~33,700 tokens. **Saves ~30,000 tokens per conversation.**
-> **Last scanned:** 2026-06-11 18:30 — re-run after significant changes
+> **Token savings:** this file is ~3,700 tokens. Without it, AI exploration would cost ~33,700 tokens. **Saves ~30,000 tokens per conversation.**
+> **Last scanned:** 2026-06-11 18:31 — re-run after significant changes
 
 ---
 
@@ -169,11 +169,12 @@
   - _...9 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
+  - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
   - function isOnBoard: (order, now) => boolean
   - const PREP_ORDER
   - const PREP_LABELS: Record<PrepStatus, string>
   - const DONE_RETENTION_MS
-  - const BOARD_ORDER_STATUSES: readonly OrderStatus[]
+  - _...1 more_
 - `lib/products.ts`
   - function toShopProduct: (row) => ShopProduct
   - function getAllProductRows: () => Promise<ProductRow[]>

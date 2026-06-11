@@ -36,6 +36,18 @@ export function isPrepStatus(value: string): value is PrepStatus {
   return (PREP_ORDER as readonly string[]).includes(value);
 }
 
+// Statut dérivé des cases de préparation. Ne renvoie jamais `done` : la
+// sortie du board est l'affaire du statut commande (shipped / picked_up).
+// Appliqué uniquement quand on coche/décoche — jamais lors d'un drag.
+export function derivePrepStatus(
+  preparedTotal: number,
+  totalQty: number,
+): Extract<PrepStatus, "todo" | "in_progress" | "ready"> {
+  if (totalQty <= 0 || preparedTotal <= 0) return "todo";
+  if (preparedTotal >= totalQty) return "ready";
+  return "in_progress";
+}
+
 export function isOnBoard(
   order: {
     status: OrderStatus;
