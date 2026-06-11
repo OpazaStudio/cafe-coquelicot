@@ -127,6 +127,7 @@ export function CheckoutForm() {
                 <input
                   name="shippingPostalCode"
                   required
+                  minLength={2}
                   maxLength={10}
                   autoComplete="postal-code"
                   inputMode={country === "FR" ? "numeric" : "text"}
