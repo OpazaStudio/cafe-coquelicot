@@ -112,7 +112,7 @@ test("la commande payée apparaît dans l'admin et suit ses statuts", async ({
   expect(orderNumber, "le test de paiement doit passer d'abord").toMatch(/^CQ-/);
   await adminLogin(page);
 
-  await page.goto("/admin/commandes");
+  await page.goto("/admin/commandes?vue=tableau");
   const row = page.getByTestId(`order-row-${orderNumber}`);
   await expect(row).toBeVisible();
   await expect(row).toContainText("Payée");

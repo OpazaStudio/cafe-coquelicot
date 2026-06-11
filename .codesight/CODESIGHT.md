@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 1 routes | 3 models | 50 components | 13 lib files | 15 env vars | 0 middleware | 50% test coverage
-> **Token savings:** this file is ~3,400 tokens. Without it, AI exploration would cost ~32,200 tokens. **Saves ~28,700 tokens per conversation.**
-> **Last scanned:** 2026-06-11 17:14 — re-run after significant changes
+> 1 routes | 3 models | 52 components | 13 lib files | 15 env vars | 0 middleware | 50% test coverage
+> **Token savings:** this file is ~3,500 tokens. Without it, AI exploration would cost ~33,000 tokens. **Saves ~29,500 tokens per conversation.**
+> **Last scanned:** 2026-06-11 17:18 — re-run after significant changes
 
 ---
 
@@ -68,7 +68,9 @@
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
 - **StatusActions** [client] — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** [client] — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
-- **CommandesPage** — `app/(admin)/admin/(panel)/commandes/page.tsx`
+- **KanbanBoard** [client] — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
+- **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
+- **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
@@ -246,12 +248,13 @@
 - `tests/helpers/db.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
+- `app/(admin)/admin/(panel)/commandes/kanban-board.tsx` — imported by **1** files
+- `app/(admin)/admin/(panel)/commandes/orders-table.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/admin-nav.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/revenue-chart.tsx` — imported by **1** files
 - `app/(admin)/admin/login/login-form.tsx` — imported by **1** files
 - `components/newsletter.tsx` — imported by **1** files
 - `components/cart-link.tsx` — imported by **1** files
-- `lib/money.ts` — imported by **1** files
 
 ## Import Map (who imports what)
 
@@ -260,7 +263,7 @@
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`
 - `lib/db/client.ts` ← `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/seed.ts`
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`
-- `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/page.tsx`, `app/(admin)/admin/(panel)/page.tsx`
+- `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - `app/(admin)/admin/login/actions.ts` ← `app/(admin)/admin/(panel)/layout.tsx`, `app/(admin)/admin/login/login-form.tsx`
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`

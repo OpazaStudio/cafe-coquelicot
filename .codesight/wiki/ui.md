@@ -2,13 +2,14 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**50 components** (react)
+**52 components** (react)
 
 ## Client Components
 
 - **AdminNav** — `app/(admin)/admin/(panel)/admin-nav.tsx`
 - **StatusActions** — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
+- **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **ProductForm** — props: action, product, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChart** — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **LoginForm** — `app/(admin)/admin/login/login-form.tsx`
@@ -24,7 +25,8 @@
 ## Components
 
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
-- **CommandesPage** — `app/(admin)/admin/(panel)/commandes/page.tsx`
+- **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
+- **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
