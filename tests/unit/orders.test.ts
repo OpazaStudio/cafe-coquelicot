@@ -80,6 +80,8 @@ describe("createPendingOrder", () => {
     expect(order.fulfillment).toBe("retrait");
     expect(order.deliveryFeeCents).toBe(0);
     expect(order.shippingAddress).toBeNull();
+    expect(order.shippingPostalCode).toBeNull();
+    expect(order.shippingCity).toBeNull();
     expect(order.shippingCountry).toBeNull();
   });
 
@@ -210,6 +212,35 @@ describe("updateOrderStatus (machine d'états)", () => {
     const [row] = await db.select().from(orders).where(eq(orders.id, order.id));
     expect(row.status).toBe("cancelled");
   });
+
+  it("autorise l'annulation depuis preparing pour les deux modes", async () => {
+    const retrait = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    await updateOrderStatus(db, retrait.order.id, "paid");
+    await updateOrderStatus(db, retrait.order.id, "preparing");
+    expect(
+      (await updateOrderStatus(db, retrait.order.id, "cancelled")).status,
+    ).toBe("cancelled");
+
+    const poste = await createPendingOrder(
+      db,
+      {
+        ...camille,
+        fulfillment: "poste",
+        shippingAddress: "3 quai Valin",
+        shippingPostalCode: "17000",
+        shippingCity: "La Rochelle",
+        shippingCountry: "FR",
+      },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    await updateOrderStatus(db, poste.order.id, "paid");
+    await updateOrderStatus(db, poste.order.id, "preparing");
+    expect(
+      (await updateOrderStatus(db, poste.order.id, "cancelled")).status,
+    ).toBe("cancelled");
+  });
 });
 
 describe("setTrackingNumber", () => {
@@ -224,5 +255,11 @@ describe("setTrackingNumber", () => {
     await setTrackingNumber(db, order.id, null);
     [row] = await db.select().from(orders).where(eq(orders.id, order.id));
     expect(row.trackingNumber).toBeNull();
+  });
+
+  it("échoue sur une commande inconnue", async () => {
+    await expect(
+      setTrackingNumber(db, "00000000-0000-0000-0000-000000000000", "X1"),
+    ).rejects.toThrow(/introuvable/);
   });
 });

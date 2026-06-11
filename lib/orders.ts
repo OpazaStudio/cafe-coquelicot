@@ -15,6 +15,7 @@ import {
   canTransition,
   SHIPPING_FEE_CENTS,
   type Fulfillment,
+  type ShippingCountryCode,
 } from "./order-status";
 
 export { SHIPPING_FEE_CENTS, type Fulfillment };
@@ -28,10 +29,12 @@ export type CheckoutCustomerInput = {
   email: string;
   phone?: string;
   fulfillment: Fulfillment;
+  // Champs poste — complétude validée en amont (checkout action) ; les
+  // lignes migrées d'avant l'envoi postal peuvent être partielles.
   shippingAddress?: string;
   shippingPostalCode?: string;
   shippingCity?: string;
-  shippingCountry?: string; // code ISO alpha-2, validé en amont (checkout action)
+  shippingCountry?: ShippingCountryCode;
   deliveryDate?: string; // YYYY-MM-DD
   cardMessage?: string;
 };
@@ -78,8 +81,8 @@ export async function createPendingOrder(
     (sum, i) => sum + bySlug.get(i.slug)!.priceCents * i.qty,
     0,
   );
-  const deliveryFeeCents =
-    customer.fulfillment === "poste" ? SHIPPING_FEE_CENTS : 0;
+  const isPoste = customer.fulfillment === "poste";
+  const deliveryFeeCents = isPoste ? SHIPPING_FEE_CENTS : 0;
 
   return db.transaction(async (tx) => {
     const [order] = await tx
@@ -91,22 +94,10 @@ export async function createPendingOrder(
         customerEmail: customer.email,
         customerPhone: customer.phone || null,
         fulfillment: customer.fulfillment,
-        shippingAddress:
-          customer.fulfillment === "poste"
-            ? (customer.shippingAddress ?? null)
-            : null,
-        shippingPostalCode:
-          customer.fulfillment === "poste"
-            ? (customer.shippingPostalCode ?? null)
-            : null,
-        shippingCity:
-          customer.fulfillment === "poste"
-            ? (customer.shippingCity ?? null)
-            : null,
-        shippingCountry:
-          customer.fulfillment === "poste"
-            ? (customer.shippingCountry ?? null)
-            : null,
+        shippingAddress: isPoste ? (customer.shippingAddress ?? null) : null,
+        shippingPostalCode: isPoste ? (customer.shippingPostalCode ?? null) : null,
+        shippingCity: isPoste ? (customer.shippingCity ?? null) : null,
+        shippingCountry: isPoste ? (customer.shippingCountry ?? null) : null,
         deliveryDate: customer.deliveryDate || null,
         cardMessage: customer.cardMessage || null,
         subtotalCents,
@@ -243,13 +234,16 @@ export async function updateOrderStatus(
   return updated;
 }
 
+/** N° de suivi (mode poste) : posé/effacé par l'admin, jamais côté client. */
 export async function setTrackingNumber(
   db: Db,
   orderId: string,
   trackingNumber: string | null,
 ): Promise<void> {
-  await db
+  const updated = await db
     .update(orders)
     .set({ trackingNumber })
-    .where(eq(orders.id, orderId));
+    .where(eq(orders.id, orderId))
+    .returning({ id: orders.id });
+  if (updated.length === 0) throw new Error("Commande introuvable.");
 }
