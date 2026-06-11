@@ -11,6 +11,7 @@ import {
   createPendingOrder,
   generateOrderNumber,
   getOrderBySessionId,
+  listBoardOrders,
   markOrderPaidBySession,
   setPrepStatus,
   setTrackingNumber,
@@ -345,5 +346,76 @@ describe("setPrepStatus (kanban de préparation)", () => {
     await expect(
       setPrepStatus(db, "00000000-0000-0000-0000-000000000000", "done"),
     ).rejects.toThrow(/introuvable/);
+  });
+});
+
+describe("listBoardOrders (visibilité du board)", () => {
+  const now = new Date("2026-06-11T12:00:00Z");
+  const hours = (n: number) => n * 60 * 60 * 1000;
+
+  async function paidOrder(deliveryDate?: string) {
+    const { order } = await createPendingOrder(
+      db,
+      { ...camille, deliveryDate },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    return updateOrderStatus(db, order.id, "paid");
+  }
+
+  it("liste les payées, exclut pending et annulées", async () => {
+    await createPendingOrder(db, camille, [{ slug: "gabut", qty: 1 }]); // pending
+    const paid = await paidOrder();
+    const toCancel = await createPendingOrder(db, camille, [
+      { slug: "estran", qty: 1 },
+    ]);
+    await updateOrderStatus(db, toCancel.order.id, "cancelled");
+
+    const board = await listBoardOrders(db, now);
+    expect(board.map((o) => o.id)).toEqual([paid.id]);
+  });
+
+  it("masque les terminées de plus de 48h, garde les récentes", async () => {
+    const recent = await paidOrder();
+    await setPrepStatus(db, recent.id, "done", new Date(now.getTime() - hours(47)));
+    const old = await paidOrder();
+    await setPrepStatus(db, old.id, "done", new Date(now.getTime() - hours(49)));
+
+    const ids = (await listBoardOrders(db, now)).map((o) => o.id);
+    expect(ids).toContain(recent.id);
+    expect(ids).not.toContain(old.id);
+  });
+
+  it("borne : pile 48h → masquée", async () => {
+    const edge = await paidOrder();
+    await setPrepStatus(
+      db,
+      edge.id,
+      "done",
+      new Date(now.getTime() - 48 * 60 * 60 * 1000),
+    );
+    expect((await listBoardOrders(db, now)).map((o) => o.id)).not.toContain(
+      edge.id,
+    );
+  });
+
+  it("trie par date de livraison souhaitée puis par création", async () => {
+    const late = await paidOrder("2026-06-20");
+    const early = await paidOrder("2026-06-15");
+    const none = await paidOrder(); // sans date → en dernier
+
+    const ids = (await listBoardOrders(db, now)).map((o) => o.id);
+    expect(ids).toEqual([early.id, late.id, none.id]);
+  });
+
+  it("garde visible une done sans date (cas défensif, écrit hors API)", async () => {
+    const order = await paidOrder();
+    await db
+      .update(orders)
+      .set({ prepStatus: "done", prepDoneAt: null })
+      .where(eq(orders.id, order.id));
+
+    expect((await listBoardOrders(db, now)).map((o) => o.id)).toContain(
+      order.id,
+    );
   });
 });

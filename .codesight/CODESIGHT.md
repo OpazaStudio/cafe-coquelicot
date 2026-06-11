@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 1 routes | 3 models | 50 components | 13 lib files | 15 env vars | 0 middleware | 50% test coverage
-> **Token savings:** this file is ~3,500 tokens. Without it, AI exploration would cost ~32,400 tokens. **Saves ~28,900 tokens per conversation.**
-> **Last scanned:** 2026-06-11 17:02 — re-run after significant changes
+> **Token savings:** this file is ~3,400 tokens. Without it, AI exploration would cost ~32,200 tokens. **Saves ~28,700 tokens per conversation.**
+> **Last scanned:** 2026-06-11 17:09 — re-run after significant changes
 
 ---
 
@@ -162,7 +162,7 @@
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?) => Promise<OrderRow | null>
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
   - function getOrderBySessionId: (db, stripeSessionId) => Promise<
-  - _...8 more_
+  - _...9 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function isOnBoard: (order, now) => boolean
@@ -251,7 +251,6 @@
 - `app/(admin)/admin/login/login-form.tsx` — imported by **1** files
 - `components/newsletter.tsx` — imported by **1** files
 - `components/cart-link.tsx` — imported by **1** files
-- `lib/prep-status.ts` — imported by **1** files
 - `lib/money.ts` — imported by **1** files
 
 ## Import Map (who imports what)

@@ -1,6 +1,6 @@
 // Cycle de vie des commandes. Toutes les écritures passent par ici
 // (action checkout, webhook Stripe, page de confirmation, admin).
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, ne, or } from "drizzle-orm";
 import type { Db } from "./db/client";
 import {
   orderItems,
@@ -17,7 +17,11 @@ import {
   type Fulfillment,
   type ShippingCountryCode,
 } from "./order-status";
-import { BOARD_ORDER_STATUSES, type PrepStatus } from "./prep-status";
+import {
+  BOARD_ORDER_STATUSES,
+  DONE_RETENTION_MS,
+  type PrepStatus,
+} from "./prep-status";
 
 export { SHIPPING_FEE_CENTS, type Fulfillment };
 
@@ -208,6 +212,32 @@ export async function getOrderWithItems(
 
 export async function listOrders(db: Db): Promise<OrderRow[]> {
   return db.select().from(orders).orderBy(desc(orders.createdAt));
+}
+
+/**
+ * Cartes visibles du kanban : commandes payées non annulées, les `done`
+ * masquées 48h après leur fin de préparation. Tri : date de livraison
+ * souhaitée croissante (NULLS LAST, défaut Postgres en ASC) puis création.
+ */
+export async function listBoardOrders(
+  db: Db,
+  now = new Date(),
+): Promise<OrderRow[]> {
+  const cutoff = new Date(now.getTime() - DONE_RETENTION_MS);
+  return db
+    .select()
+    .from(orders)
+    .where(
+      and(
+        inArray(orders.status, BOARD_ORDER_STATUSES),
+        or(
+          ne(orders.prepStatus, "done"),
+          isNull(orders.prepDoneAt),
+          gt(orders.prepDoneAt, cutoff),
+        ),
+      ),
+    )
+    .orderBy(asc(orders.deliveryDate), asc(orders.createdAt));
 }
 
 export async function updateOrderStatus(
