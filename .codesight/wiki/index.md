@@ -11,15 +11,16 @@ Structural map compiled from source code via AST. No LLM — deterministic, 200m
 - [Overview](./overview.md)
 - [Database](./database.md)
 - [Payments](./payments.md)
+- [Route](./route.md)
 - [Ui](./ui.md)
 - [Libraries](./libraries.md)
 
 ## Quick Stats
 
-- Routes: **1**
+- Routes: **2**
 - Models: **3**
 - Components: **52**
-- Env vars: **3** required, **12** with defaults
+- Env vars: **4** required, **12** with defaults
 
 ## How to Use
 
@@ -46,4 +47,4 @@ These exist in your codebase but are **not** reflected in wiki articles:
 When in doubt, search the source. The wiki is a starting point, not a complete inventory.
 
 ---
-_Last compiled: 2026-06-11 · 6 articles · [codesight](https://github.com/Houseofmvps/codesight)_
+_Last compiled: 2026-06-11 · 7 articles · [codesight](https://github.com/Houseofmvps/codesight)_

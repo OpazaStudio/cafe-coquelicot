@@ -2,14 +2,15 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 1 routes | 3 models | 52 components | 13 lib files | 15 env vars | 0 middleware | 50% test coverage
-> **Token savings:** this file is ~3,600 tokens. Without it, AI exploration would cost ~33,000 tokens. **Saves ~29,500 tokens per conversation.**
-> **Last scanned:** 2026-06-11 17:27 — re-run after significant changes
+> 2 routes | 3 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 40% test coverage
+> **Token savings:** this file is ~3,600 tokens. Without it, AI exploration would cost ~33,700 tokens. **Saves ~30,100 tokens per conversation.**
+> **Last scanned:** 2026-06-11 17:29 — re-run after significant changes
 
 ---
 
 # Routes
 
+- `POST` `/api/e2e/orders` → out: { error } [db]
 - `POST` `/api/stripe/webhook` [auth, payment]
 
 ---
@@ -203,6 +204,7 @@
 - `ADMIN_PASSWORD_HASH` (has default) — .env.local
 - `CI` **required** — playwright.config.ts
 - `DATABASE_URL` (has default) — .env.local
+- `E2E_TEST_HOOKS` **required** — app/api/e2e/orders/route.ts
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local
@@ -273,7 +275,7 @@
 
 # Test Coverage
 
-> **50%** of routes and models are covered by tests
+> **40%** of routes and models are covered by tests
 > 17 test files found
 
 ## Covered Models

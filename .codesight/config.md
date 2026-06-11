@@ -7,6 +7,7 @@
 - `ADMIN_PASSWORD_HASH` (has default) — .env.local
 - `CI` **required** — playwright.config.ts
 - `DATABASE_URL` (has default) — .env.local
+- `E2E_TEST_HOOKS` **required** — app/api/e2e/orders/route.ts
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local

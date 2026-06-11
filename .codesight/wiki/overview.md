@@ -6,11 +6,12 @@
 
 ## Scale
 
-1 API routes · 3 database models · 52 UI components · 13 library files · 15 environment variables
+2 API routes · 3 database models · 52 UI components · 13 library files · 16 environment variables
 
 ## Subsystems
 
 - **[Payments](./payments.md)** — 1 routes — touches: auth, payment
+- **[Route](./route.md)** — 1 routes — touches: db
 
 **Database:** drizzle, 3 models — see [database.md](./database.md)
 
@@ -32,6 +33,7 @@ Changes to these files have the widest blast radius across the codebase:
 ## Required Environment Variables
 
 - `CI` — `playwright.config.ts`
+- `E2E_TEST_HOOKS` — `app/api/e2e/orders/route.ts`
 - `NODE_ENV` — `lib/auth/dal.ts`
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 

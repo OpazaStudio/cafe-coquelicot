@@ -35,6 +35,8 @@ export default defineConfig({
       // pour les redirections success/cancel de Stripe.
       PGLITE_DATA_DIR: ".data/pglite-e2e",
       NEXT_PUBLIC_SITE_URL: baseURL,
+      // Hooks de seed pour les specs kanban (app/api/e2e/orders).
+      E2E_TEST_HOOKS: "1",
       // Transmettre les clés Stripe au processus serveur (le webServer.env
       // remplace process.env, donc les variables chargées par loadEnvConfig
       // ne sont pas héritées automatiquement).
