@@ -535,7 +535,23 @@ describe("listBoardOrders (visibilité du board)", () => {
     await updateOrderStatus(db, toCancel.order.id, "cancelled");
 
     const board = await listBoardOrders(db, now);
-    expect(board.map((o) => o.id)).toEqual([paid.id]);
+    expect(board.map(({ order }) => order.id)).toEqual([paid.id]);
+  });
+
+  it("joint les articles de chaque commande, triés par nom", async () => {
+    const { order } = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 2 },
+      { slug: "estran", qty: 1 },
+    ]);
+    await updateOrderStatus(db, order.id, "paid");
+
+    const board = await listBoardOrders(db, now);
+    expect(board).toHaveLength(1);
+    expect(board[0].items.map((i) => i.nameSnapshot)).toEqual([
+      "estran",
+      "rivage",
+    ]);
+    expect(board[0].items.map((i) => i.preparedQty)).toEqual([0, 0]);
   });
 
   it("masque les terminées de plus de 48h, garde les récentes", async () => {
@@ -544,7 +560,7 @@ describe("listBoardOrders (visibilité du board)", () => {
     const old = await paidOrder();
     await setPrepStatus(db, old.id, "done", new Date(now.getTime() - hours(49)));
 
-    const ids = (await listBoardOrders(db, now)).map((o) => o.id);
+    const ids = (await listBoardOrders(db, now)).map(({ order }) => order.id);
     expect(ids).toContain(recent.id);
     expect(ids).not.toContain(old.id);
   });
@@ -557,7 +573,7 @@ describe("listBoardOrders (visibilité du board)", () => {
       "done",
       new Date(now.getTime() - 48 * 60 * 60 * 1000),
     );
-    expect((await listBoardOrders(db, now)).map((o) => o.id)).not.toContain(
+    expect((await listBoardOrders(db, now)).map(({ order }) => order.id)).not.toContain(
       edge.id,
     );
   });
@@ -567,7 +583,7 @@ describe("listBoardOrders (visibilité du board)", () => {
     const early = await paidOrder("2026-06-15");
     const none = await paidOrder(); // sans date → en dernier
 
-    const ids = (await listBoardOrders(db, now)).map((o) => o.id);
+    const ids = (await listBoardOrders(db, now)).map(({ order }) => order.id);
     expect(ids).toEqual([early.id, late.id, none.id]);
   });
 
@@ -578,7 +594,7 @@ describe("listBoardOrders (visibilité du board)", () => {
       .set({ prepStatus: "done", prepDoneAt: null })
       .where(eq(orders.id, order.id));
 
-    expect((await listBoardOrders(db, now)).map((o) => o.id)).toContain(
+    expect((await listBoardOrders(db, now)).map(({ order }) => order.id)).toContain(
       order.id,
     );
   });

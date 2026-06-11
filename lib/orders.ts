@@ -215,17 +215,20 @@ export async function listOrders(db: Db): Promise<OrderRow[]> {
   return db.select().from(orders).orderBy(desc(orders.createdAt));
 }
 
+export type BoardOrder = { order: OrderRow; items: OrderItemRow[] };
+
 /**
- * Cartes visibles du kanban : commandes payées non annulées, les `done`
- * masquées 48h après leur fin de préparation. Tri : date de livraison
- * souhaitée croissante (NULLS LAST, défaut Postgres en ASC) puis création.
+ * Cartes visibles du kanban avec leurs articles : commandes payées non
+ * annulées, les `done` masquées 48h après leur fin de préparation.
+ * Tri : date de livraison souhaitée croissante (NULLS LAST, défaut
+ * Postgres en ASC) puis création ; articles triés par nom.
  */
 export async function listBoardOrders(
   db: Db,
   now = new Date(),
-): Promise<OrderRow[]> {
+): Promise<BoardOrder[]> {
   const cutoff = new Date(now.getTime() - DONE_RETENTION_MS);
-  return db
+  const rows = await db
     .select()
     .from(orders)
     .where(
@@ -239,6 +242,25 @@ export async function listBoardOrders(
       ),
     )
     .orderBy(asc(orders.deliveryDate), asc(orders.createdAt));
+  if (rows.length === 0) return [];
+
+  const items = await db
+    .select()
+    .from(orderItems)
+    .where(
+      inArray(
+        orderItems.orderId,
+        rows.map((r) => r.id),
+      ),
+    )
+    .orderBy(asc(orderItems.nameSnapshot));
+  const byOrder = new Map<string, OrderItemRow[]>();
+  for (const item of items) {
+    const list = byOrder.get(item.orderId) ?? [];
+    list.push(item);
+    byOrder.set(item.orderId, list);
+  }
+  return rows.map((order) => ({ order, items: byOrder.get(order.id) ?? [] }));
 }
 
 export async function updateOrderStatus(

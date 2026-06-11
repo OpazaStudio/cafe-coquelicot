@@ -6,6 +6,7 @@ import { verifySession } from "@/lib/auth/dal";
 import { getDb } from "@/lib/db/client";
 import { orderStatus, prepStatusEnum } from "@/lib/db/schema";
 import {
+  setItemPreparedQty,
   setPrepStatus,
   setTrackingNumber,
   updateOrderStatus,
@@ -36,6 +37,37 @@ export async function changeOrderStatus(
   revalidatePath("/admin/commandes");
   revalidatePath(`/admin/commandes/${orderId}`);
   revalidatePath("/admin");
+  return undefined;
+}
+
+const ItemPrepSchema = z.object({
+  orderItemId: z.uuid(),
+  preparedQty: z.number().int().min(0).max(99),
+});
+
+export async function setItemPrepared(
+  orderItemId: string,
+  preparedQty: number,
+): Promise<StatusActionState> {
+  await verifySession();
+  const parsed = ItemPrepSchema.safeParse({ orderItemId, preparedQty });
+  if (!parsed.success) {
+    return { error: "Requête invalide." };
+  }
+  let orderId: string;
+  try {
+    const db = await getDb();
+    const updated = await setItemPreparedQty(
+      db,
+      parsed.data.orderItemId,
+      parsed.data.preparedQty,
+    );
+    orderId = updated.id;
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Erreur inconnue." };
+  }
+  revalidatePath("/admin/commandes");
+  revalidatePath(`/admin/commandes/${orderId}`);
   return undefined;
 }
 

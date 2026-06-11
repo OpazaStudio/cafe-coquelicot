@@ -15,7 +15,8 @@ export default async function CommandesPage({
   const { vue } = await searchParams;
   const showTable = vue === "tableau";
   const db = await getDb();
-  const orders = showTable ? await listOrders(db) : await listBoardOrders(db);
+  const tableOrders = showTable ? await listOrders(db) : [];
+  const boardOrders = showTable ? [] : await listBoardOrders(db);
 
   return (
     <>
@@ -24,7 +25,7 @@ export default async function CommandesPage({
           <h1 className="text-2xl font-semibold tracking-tight">Commandes</h1>
           <p className="text-sm text-stone-500">
             {showTable
-              ? `${orders.length} commande${orders.length > 1 ? "s" : ""} au total`
+              ? `${tableOrders.length} commande${tableOrders.length > 1 ? "s" : ""} au total`
               : "Préparation — les cartes terminées disparaissent après 48h"}
           </p>
         </div>
@@ -42,9 +43,9 @@ export default async function CommandesPage({
       </div>
 
       {showTable ? (
-        <OrdersTable orders={orders} />
+        <OrdersTable orders={tableOrders} />
       ) : (
-        <KanbanBoard orders={orders} />
+        <KanbanBoard orders={boardOrders} />
       )}
     </>
   );
