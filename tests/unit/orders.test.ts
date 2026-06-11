@@ -274,6 +274,44 @@ describe("updateOrderStatus (machine d'états)", () => {
     expect(shipped.prepDoneAt).not.toBeNull();
   });
 
+  it("expédiée → toutes les cases cochées", async () => {
+    const poste = await createPendingOrder(
+      db,
+      {
+        ...camille,
+        fulfillment: "poste",
+        shippingAddress: "3 quai Valin",
+        shippingPostalCode: "17000",
+        shippingCity: "La Rochelle",
+        shippingCountry: "FR",
+      },
+      [{ slug: "rivage", qty: 2 }],
+    );
+    await updateOrderStatus(db, poste.order.id, "paid");
+    await updateOrderStatus(db, poste.order.id, "preparing");
+    await updateOrderStatus(db, poste.order.id, "shipped");
+    const [item] = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.id, poste.items[0].id));
+    expect(item.preparedQty).toBe(2);
+  });
+
+  it("retirée → cases cochées même si la carte était déjà terminée", async () => {
+    const retrait = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 2 },
+    ]);
+    await updateOrderStatus(db, retrait.order.id, "paid");
+    await setPrepStatus(db, retrait.order.id, "done"); // déplacée à la main, cases vides
+    await updateOrderStatus(db, retrait.order.id, "preparing");
+    await updateOrderStatus(db, retrait.order.id, "picked_up");
+    const [item] = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.id, retrait.items[0].id));
+    expect(item.preparedQty).toBe(2);
+  });
+
   it("ne réécrase pas une date de fin de préparation déjà posée", async () => {
     const { order } = await createPendingOrder(db, camille, [
       { slug: "rivage", qty: 1 },

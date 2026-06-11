@@ -1,6 +1,6 @@
 // Cycle de vie des commandes. Toutes les écritures passent par ici
 // (action checkout, webhook Stripe, page de confirmation, admin).
-import { and, asc, desc, eq, gt, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import type { Db } from "./db/client";
 import {
   orderItems,
@@ -258,20 +258,29 @@ export async function updateOrderStatus(
       `Transition impossible : ${order.status} → ${to}.`,
     );
   }
-  // La préparation est forcément finie quand la commande part ou est retirée.
-  const finishesPrep =
-    (to === "shipped" || to === "picked_up") && order.prepStatus !== "done";
-  const [updated] = await db
-    .update(orders)
-    .set({
-      status: to,
-      ...(finishesPrep
-        ? { prepStatus: "done" as const, prepDoneAt: new Date() }
-        : {}),
-    })
-    .where(eq(orders.id, orderId))
-    .returning();
-  return updated;
+  // La préparation est forcément finie quand la commande part ou est
+  // retirée : carte en « Terminée » (date posée une seule fois) et toutes
+  // les cases cochées — même si la carte y avait été déplacée à la main.
+  const finishesPrep = to === "shipped" || to === "picked_up";
+  return db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(orders)
+      .set({
+        status: to,
+        ...(finishesPrep && order.prepStatus !== "done"
+          ? { prepStatus: "done" as const, prepDoneAt: new Date() }
+          : {}),
+      })
+      .where(eq(orders.id, orderId))
+      .returning();
+    if (finishesPrep) {
+      await tx
+        .update(orderItems)
+        .set({ preparedQty: sql`${orderItems.qty}` })
+        .where(eq(orderItems.orderId, orderId));
+    }
+    return updated;
+  });
 }
 
 /**
