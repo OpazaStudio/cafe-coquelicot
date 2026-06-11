@@ -96,3 +96,81 @@ test("terminée depuis plus de 48h : hors du board, toujours dans le tableau", a
   await page.goto("/admin/commandes?vue=tableau");
   await expect(page.getByTestId(`order-row-${old.number}`)).toBeVisible();
 });
+
+let checklist = { id: "", number: "" };
+
+test("la carte affiche les produits et une case par unité", async ({
+  page,
+  request,
+}) => {
+  checklist = await seedOrder(request, {
+    name: "Maud Checklist",
+    items: [
+      { slug: "rivage", qty: 2 },
+      { slug: "estran", qty: 1 },
+    ],
+  });
+  await adminLogin(page);
+  await page.goto("/admin/commandes");
+  const card = page.getByTestId(`kanban-card-${checklist.number}`);
+  await expect(card).toContainText("rivage");
+  await expect(card).toContainText("estran");
+  await expect(card.getByRole("checkbox")).toHaveCount(3);
+});
+
+// Les cases sont contrôlées sans optimistic UI : l'état ne bascule qu'après
+// l'aller-retour serveur → click() (et non check(), qui exige un changement
+// immédiat), avec une assertion d'état entre chaque clic pour resynchroniser.
+test("cocher les cases fait avancer la carte (1 → en cours, toutes → à expédier)", async ({
+  page,
+}) => {
+  expect(checklist.number, "le test de seed doit passer d'abord").toMatch(
+    /^CQ-/,
+  );
+  await adminLogin(page);
+  await page.goto("/admin/commandes");
+  const card = page.getByTestId(`kanban-card-${checklist.number}`);
+
+  await card.getByRole("checkbox", { checked: false }).first().click();
+  await expect(card.getByRole("checkbox", { checked: true })).toHaveCount(1);
+  await expect(page.getByTestId("kanban-col-in_progress")).toContainText(
+    checklist.number,
+  );
+
+  await card.getByRole("checkbox", { checked: false }).first().click();
+  await expect(card.getByRole("checkbox", { checked: true })).toHaveCount(2);
+  await expect(page.getByTestId("kanban-col-in_progress")).toContainText(
+    checklist.number,
+  );
+
+  await card.getByRole("checkbox", { checked: false }).first().click();
+  await expect(card.getByRole("checkbox", { checked: true })).toHaveCount(3);
+  await expect(page.getByTestId("kanban-col-ready")).toContainText(
+    checklist.number,
+  );
+});
+
+test("décocher fait reculer la carte (symétrique jusqu'à en attente)", async ({
+  page,
+}) => {
+  expect(checklist.number, "le test de seed doit passer d'abord").toMatch(
+    /^CQ-/,
+  );
+  await adminLogin(page);
+  await page.goto("/admin/commandes");
+  const card = page.getByTestId(`kanban-card-${checklist.number}`);
+
+  await card.getByRole("checkbox", { checked: true }).first().click();
+  await expect(card.getByRole("checkbox", { checked: true })).toHaveCount(2);
+  await expect(page.getByTestId("kanban-col-in_progress")).toContainText(
+    checklist.number,
+  );
+
+  await card.getByRole("checkbox", { checked: true }).first().click();
+  await expect(card.getByRole("checkbox", { checked: true })).toHaveCount(1);
+  await card.getByRole("checkbox", { checked: true }).first().click();
+  await expect(card.getByRole("checkbox", { checked: true })).toHaveCount(0);
+  await expect(page.getByTestId("kanban-col-todo")).toContainText(
+    checklist.number,
+  );
+});
