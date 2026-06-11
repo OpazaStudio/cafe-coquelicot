@@ -13,11 +13,11 @@ import {
 } from "./db/schema";
 import {
   canTransition,
-  DELIVERY_FEE_CENTS,
+  SHIPPING_FEE_CENTS,
   type Fulfillment,
 } from "./order-status";
 
-export { DELIVERY_FEE_CENTS, type Fulfillment };
+export { SHIPPING_FEE_CENTS, type Fulfillment };
 
 export class CheckoutError extends Error {}
 
@@ -28,7 +28,10 @@ export type CheckoutCustomerInput = {
   email: string;
   phone?: string;
   fulfillment: Fulfillment;
-  address?: string;
+  shippingAddress?: string;
+  shippingPostalCode?: string;
+  shippingCity?: string;
+  shippingCountry?: string; // code ISO alpha-2, validé en amont (checkout action)
   deliveryDate?: string; // YYYY-MM-DD
   cardMessage?: string;
 };
@@ -76,7 +79,7 @@ export async function createPendingOrder(
     0,
   );
   const deliveryFeeCents =
-    customer.fulfillment === "livraison" ? DELIVERY_FEE_CENTS : 0;
+    customer.fulfillment === "poste" ? SHIPPING_FEE_CENTS : 0;
 
   return db.transaction(async (tx) => {
     const [order] = await tx
@@ -87,9 +90,22 @@ export async function createPendingOrder(
         customerName: customer.name,
         customerEmail: customer.email,
         customerPhone: customer.phone || null,
-        deliveryAddress:
-          customer.fulfillment === "livraison"
-            ? (customer.address ?? null)
+        fulfillment: customer.fulfillment,
+        shippingAddress:
+          customer.fulfillment === "poste"
+            ? (customer.shippingAddress ?? null)
+            : null,
+        shippingPostalCode:
+          customer.fulfillment === "poste"
+            ? (customer.shippingPostalCode ?? null)
+            : null,
+        shippingCity:
+          customer.fulfillment === "poste"
+            ? (customer.shippingCity ?? null)
+            : null,
+        shippingCountry:
+          customer.fulfillment === "poste"
+            ? (customer.shippingCountry ?? null)
             : null,
         deliveryDate: customer.deliveryDate || null,
         cardMessage: customer.cardMessage || null,
@@ -214,7 +230,7 @@ export async function updateOrderStatus(
     .limit(1);
   const order = found[0];
   if (!order) throw new Error("Commande introuvable.");
-  if (!canTransition(order.status, to)) {
+  if (!canTransition(order.status, to, order.fulfillment)) {
     throw new Error(
       `Transition impossible : ${order.status} → ${to}.`,
     );
@@ -225,4 +241,15 @@ export async function updateOrderStatus(
     .where(eq(orders.id, orderId))
     .returning();
   return updated;
+}
+
+export async function setTrackingNumber(
+  db: Db,
+  orderId: string,
+  trackingNumber: string | null,
+): Promise<void> {
+  await db
+    .update(orders)
+    .set({ trackingNumber })
+    .where(eq(orders.id, orderId));
 }
