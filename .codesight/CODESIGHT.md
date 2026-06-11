@@ -2,15 +2,15 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 3 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 40% test coverage
-> **Token savings:** this file is ~3,600 tokens. Without it, AI exploration would cost ~33,700 tokens. **Saves ~30,100 tokens per conversation.**
-> **Last scanned:** 2026-06-11 17:29 — re-run after significant changes
+> 2 routes | 3 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 60% test coverage
+> **Token savings:** this file is ~3,600 tokens. Without it, AI exploration would cost ~33,700 tokens. **Saves ~30,000 tokens per conversation.**
+> **Last scanned:** 2026-06-11 17:42 — re-run after significant changes
 
 ---
 
 # Routes
 
-- `POST` `/api/e2e/orders` → out: { error } [db]
+- `POST` `/api/e2e/orders` → out: { error } [db] ✓
 - `POST` `/api/stripe/webhook` [auth, payment]
 
 ---
@@ -238,11 +238,11 @@
 ## Most Imported Files (change these carefully)
 
 - `lib/db/schema.ts` — imported by **6** files
+- `tests/e2e/helpers.ts` — imported by **5** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
 - `components/illustrations.tsx` — imported by **4** files
 - `lib/db/client.ts` — imported by **4** files
-- `tests/e2e/helpers.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
@@ -261,11 +261,11 @@
 ## Import Map (who imports what)
 
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
+- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts`
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`
 - `lib/db/client.ts` ← `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/seed.ts`
-- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - `app/(admin)/admin/login/actions.ts` ← `app/(admin)/admin/(panel)/layout.tsx`, `app/(admin)/admin/login/login-form.tsx`
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
@@ -275,8 +275,12 @@
 
 # Test Coverage
 
-> **40%** of routes and models are covered by tests
-> 17 test files found
+> **60%** of routes and models are covered by tests
+> 18 test files found
+
+## Covered Routes
+
+- POST:/api/e2e/orders
 
 ## Covered Models
 
