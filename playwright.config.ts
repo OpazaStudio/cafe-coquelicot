@@ -37,6 +37,9 @@ export default defineConfig({
       NEXT_PUBLIC_SITE_URL: baseURL,
       // Hooks de seed pour les specs kanban (app/api/e2e/orders).
       E2E_TEST_HOOKS: "1",
+      // Forcer PGlite (pas Supabase) : .env.local définit DATABASE_URL mais
+      // Next.js ne l'écrase pas si la variable est déjà dans process.env.
+      DATABASE_URL: "",
       // Transmettre les clés Stripe au processus serveur (le webServer.env
       // remplace process.env, donc les variables chargées par loadEnvConfig
       // ne sont pas héritées automatiquement).
