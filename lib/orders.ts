@@ -234,7 +234,7 @@ export async function updateOrderStatus(
   return updated;
 }
 
-/** N° de suivi (mode poste) : posé/effacé par l'admin, jamais côté client. */
+/** N° de suivi (mode poste uniquement) : posé/effacé par l'admin, jamais côté client. */
 export async function setTrackingNumber(
   db: Db,
   orderId: string,
@@ -243,7 +243,9 @@ export async function setTrackingNumber(
   const updated = await db
     .update(orders)
     .set({ trackingNumber })
-    .where(eq(orders.id, orderId))
+    .where(and(eq(orders.id, orderId), eq(orders.fulfillment, "poste")))
     .returning({ id: orders.id });
-  if (updated.length === 0) throw new Error("Commande introuvable.");
+  if (updated.length === 0) {
+    throw new Error("Commande introuvable ou sans envoi postal.");
+  }
 }

@@ -244,8 +244,17 @@ describe("updateOrderStatus (machine d'états)", () => {
 });
 
 describe("setTrackingNumber", () => {
+  const posteCamille = {
+    ...camille,
+    fulfillment: "poste" as const,
+    shippingAddress: "3 quai Valin",
+    shippingPostalCode: "17000",
+    shippingCity: "La Rochelle",
+    shippingCountry: "FR" as const,
+  };
+
   it("enregistre puis efface le numéro de suivi", async () => {
-    const { order } = await createPendingOrder(db, camille, [
+    const { order } = await createPendingOrder(db, posteCamille, [
       { slug: "rivage", qty: 1 },
     ]);
     await setTrackingNumber(db, order.id, "6A1234567890123");
@@ -257,7 +266,13 @@ describe("setTrackingNumber", () => {
     expect(row.trackingNumber).toBeNull();
   });
 
-  it("échoue sur une commande inconnue", async () => {
+  it("refuse une commande retrait ou inconnue", async () => {
+    const { order } = await createPendingOrder(db, camille, [
+      { slug: "rivage", qty: 1 },
+    ]);
+    await expect(setTrackingNumber(db, order.id, "X1")).rejects.toThrow(
+      /introuvable ou sans envoi postal/,
+    );
     await expect(
       setTrackingNumber(db, "00000000-0000-0000-0000-000000000000", "X1"),
     ).rejects.toThrow(/introuvable/);

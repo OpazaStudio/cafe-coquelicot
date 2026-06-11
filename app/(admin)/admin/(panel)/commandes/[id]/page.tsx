@@ -116,10 +116,14 @@ export default async function CommandeDetailPage({
                   : "Retrait atelier"}
               </p>
               {order.fulfillment === "poste" && (
-                <p className="text-stone-600">
+                <p className="whitespace-pre-line text-stone-600">
                   {order.shippingAddress}
-                  <br />
-                  {order.shippingPostalCode} {order.shippingCity}
+                  {(order.shippingPostalCode || order.shippingCity) && (
+                    <>
+                      <br />
+                      {order.shippingPostalCode} {order.shippingCity}
+                    </>
+                  )}
                   {order.shippingCountry &&
                     isShippingCountry(order.shippingCountry) &&
                     order.shippingCountry !== "FR" && (
