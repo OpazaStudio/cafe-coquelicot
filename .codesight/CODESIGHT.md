@@ -158,13 +158,13 @@
   - const SESSION_COOKIE
   - const SESSION_DURATION_MS
 - `lib/cart/cart.ts`
-  - function addItem: (cart, item, "qty">, qty) => Cart
-  - function removeItem: (cart, slug) => Cart
-  - function setQty: (cart, slug, qty) => Cart
+  - function cartItemKey: (slug, sizeId?, colorId?) => string
+  - function addItem: (cart, item, qty) => Cart
+  - function removeItem: (cart, key) => Cart
+  - function setQty: (cart, key, qty) => Cart
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
-  - function sanitizeCart: (value) => Cart
-  - _...3 more_
+  - _...5 more_
 - `lib/db/client.ts`
   - function seedIfEmpty: (db) => Promise<boolean>
   - function getDb: () => Promise<Db>

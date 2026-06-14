@@ -16,7 +16,7 @@
 
 ## Cart (1 files)
 
-- `lib/cart/cart.ts` — addItem, removeItem, setQty, cartCount, cartSubtotalCents, sanitizeCart, …
+- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
 
 ## Item-label.ts (1 files)
 
