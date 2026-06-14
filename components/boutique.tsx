@@ -6,12 +6,11 @@
 // The catalogue itself now lives in Postgres and is passed in by the
 // server page (app/boutique/page.tsx).
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import type { ProductCategory } from "@/lib/db/schema";
-import type { ShopColor, ShopProduct, ShopSize } from "@/lib/products";
-import { useCart } from "@/lib/cart/cart-context";
-import { formatEuros } from "@/lib/money";
-import { Bouquet, ArrowRight } from "./illustrations";
+import type { ShopProduct } from "@/lib/products";
+import { Bouquet } from "./illustrations";
 
 const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "tout", label: "Tout" },
@@ -60,95 +59,24 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
   );
 }
 
+// Carte présentationnelle : un lien vers la page produit, où se fait toute la
+// sélection (taille/coloris/quantité) et l'ajout au panier.
 function ProductCard(product: ShopProduct) {
-  const { name, tag, desc, badge, sizes, colors } = product;
-  const { add } = useCart();
-  const [added, setAdded] = useState(false);
-  const [size, setSize] = useState<ShopSize | null>(sizes[0] ?? null);
-  const [color, setColor] = useState<ShopColor | null>(colors[0] ?? null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, []);
-
-  // Le coloris change l'illustration ; la taille porte le prix. Produit nu :
-  // illustration par défaut + prix « dès » historique.
-  const illustration = color?.illustrationVariant ?? product.variant;
-  const priceCents = size?.priceCents ?? product.priceCents;
-  const priceLabel = sizes.length ? formatEuros(priceCents) : product.price;
-
-  function handleAdd() {
-    add({
-      slug: product.slug,
-      name,
-      priceCents,
-      sizeId: size?.id ?? null,
-      colorId: color?.id ?? null,
-      sizeLabel: size?.label ?? null,
-      colorLabel: color?.label ?? null,
-    });
-    setAdded(true);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setAdded(false), 1600);
-  }
-
+  const { slug, name, tag, desc, badge, price, variant } = product;
   return (
-    <article className="product-card">
+    <Link href={`/boutique/${slug}`} className="product-card">
       <div className="product-card__media">
         {badge && <span className="product-card__badge">{badge}</span>}
-        <Bouquet variant={illustration} />
+        <Bouquet variant={variant} />
       </div>
       <div>
         <p className="eyebrow" style={{ opacity: 0.6, marginBottom: 6 }}>{tag}</p>
         <h3 className="product-card__name">{name}</h3>
       </div>
-
-      {sizes.length > 0 && (
-        <div className="product-card__options" role="group" aria-label={`Taille de ${name}`}>
-          {sizes.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className={`product-card__option${size?.id === s.id ? " is-active" : ""}`}
-              aria-pressed={size?.id === s.id}
-              onClick={() => setSize(s)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      )}
-      {colors.length > 0 && (
-        <div className="product-card__options" role="group" aria-label={`Coloris de ${name}`}>
-          {colors.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`product-card__option${color?.id === c.id ? " is-active" : ""}`}
-              aria-pressed={color?.id === c.id}
-              onClick={() => setColor(c)}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-      )}
-
       <div className="product-card__row">
         <p className="product-card__desc">{desc}</p>
-        <span className="product-card__price">{priceLabel}</span>
+        <span className="product-card__price">{price}</span>
       </div>
-      <button
-        type="button"
-        className="product-card__add link-arrow"
-        onClick={handleAdd}
-        aria-label={`Ajouter ${name} au panier`}
-      >
-        {added ? <>Ajouté ✓</> : <>Ajouter <ArrowRight /></>}
-      </button>
-    </article>
+    </Link>
   );
 }
