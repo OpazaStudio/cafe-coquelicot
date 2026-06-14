@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 52 components | 14 lib files | 16 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~3,900 tokens. Without it, AI exploration would cost ~34,700 tokens. **Saves ~30,800 tokens per conversation.**
-> **Last scanned:** 2026-06-14 08:56 — re-run after significant changes
+> 2 routes | 5 models | 52 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~3,900 tokens. Without it, AI exploration would cost ~35,000 tokens. **Saves ~31,100 tokens per conversation.**
+> **Last scanned:** 2026-06-14 08:57 — re-run after significant changes
 
 ---
 
@@ -173,6 +173,7 @@
   - function buildChildSeedRows: (idBySlug, string>) => void
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
+- `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string
@@ -304,7 +305,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 18 test files found
+> 19 test files found
 
 ## Covered Routes
 

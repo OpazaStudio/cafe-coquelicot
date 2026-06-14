@@ -28,6 +28,7 @@
   - function buildChildSeedRows: (idBySlug, string>) => void
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
+- `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string

@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**14 library files** across 12 modules
+**15 library files** across 13 modules
 
 ## Auth (2 files)
 
@@ -17,6 +17,10 @@
 ## Cart (1 files)
 
 - `lib/cart/cart.ts` — addItem, removeItem, setQty, cartCount, cartSubtotalCents, sanitizeCart, …
+
+## Item-label.ts (1 files)
+
+- `lib/item-label.ts` — composeItemName
 
 ## Money.ts (1 files)
 
