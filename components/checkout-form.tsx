@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { useCart } from "@/lib/cart/cart-context";
+import { composeItemName } from "@/lib/item-label";
 import { formatEuros } from "@/lib/money";
 import {
   SHIPPING_COUNTRY_CODES,
@@ -48,7 +49,12 @@ export function CheckoutForm() {
 
   const feeCents = fulfillment === "poste" ? SHIPPING_FEE_CENTS : 0;
   const itemsPayload = JSON.stringify(
-    items.map((i) => ({ slug: i.slug, qty: i.qty })),
+    items.map((i) => ({
+      slug: i.slug,
+      sizeId: i.sizeId,
+      colorId: i.colorId,
+      qty: i.qty,
+    })),
   );
 
   return (
@@ -192,9 +198,9 @@ export function CheckoutForm() {
         <h2 className="eyebrow">Votre commande</h2>
         <ul className="checkout-recap">
           {items.map((i) => (
-            <li key={i.slug} className="cart-summary__row">
+            <li key={i.key} className="cart-summary__row">
               <span>
-                {i.name} × {i.qty}
+                {composeItemName(i.name, i.sizeLabel, i.colorLabel)} × {i.qty}
               </span>
               <span>{formatEuros(i.priceCents * i.qty)}</span>
             </li>

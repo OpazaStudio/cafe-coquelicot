@@ -8,6 +8,7 @@ import {
   createPendingOrder,
   CheckoutError,
 } from "@/lib/orders";
+import { composeItemName } from "@/lib/item-label";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
 import {
   isShippingCountry,
@@ -18,6 +19,8 @@ const ItemsSchema = z
   .array(
     z.object({
       slug: z.string().min(1),
+      sizeId: z.uuid().nullish(),
+      colorId: z.uuid().nullish(),
       qty: z.number().int().min(1).max(99),
     }),
   )
@@ -148,7 +151,13 @@ export async function startCheckout(
           price_data: {
             currency: "eur",
             unit_amount: line.priceCentsSnapshot,
-            product_data: { name: line.nameSnapshot },
+            product_data: {
+              name: composeItemName(
+                line.nameSnapshot,
+                line.sizeLabelSnapshot,
+                line.colorLabelSnapshot,
+              ),
+            },
           },
         })),
         ...(order.deliveryFeeCents > 0
