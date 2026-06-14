@@ -5,7 +5,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import type { Db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
-import { SEED_PRODUCTS } from "@/lib/db/seed-data";
+import { SEED_PRODUCTS, buildChildSeedRows } from "@/lib/db/seed-data";
 
 export async function createTestDb({ seed = true } = {}): Promise<Db> {
   const pglite = new PGlite();
@@ -14,7 +14,15 @@ export async function createTestDb({ seed = true } = {}): Promise<Db> {
     migrationsFolder: path.join(process.cwd(), "lib", "db", "migrations"),
   });
   if (seed) {
-    await db.insert(schema.products).values(SEED_PRODUCTS);
+    const inserted = await db
+      .insert(schema.products)
+      .values(SEED_PRODUCTS)
+      .returning({ id: schema.products.id, slug: schema.products.slug });
+    const { sizes, colors } = buildChildSeedRows(
+      new Map(inserted.map((p) => [p.slug, p.id])),
+    );
+    if (sizes.length) await db.insert(schema.productSizes).values(sizes);
+    if (colors.length) await db.insert(schema.productColors).values(colors);
   }
   return db as unknown as Db;
 }

@@ -3,7 +3,7 @@ import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema";
-import { SEED_PRODUCTS } from "./seed-data";
+import { SEED_PRODUCTS, buildChildSeedRows } from "./seed-data";
 
 // Type commun aux deux drivers (postgres-js en prod, PGlite en local/test).
 export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
@@ -42,7 +42,15 @@ async function createDb(): Promise<Db> {
 export async function seedIfEmpty(db: Db): Promise<boolean> {
   const existing = await db.select({ id: schema.products.id }).from(schema.products).limit(1);
   if (existing.length > 0) return false;
-  await db.insert(schema.products).values(SEED_PRODUCTS);
+  const inserted = await db
+    .insert(schema.products)
+    .values(SEED_PRODUCTS)
+    .returning({ id: schema.products.id, slug: schema.products.slug });
+  const { sizes, colors } = buildChildSeedRows(
+    new Map(inserted.map((p) => [p.slug, p.id])),
+  );
+  if (sizes.length) await db.insert(schema.productSizes).values(sizes);
+  if (colors.length) await db.insert(schema.productColors).values(colors);
   return true;
 }
 

@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~3,800 tokens. Without it, AI exploration would cost ~34,500 tokens. **Saves ~30,600 tokens per conversation.**
-> **Last scanned:** 2026-06-14 08:55 — re-run after significant changes
+> 2 routes | 5 models | 52 components | 14 lib files | 16 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~3,900 tokens. Without it, AI exploration would cost ~34,700 tokens. **Saves ~30,800 tokens per conversation.**
+> **Last scanned:** 2026-06-14 08:56 — re-run after significant changes
 
 ---
 
@@ -169,6 +169,10 @@
   - function seedIfEmpty: (db) => Promise<boolean>
   - function getDb: () => Promise<Db>
   - type Db
+- `lib/db/seed-data.ts`
+  - function buildChildSeedRows: (idBySlug, string>) => void
+  - const SEED_PRODUCTS: NewProductRow[]
+  - const HOME_PICKS
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string

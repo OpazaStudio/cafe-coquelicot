@@ -2,20 +2,21 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**13 library files** across 12 modules
+**14 library files** across 12 modules
 
 ## Auth (2 files)
 
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, SESSION_COOKIE, SESSION_DURATION_MS
 
+## Db (2 files)
+
+- `lib/db/client.ts` — seedIfEmpty, getDb, Db
+- `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
+
 ## Cart (1 files)
 
 - `lib/cart/cart.ts` — addItem, removeItem, setQty, cartCount, cartSubtotalCents, sanitizeCart, …
-
-## Db (1 files)
-
-- `lib/db/client.ts` — seedIfEmpty, getDb, Db
 
 ## Money.ts (1 files)
 

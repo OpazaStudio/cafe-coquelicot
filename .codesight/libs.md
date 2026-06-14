@@ -24,6 +24,10 @@
   - function seedIfEmpty: (db) => Promise<boolean>
   - function getDb: () => Promise<Db>
   - type Db
+- `lib/db/seed-data.ts`
+  - function buildChildSeedRows: (idBySlug, string>) => void
+  - const SEED_PRODUCTS: NewProductRow[]
+  - const HOME_PICKS
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string
