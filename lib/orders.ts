@@ -5,11 +5,16 @@ import type { Db } from "./db/client";
 import {
   orderItems,
   orders,
+  productColors,
+  productSizes,
   products,
   type NewOrderItemRow,
   type OrderItemRow,
   type OrderRow,
   type OrderStatus,
+  type ProductColorRow,
+  type ProductRow,
+  type ProductSizeRow,
 } from "./db/schema";
 import {
   canTransition,
@@ -28,7 +33,23 @@ export { SHIPPING_FEE_CENTS, type Fulfillment };
 
 export class CheckoutError extends Error {}
 
-export type CheckoutItemInput = { slug: string; qty: number };
+export type CheckoutItemInput = {
+  slug: string;
+  sizeId?: string | null;
+  colorId?: string | null;
+  qty: number;
+};
+
+// Ligne résolue côté serveur : prix et labels font foi (jamais le client).
+type ResolvedLine = {
+  product: ProductRow;
+  qty: number;
+  priceCents: number;
+  sizeId: string | null;
+  colorId: string | null;
+  sizeLabel: string | null;
+  colorLabel: string | null;
+};
 
 export type CheckoutCustomerInput = {
   name: string;
@@ -83,10 +104,79 @@ export async function createPendingOrder(
     }
   }
 
-  const subtotalCents = items.reduce(
-    (sum, i) => sum + bySlug.get(i.slug)!.priceCents * i.qty,
-    0,
-  );
+  // Variantes actives des produits du panier, groupées par produit.
+  const productIds = rows.map((r) => r.id);
+  const allSizes: ProductSizeRow[] = productIds.length
+    ? await db
+        .select()
+        .from(productSizes)
+        .where(
+          and(
+            inArray(productSizes.productId, productIds),
+            eq(productSizes.active, true),
+          ),
+        )
+    : [];
+  const allColors: ProductColorRow[] = productIds.length
+    ? await db
+        .select()
+        .from(productColors)
+        .where(
+          and(
+            inArray(productColors.productId, productIds),
+            eq(productColors.active, true),
+          ),
+        )
+    : [];
+  const sizesByProduct = new Map<string, ProductSizeRow[]>();
+  for (const s of allSizes) {
+    const list = sizesByProduct.get(s.productId);
+    if (list) list.push(s);
+    else sizesByProduct.set(s.productId, [s]);
+  }
+  const colorsByProduct = new Map<string, ProductColorRow[]>();
+  for (const c of allColors) {
+    const list = colorsByProduct.get(c.productId);
+    if (list) list.push(c);
+    else colorsByProduct.set(c.productId, [c]);
+  }
+
+  // Résolution : la taille porte le prix, le coloris est figé en snapshot.
+  // Une taille/coloris est exigé ssi le produit en propose ; un id fourni doit
+  // appartenir au produit et être actif.
+  const resolved: ResolvedLine[] = items.map((item) => {
+    const p = bySlug.get(item.slug)!;
+    const sizes = sizesByProduct.get(p.id) ?? [];
+    const colors = colorsByProduct.get(p.id) ?? [];
+
+    let priceCents = p.priceCents;
+    let sizeId: string | null = null;
+    let sizeLabel: string | null = null;
+    if (sizes.length > 0) {
+      const s = item.sizeId ? sizes.find((x) => x.id === item.sizeId) : undefined;
+      if (!s) throw new CheckoutError(`Choix de taille requis pour ${p.name}.`);
+      priceCents = s.priceCents;
+      sizeId = s.id;
+      sizeLabel = s.label;
+    } else if (item.sizeId) {
+      throw new CheckoutError(`Ce produit n'a pas de taille (${p.name}).`);
+    }
+
+    let colorId: string | null = null;
+    let colorLabel: string | null = null;
+    if (colors.length > 0) {
+      const c = item.colorId ? colors.find((x) => x.id === item.colorId) : undefined;
+      if (!c) throw new CheckoutError(`Choix de coloris requis pour ${p.name}.`);
+      colorId = c.id;
+      colorLabel = c.label;
+    } else if (item.colorId) {
+      throw new CheckoutError(`Ce produit n'a pas de coloris (${p.name}).`);
+    }
+
+    return { product: p, qty: item.qty, priceCents, sizeId, colorId, sizeLabel, colorLabel };
+  });
+
+  const subtotalCents = resolved.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
   const isPoste = customer.fulfillment === "poste";
   const deliveryFeeCents = isPoste ? SHIPPING_FEE_CENTS : 0;
 
@@ -112,16 +202,17 @@ export async function createPendingOrder(
       })
       .returning();
 
-    const values: NewOrderItemRow[] = items.map((i) => {
-      const p = bySlug.get(i.slug)!;
-      return {
-        orderId: order.id,
-        productId: p.id,
-        nameSnapshot: p.name,
-        priceCentsSnapshot: p.priceCents,
-        qty: i.qty,
-      };
-    });
+    const values: NewOrderItemRow[] = resolved.map((l) => ({
+      orderId: order.id,
+      productId: l.product.id,
+      nameSnapshot: l.product.name,
+      priceCentsSnapshot: l.priceCents,
+      qty: l.qty,
+      sizeId: l.sizeId,
+      colorId: l.colorId,
+      sizeLabelSnapshot: l.sizeLabel,
+      colorLabelSnapshot: l.colorLabel,
+    }));
     const insertedItems = await tx.insert(orderItems).values(values).returning();
 
     return { order, items: insertedItems };

@@ -2,7 +2,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { orderItems, orders, products } from "@/lib/db/schema";
+import {
+  orderItems,
+  orders,
+  productColors,
+  productSizes,
+  products,
+} from "@/lib/db/schema";
 import { SHIPPING_FEE_CENTS } from "@/lib/order-status";
 import {
   cancelOrderBySession,
@@ -333,6 +339,81 @@ describe("statut de préparation (schéma)", () => {
     ]);
     expect(order.prepStatus).toBe("todo");
     expect(order.prepDoneAt).toBeNull();
+  });
+});
+
+describe("createPendingOrder — variantes", () => {
+  // Résolution des ids seedés (solana : tailles Petit/Moyen/Grand + Naturel/Blanc).
+  async function sizeId(slug: string, label: string) {
+    const [prod] = await db.select().from(products).where(eq(products.slug, slug));
+    const rows = await db.select().from(productSizes);
+    return rows.find((s) => s.productId === prod.id && s.label === label)!.id;
+  }
+  async function colorId(slug: string, label: string) {
+    const [prod] = await db.select().from(products).where(eq(products.slug, slug));
+    const rows = await db.select().from(productColors);
+    return rows.find((c) => c.productId === prod.id && c.label === label)!.id;
+  }
+
+  it("prix lu sur la taille, coloris enregistré (snapshots)", async () => {
+    const { order, items } = await createPendingOrder(db, camille, [
+      {
+        slug: "solana",
+        sizeId: await sizeId("solana", "Grand"),
+        colorId: await colorId("solana", "Blanc"),
+        qty: 1,
+      },
+    ]);
+    const it0 = items[0];
+    expect(it0.priceCentsSnapshot).toBe(4200); // Grand
+    expect(it0.nameSnapshot).toBe("solana");
+    expect(it0.sizeLabelSnapshot).toBe("Grand");
+    expect(it0.colorLabelSnapshot).toBe("Blanc");
+    expect(order.subtotalCents).toBe(4200);
+  });
+
+  it("rejette une taille manquante quand le produit en a", async () => {
+    await expect(
+      createPendingOrder(db, camille, [{ slug: "solana", qty: 1 }]),
+    ).rejects.toThrow(CheckoutError);
+  });
+
+  it("rejette un coloris manquant quand le produit en a", async () => {
+    await expect(
+      createPendingOrder(db, camille, [
+        { slug: "solana", sizeId: await sizeId("solana", "Moyen"), qty: 1 },
+      ]),
+    ).rejects.toThrow(CheckoutError);
+  });
+
+  it("rejette une taille d'un autre produit ou inexistante", async () => {
+    await expect(
+      createPendingOrder(db, camille, [
+        {
+          slug: "solana",
+          sizeId: "00000000-0000-0000-0000-000000000000",
+          colorId: await colorId("solana", "Blanc"),
+          qty: 1,
+        },
+      ]),
+    ).rejects.toThrow(CheckoutError);
+  });
+
+  it("rejette un sizeId fourni pour un produit nu", async () => {
+    await expect(
+      createPendingOrder(db, camille, [
+        { slug: "rivage", sizeId: await sizeId("solana", "Grand"), qty: 1 },
+      ]),
+    ).rejects.toThrow(CheckoutError);
+  });
+
+  it("taille seule (lagune, sans coloris) : prix de taille, coloris null", async () => {
+    const { items } = await createPendingOrder(db, camille, [
+      { slug: "lagune", sizeId: await sizeId("lagune", "Grand"), qty: 1 },
+    ]);
+    expect(items[0].priceCentsSnapshot).toBe(7200);
+    expect(items[0].sizeLabelSnapshot).toBe("Grand");
+    expect(items[0].colorLabelSnapshot).toBeNull();
   });
 });
 
