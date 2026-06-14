@@ -16,7 +16,7 @@ import {
   sanitizeCart,
   setQty,
   type Cart,
-  type CartItem,
+  type CartItemInput,
 } from "./cart";
 
 const STORAGE_KEY = "coquelicot.cart.v1";
@@ -27,9 +27,9 @@ type CartContextValue = {
   subtotalCents: number;
   /** false tant que le localStorage n'a pas été relu (SSR → hydratation). */
   ready: boolean;
-  add: (item: Omit<CartItem, "qty">, qty?: number) => void;
-  remove: (slug: string) => void;
-  changeQty: (slug: string, qty: number) => void;
+  add: (item: CartItemInput, qty?: number) => void;
+  remove: (key: string) => void;
+  changeQty: (key: string, qty: number) => void;
   clear: () => void;
 };
 
@@ -70,16 +70,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, ready]);
 
   const add = useCallback(
-    (item: Omit<CartItem, "qty">, qty = 1) =>
+    (item: CartItemInput, qty = 1) =>
       setItems((cart) => addItem(cart, item, qty)),
     [setItems],
   );
   const remove = useCallback(
-    (slug: string) => setItems((cart) => removeItem(cart, slug)),
+    (key: string) => setItems((cart) => removeItem(cart, key)),
     [setItems],
   );
   const changeQty = useCallback(
-    (slug: string, qty: number) => setItems((cart) => setQty(cart, slug, qty)),
+    (key: string, qty: number) => setItems((cart) => setQty(cart, key, qty)),
     [setItems],
   );
   const clear = useCallback(() => setItems(() => []), [setItems]);

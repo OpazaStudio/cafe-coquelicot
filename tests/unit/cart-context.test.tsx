@@ -45,7 +45,17 @@ describe("CartProvider", () => {
         window.localStorage.getItem("coquelicot.cart.v1") ?? "[]",
       );
       expect(stored).toEqual([
-        { slug: "rivage", name: "rivage", priceCents: 4800, qty: 2 },
+        {
+          key: "rivage",
+          slug: "rivage",
+          name: "rivage",
+          priceCents: 4800,
+          sizeId: null,
+          colorId: null,
+          sizeLabel: null,
+          colorLabel: null,
+          qty: 2,
+        },
       ]);
     });
   });

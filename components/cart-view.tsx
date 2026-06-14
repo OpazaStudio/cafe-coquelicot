@@ -26,42 +26,48 @@ export function CartView() {
   return (
     <div className="cart-grid">
       <ul className="cart-list" data-testid="cart-list">
-        {items.map((item) => (
-          <li key={item.slug} className="cart-line" data-testid={`cart-line-${item.slug}`}>
-            <div className="cart-line__info">
-              <h3 className="cart-line__name">{item.name}</h3>
-              <p className="cart-line__unit">{formatEuros(item.priceCents)} l&apos;unité</p>
-            </div>
-            <div className="cart-line__qty" aria-label={`Quantité pour ${item.name}`}>
+        {items.map((item) => {
+          const variant = [item.sizeLabel, item.colorLabel]
+            .filter(Boolean)
+            .join(" · ");
+          return (
+            <li key={item.key} className="cart-line" data-testid={`cart-line-${item.key}`}>
+              <div className="cart-line__info">
+                <h3 className="cart-line__name">{item.name}</h3>
+                {variant && <p className="cart-line__variant">{variant}</p>}
+                <p className="cart-line__unit">{formatEuros(item.priceCents)} l&apos;unité</p>
+              </div>
+              <div className="cart-line__qty" aria-label={`Quantité pour ${item.name}`}>
+                <button
+                  type="button"
+                  onClick={() => changeQty(item.key, item.qty - 1)}
+                  aria-label={`Réduire la quantité de ${item.name}`}
+                >
+                  −
+                </button>
+                <span data-testid={`qty-${item.key}`}>{item.qty}</span>
+                <button
+                  type="button"
+                  onClick={() => changeQty(item.key, item.qty + 1)}
+                  aria-label={`Augmenter la quantité de ${item.name}`}
+                >
+                  +
+                </button>
+              </div>
+              <div className="cart-line__total">
+                {formatEuros(item.priceCents * item.qty)}
+              </div>
               <button
                 type="button"
-                onClick={() => changeQty(item.slug, item.qty - 1)}
-                aria-label={`Réduire la quantité de ${item.name}`}
+                className="cart-line__remove"
+                onClick={() => remove(item.key)}
+                aria-label={`Retirer ${item.name} du panier`}
               >
-                −
+                ✕
               </button>
-              <span data-testid={`qty-${item.slug}`}>{item.qty}</span>
-              <button
-                type="button"
-                onClick={() => changeQty(item.slug, item.qty + 1)}
-                aria-label={`Augmenter la quantité de ${item.name}`}
-              >
-                +
-              </button>
-            </div>
-            <div className="cart-line__total">
-              {formatEuros(item.priceCents * item.qty)}
-            </div>
-            <button
-              type="button"
-              className="cart-line__remove"
-              onClick={() => remove(item.slug)}
-              aria-label={`Retirer ${item.name} du panier`}
-            >
-              ✕
-            </button>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
 
       <aside className="cart-summary">
