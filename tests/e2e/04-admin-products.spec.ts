@@ -104,14 +104,16 @@ test.describe("CRUD produits", () => {
     await expect(row).toContainText("2 tailles · 1 coloris");
     await expect(row).toContainText("dès 20€");
 
-    // En boutique : sélecteurs présents et prix réactif
+    // Sur la page produit : sélecteurs présents et prix réactif
     await page.goto("/boutique");
-    const card = page.locator(".product-card", {
-      hasText: "bouquet variantes test",
-    });
-    await expect(card.locator(".product-card__price")).toHaveText("20€");
-    await card.getByRole("button", { name: "Grand", exact: true }).click();
-    await expect(card.locator(".product-card__price")).toHaveText("40€");
+    await page
+      .locator(".product-card", { hasText: "bouquet variantes test" })
+      .first()
+      .click();
+    await page.waitForURL("**/boutique/bouquet-variantes-test");
+    await expect(page.getByTestId("product-price")).toHaveText("20€");
+    await page.getByRole("button", { name: /^Grand/ }).click();
+    await expect(page.getByTestId("product-price")).toHaveText("40€");
 
     // Nettoyage (ne pas polluer le comptage des autres specs)
     await page.goto("/admin/produits");

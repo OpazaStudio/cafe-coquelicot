@@ -14,26 +14,31 @@ export async function adminLogin(page: Page): Promise<void> {
   ).toBeVisible();
 }
 
+// Ajout depuis la grille : la carte mène à la page produit, où vit le bouton.
 export async function addToCart(page: Page, name: string): Promise<void> {
+  await page.goto("/boutique");
+  await page.locator(".product-card", { hasText: name }).first().click();
   await page
     .getByRole("button", { name: `Ajouter ${name} au panier` })
     .click();
 }
 
-// Ajoute un produit en sélectionnant d'abord taille et/ou coloris sur sa carte.
+// Ouvre la page produit puis sélectionne taille/coloris avant d'ajouter.
+// (Le bouton taille affiche « Label · prix » → match par préfixe.)
 export async function addVariantToCart(
   page: Page,
   name: string,
   opts: { size?: string; color?: string } = {},
 ): Promise<void> {
-  const card = page.locator(".product-card", { hasText: name });
+  await page.goto("/boutique");
+  await page.locator(".product-card", { hasText: name }).first().click();
   if (opts.size) {
-    await card.getByRole("button", { name: opts.size, exact: true }).click();
+    await page.getByRole("button", { name: new RegExp(`^${opts.size}`) }).click();
   }
   if (opts.color) {
-    await card.getByRole("button", { name: opts.color, exact: true }).click();
+    await page.getByRole("button", { name: opts.color, exact: true }).click();
   }
-  await card
+  await page
     .getByRole("button", { name: `Ajouter ${name} au panier` })
     .click();
 }
