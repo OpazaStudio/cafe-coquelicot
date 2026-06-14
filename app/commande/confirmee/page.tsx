@@ -4,6 +4,7 @@ import { SiteHeader, SiteFooter } from "@/components/sections";
 import { ClearCart } from "@/components/clear-cart";
 import { ArrowRight } from "@/components/illustrations";
 import { getDb } from "@/lib/db/client";
+import { composeItemName } from "@/lib/item-label";
 import { formatEuros } from "@/lib/money";
 import {
   getOrderBySessionId,
@@ -67,7 +68,12 @@ export default async function ConfirmationPage({
                     {data.items.map((item) => (
                       <li key={item.id} className="cart-summary__row">
                         <span>
-                          {item.nameSnapshot} × {item.qty}
+                          {composeItemName(
+                            item.nameSnapshot,
+                            item.sizeLabelSnapshot,
+                            item.colorLabelSnapshot,
+                          )}{" "}
+                          × {item.qty}
                         </span>
                         <span>
                           {formatEuros(item.priceCentsSnapshot * item.qty)}

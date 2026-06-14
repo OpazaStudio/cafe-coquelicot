@@ -1,16 +1,25 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/auth/dal";
 import { CATEGORY_LABELS } from "@/lib/categories";
-import { getAllProductRows } from "@/lib/products";
+import { getDb } from "@/lib/db/client";
+import { listProductsForAdmin } from "@/lib/products";
 import { formatEuros } from "@/lib/money";
 import { Bouquet } from "@/components/illustrations";
 import { deleteProduct, setProductActive } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+function variantSummary(sizeCount: number, colorCount: number): string {
+  const parts: string[] = [];
+  if (sizeCount > 0) parts.push(`${sizeCount} taille${sizeCount > 1 ? "s" : ""}`);
+  if (colorCount > 0) parts.push(`${colorCount} coloris`);
+  return parts.length ? parts.join(" · ") : "—";
+}
+
 export default async function ProduitsPage() {
   await verifySession();
-  const rows = await getAllProductRows();
+  const list = await listProductsForAdmin(await getDb());
+  const visibles = list.filter((p) => p.row.active).length;
 
   return (
     <>
@@ -18,9 +27,8 @@ export default async function ProduitsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Produits</h1>
           <p className="text-sm text-stone-500">
-            {rows.length} produit{rows.length > 1 ? "s" : ""} —{" "}
-            {rows.filter((r) => r.active).length} visible
-            {rows.filter((r) => r.active).length > 1 ? "s" : ""} en boutique
+            {list.length} produit{list.length > 1 ? "s" : ""} — {visibles} visible
+            {visibles > 1 ? "s" : ""} en boutique
           </p>
         </div>
         <Link
@@ -38,13 +46,14 @@ export default async function ProduitsPage() {
               <th className="px-4 py-3 font-medium">Produit</th>
               <th className="px-4 py-3 font-medium">Catégorie</th>
               <th className="px-4 py-3 font-medium">Prix</th>
+              <th className="px-4 py-3 font-medium">Variantes</th>
               <th className="px-4 py-3 font-medium">Badge</th>
               <th className="px-4 py-3 font-medium">Statut</th>
               <th className="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((p) => (
+            {list.map(({ row: p, sizeCount, colorCount, fromCents }) => (
               <tr
                 key={p.id}
                 data-testid={`product-row-${p.slug}`}
@@ -65,7 +74,10 @@ export default async function ProduitsPage() {
                   {CATEGORY_LABELS[p.category]}
                 </td>
                 <td className="px-4 py-3 font-medium">
-                  {formatEuros(p.priceCents)}
+                  {sizeCount > 0 ? `dès ${formatEuros(fromCents)}` : formatEuros(fromCents)}
+                </td>
+                <td className="px-4 py-3 text-stone-600">
+                  {variantSummary(sizeCount, colorCount)}
                 </td>
                 <td className="px-4 py-3 text-stone-600">{p.badge ?? "—"}</td>
                 <td className="px-4 py-3">

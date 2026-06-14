@@ -187,11 +187,17 @@ function ItemLine({
   disabled: boolean;
   onSetPrepared: (preparedQty: number) => void;
 }) {
+  const variant = [item.sizeLabelSnapshot, item.colorLabelSnapshot]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <li className="flex items-center justify-between gap-2">
       <span className="font-medium text-stone-700">
         {item.qty > 1 && `${item.qty} × `}
         {item.nameSnapshot}
+        {variant && (
+          <span className="font-normal text-stone-500"> — {variant}</span>
+        )}
       </span>
       <span className="flex shrink-0 flex-wrap justify-end gap-1">
         {Array.from({ length: item.qty }, (_, i) => {
