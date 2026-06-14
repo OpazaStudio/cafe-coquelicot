@@ -382,6 +382,33 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   white-space: nowrap;
 }
 
+/* Sélecteurs de variantes (taille / coloris) sur la carte produit. */
+.product-card__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 -2px;
+}
+.product-card__option {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 4px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.product-card__option:hover {
+  border-color: var(--burgundy);
+}
+.product-card__option.is-active {
+  background: var(--burgundy);
+  border-color: var(--burgundy);
+  color: var(--linen);
+}
+
 .shop__cta {
   margin-top: 64px;
   display: flex;
@@ -1114,6 +1141,12 @@ button.product-card__add {
   text-transform: lowercase;
   margin: 0;
   line-height: 1;
+}
+.cart-line__variant {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 .cart-line__unit {
   margin: 6px 0 0;
