@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**52 components** (react)
+**53 components** (react)
 
 ## Client Components
 
@@ -20,6 +20,7 @@
 - **ClearCart** — `components/clear-cart.tsx`
 - **Effects** — `components/effects.tsx`
 - **Newsletter** — `components/newsletter.tsx`
+- **ProductDetail** — props: product — `components/product-detail.tsx`
 - **CartProvider** — `lib/cart/cart-context.tsx`
 
 ## Components

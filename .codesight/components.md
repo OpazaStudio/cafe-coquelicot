@@ -42,6 +42,7 @@
 - **ArrowDiag** — props: size — `components/illustrations.tsx`
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
 - **Newsletter** [client] — `components/newsletter.tsx`
+- **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **SiteHeader** — `components/sections.tsx`
 - **Hero** — props: bg — `components/sections.tsx`
 - **Shop** — props: bg, products — `components/sections.tsx`
