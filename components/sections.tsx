@@ -29,11 +29,6 @@ export function SiteHeader() {
         <Link href="/#contact">Contact</Link>
       </nav>
       <div className="site-header__right">
-        <div className="site-header__lang">
-          <span className="active">FR</span>
-          <span>/</span>
-          <span>EN</span>
-        </div>
         <CartLink />
       </div>
     </header>

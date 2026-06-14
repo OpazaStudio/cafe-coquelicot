@@ -124,12 +124,16 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--linen);
-  mix-blend-mode: difference;
+  color: var(--burgundy);
+  transition: color 0.3s ease;
   font-family: var(--font-body);
   font-size: 14px;
   letter-spacing: 0.04em;
 }
+.site-header--light {
+  color: var(--linen);
+}
+
 .site-header__logo {
   font-family: var(--font-display);
   font-size: 28px;
@@ -162,15 +166,6 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   display: flex;
   gap: 22px;
   align-items: center;
-}
-.site-header__lang {
-  display: flex;
-  gap: 4px;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-}
-.site-header__lang span:not(.active) {
-  opacity: 0.5;
 }
 
 /* ── Hero ─────────────────────────────────────────────────────── */

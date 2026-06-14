@@ -30,7 +30,50 @@ function useReveal() {
   }, [pathname]);
 }
 
+// Header theme: switches to --light when a dark section (burgundy, coffee-bean,
+// coffee-bean-2) is behind the fixed header. Uses a thin observation strip at
+// the top of the viewport so the transition fires exactly when the section
+// reaches the header, not earlier.
+const DARK_BGS = new Set(["burgundy", "coffee-bean", "coffee-bean-2"]);
+const HEADER_HEIGHT = 70; // px — approximate height of .site-header
+
+function useHeaderTheme() {
+  const pathname = usePathname();
+  useEffect(() => {
+    const header = document.querySelector<HTMLElement>(".site-header");
+    if (!header) return;
+
+    const visible = new Set<Element>();
+
+    const update = () => {
+      let isDark = false;
+      visible.forEach((el) => {
+        if (DARK_BGS.has((el as HTMLElement).dataset.bg ?? "")) isDark = true;
+      });
+      header.classList.toggle("site-header--light", isDark);
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) visible.add(e.target);
+          else visible.delete(e.target);
+        });
+        update();
+      },
+      {
+        rootMargin: `0px 0px -${window.innerHeight - HEADER_HEIGHT}px 0px`,
+        threshold: 0,
+      }
+    );
+
+    document.querySelectorAll("section[data-section]").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [pathname]);
+}
+
 export function Effects() {
   useReveal();
+  useHeaderTheme();
   return null;
 }
