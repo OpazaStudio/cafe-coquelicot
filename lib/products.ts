@@ -127,6 +127,8 @@ export const getHomeProducts = cache(async (): Promise<ShopProduct[]> => {
   return HOME_PICKS.flatMap((slug) => bySlug.get(slug) ?? []);
 });
 
+// Page produit (vitrine) : produits actifs uniquement — un produit masqué
+// (ou inconnu) renvoie null → la route répond 404.
 export async function queryProductBySlug(
   db: Db,
   slug: string,
@@ -134,7 +136,7 @@ export async function queryProductBySlug(
   const [row] = await db
     .select()
     .from(products)
-    .where(eq(products.slug, slug))
+    .where(and(eq(products.slug, slug), eq(products.active, true)))
     .limit(1);
   if (!row) return null;
   const { sizes, colors } = await activeChildren(db, [row.id]);

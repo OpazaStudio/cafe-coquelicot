@@ -7,6 +7,7 @@ import {
   getProductWithVariants,
   listProductsForAdmin,
   queryActiveProducts,
+  queryProductBySlug,
 } from "@/lib/products";
 import { createTestDb } from "../helpers/db";
 
@@ -65,6 +66,24 @@ describe("getProductWithVariants", () => {
     expect(data!.sizes.map((s) => s.label)).toEqual(["Petit", "Moyen", "Grand"]);
     expect(data!.sizes.find((s) => s.label === "Petit")!.active).toBe(false);
     expect(data!.colors.map((c) => c.label)).toEqual(["Naturel", "Blanc"]);
+  });
+});
+
+describe("queryProductBySlug", () => {
+  it("renvoie le produit actif avec ses variantes", async () => {
+    const p = await queryProductBySlug(db, "solana");
+    expect(p?.sizes.map((s) => s.label)).toEqual(["Petit", "Moyen", "Grand"]);
+    expect(p?.colors.map((c) => c.label)).toEqual(["Naturel", "Blanc"]);
+  });
+  it("renvoie null pour un produit masqué", async () => {
+    await db
+      .update(products)
+      .set({ active: false })
+      .where(eq(products.slug, "solana"));
+    expect(await queryProductBySlug(db, "solana")).toBeNull();
+  });
+  it("renvoie null pour un slug inconnu", async () => {
+    expect(await queryProductBySlug(db, "inexistant")).toBeNull();
   });
 });
 
