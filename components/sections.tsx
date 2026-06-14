@@ -109,9 +109,9 @@ export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] 
   );
 }
 
-function ProductCard({ name, tag, desc, price, variant, badge }: ShopProduct) {
+function ProductCard({ slug, name, tag, desc, price, variant, badge }: ShopProduct) {
   return (
-    <article className="product-card">
+    <Link href={`/boutique/${slug}`} className="product-card">
       <div className="product-card__media">
         {badge && <span className="product-card__badge">{badge}</span>}
         <Bouquet variant={variant} />
@@ -124,7 +124,7 @@ function ProductCard({ name, tag, desc, price, variant, badge }: ShopProduct) {
         <p className="product-card__desc">{desc}</p>
         <span className="product-card__price">{price}</span>
       </div>
-    </article>
+    </Link>
   );
 }
 
