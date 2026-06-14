@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 2 routes | 5 models | 52 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~3,900 tokens. Without it, AI exploration would cost ~35,000 tokens. **Saves ~31,100 tokens per conversation.**
-> **Last scanned:** 2026-06-14 09:42 — re-run after significant changes
+> **Token savings:** this file is ~4,000 tokens. Without it, AI exploration would cost ~35,000 tokens. **Saves ~31,000 tokens per conversation.**
+> **Last scanned:** 2026-06-14 09:43 — re-run after significant changes
 
 ---
 
@@ -203,13 +203,13 @@
   - const DONE_RETENTION_MS
   - _...1 more_
 - `lib/products.ts`
-  - function toShopProduct: (row) => ShopProduct
+  - function queryActiveProducts: (db) => Promise<ShopProduct[]>
+  - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - type ShopProduct
-  - const getActiveProducts
-  - const getHomeProducts
-  - _...1 more_
+  - function getProductWithVariants: (db, id) => Promise<
+  - function listProductsForAdmin: (db) => Promise<
+  - _...6 more_
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>
@@ -273,10 +273,10 @@
 - `components/illustrations.tsx` — imported by **4** files
 - `lib/db/client.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **3** files
+- `tests/helpers/db.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
 - `lib/db/seed-data.ts` — imported by **2** files
-- `tests/helpers/db.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/kanban-board.tsx` — imported by **1** files
@@ -296,16 +296,16 @@
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`
 - `lib/db/client.ts` ← `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/seed.ts`
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
+- `tests/helpers/db.ts` ← `tests/unit/orders.test.ts`, `tests/unit/products.test.ts`, `tests/unit/stats.test.ts`
 - `app/(admin)/admin/login/actions.ts` ← `app/(admin)/admin/(panel)/layout.tsx`, `app/(admin)/admin/login/login-form.tsx`
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
-- `lib/db/seed-data.ts` ← `lib/db/client.ts`, `lib/products.ts`
 
 ---
 
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 19 test files found
+> 20 test files found
 
 ## Covered Routes
 

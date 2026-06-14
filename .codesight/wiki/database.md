@@ -92,8 +92,8 @@ Read and edit these files when adding columns, creating migrations, or changing 
 
 - `lib/db/schema.ts` — imported by **6** files
 - `lib/db/client.ts` — imported by **4** files
+- `tests/helpers/db.ts` — imported by **3** files
 - `lib/db/seed-data.ts` — imported by **2** files
-- `tests/helpers/db.ts` — imported by **2** files
 
 ---
 _Back to [overview.md](./overview.md)_

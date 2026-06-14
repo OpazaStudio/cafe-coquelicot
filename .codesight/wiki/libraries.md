@@ -40,7 +40,7 @@
 
 ## Products.ts (1 files)
 
-- `lib/products.ts` — toShopProduct, getAllProductRows, getProductRow, ShopProduct, getActiveProducts, getHomeProducts, …
+- `lib/products.ts` — queryActiveProducts, queryProductBySlug, getAllProductRows, getProductRow, getProductWithVariants, listProductsForAdmin, …
 
 ## Proxy.ts (1 files)
 

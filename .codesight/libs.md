@@ -58,13 +58,13 @@
   - const DONE_RETENTION_MS
   - _...1 more_
 - `lib/products.ts`
-  - function toShopProduct: (row) => ShopProduct
+  - function queryActiveProducts: (db) => Promise<ShopProduct[]>
+  - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - type ShopProduct
-  - const getActiveProducts
-  - const getHomeProducts
-  - _...1 more_
+  - function getProductWithVariants: (db, id) => Promise<
+  - function listProductsForAdmin: (db) => Promise<
+  - _...6 more_
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>
