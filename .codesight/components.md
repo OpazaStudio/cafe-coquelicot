@@ -13,7 +13,7 @@
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
-- **ProductForm** [client] — props: action, product, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`

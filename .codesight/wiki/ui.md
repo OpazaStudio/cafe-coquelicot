@@ -10,7 +10,7 @@
 - **StatusActions** — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
-- **ProductForm** — props: action, product, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChart** — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **LoginForm** — `app/(admin)/admin/login/login-form.tsx`
 - **BoutiqueShop** — props: catalogue — `components/boutique.tsx`

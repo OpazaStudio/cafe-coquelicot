@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/auth/dal";
-import { getProductRow } from "@/lib/products";
+import { getDb } from "@/lib/db/client";
+import { getProductWithVariants } from "@/lib/products";
 import { updateProduct } from "../actions";
 import { ProductForm } from "../product-form";
 
@@ -10,8 +11,9 @@ export default async function EditProduitPage({
 }: PageProps<"/admin/produits/[id]">) {
   await verifySession();
   const { id } = await params;
-  const product = await getProductRow(id);
-  if (!product) notFound();
+  const data = await getProductWithVariants(await getDb(), id);
+  if (!data) notFound();
+  const { product, sizes, colors } = data;
 
   return (
     <>
@@ -30,6 +32,8 @@ export default async function EditProduitPage({
         <ProductForm
           action={updateProduct.bind(null, product.id)}
           product={product}
+          sizes={sizes}
+          colors={colors}
           submitLabel="Enregistrer"
         />
       </div>
