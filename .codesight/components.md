@@ -17,6 +17,7 @@
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
+- **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`
 - **BoutiquePage** — `app/boutique/page.tsx`
 - **CheckoutPage** — `app/checkout/page.tsx`
 - **ConfirmationPage** — props: searchParams — `app/commande/confirmee/page.tsx`

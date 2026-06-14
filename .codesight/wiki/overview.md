@@ -6,7 +6,7 @@
 
 ## Scale
 
-2 API routes · 5 database models · 53 UI components · 15 library files · 16 environment variables
+2 API routes · 5 database models · 54 UI components · 15 library files · 16 environment variables
 
 ## Subsystems
 
@@ -15,7 +15,7 @@
 
 **Database:** drizzle, 5 models — see [database.md](./database.md)
 
-**UI:** 53 components (react) — see [ui.md](./ui.md)
+**UI:** 54 components (react) — see [ui.md](./ui.md)
 
 **Libraries:** 15 files — see [libraries.md](./libraries.md)
 

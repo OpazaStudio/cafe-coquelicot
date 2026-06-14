@@ -2,8 +2,8 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 53 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,000 tokens. Without it, AI exploration would cost ~35,300 tokens. **Saves ~31,300 tokens per conversation.**
+> 2 routes | 5 models | 54 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,000 tokens. Without it, AI exploration would cost ~35,600 tokens. **Saves ~31,600 tokens per conversation.**
 > **Last scanned:** 2026-06-14 11:10 — re-run after significant changes
 
 ---
@@ -105,6 +105,7 @@
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
+- **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`
 - **BoutiquePage** — `app/boutique/page.tsx`
 - **CheckoutPage** — `app/checkout/page.tsx`
 - **ConfirmationPage** — props: searchParams — `app/commande/confirmee/page.tsx`
