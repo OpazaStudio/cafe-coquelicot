@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 3 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 60% test coverage
-> **Token savings:** this file is ~3,700 tokens. Without it, AI exploration would cost ~33,700 tokens. **Saves ~30,000 tokens per conversation.**
-> **Last scanned:** 2026-06-14 08:53 — re-run after significant changes
+> 2 routes | 5 models | 52 components | 13 lib files | 16 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~3,800 tokens. Without it, AI exploration would cost ~34,500 tokens. **Saves ~30,600 tokens per conversation.**
+> **Last scanned:** 2026-06-14 08:55 — re-run after significant changes
 
 ---
 
@@ -28,6 +28,24 @@
 - badge: text
 - illustrationVariant: integer (default, required)
 - active: boolean (default, required)
+
+### product_sizes
+- id: uuid (pk)
+- productId: uuid (fk, required)
+- label: text (required)
+- priceCents: integer (required)
+- sortOrder: integer (default, required)
+- active: boolean (default, required)
+- _relations_: productId -> products.id
+
+### product_colors
+- id: uuid (pk)
+- productId: uuid (fk, required)
+- label: text (required)
+- illustrationVariant: integer (default, required)
+- sortOrder: integer (default, required)
+- active: boolean (default, required)
+- _relations_: productId -> products.id
 
 ### orders
 - id: uuid (pk)
@@ -60,7 +78,11 @@
 - priceCentsSnapshot: integer (required)
 - qty: integer (required)
 - preparedQty: integer (default, required)
-- _relations_: orderId -> orders.id, productId -> products.id
+- sizeId: uuid (fk)
+- colorId: uuid (fk)
+- sizeLabelSnapshot: text
+- colorLabelSnapshot: text
+- _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ---
 
@@ -277,7 +299,7 @@
 
 # Test Coverage
 
-> **60%** of routes and models are covered by tests
+> **43%** of routes and models are covered by tests
 > 18 test files found
 
 ## Covered Routes

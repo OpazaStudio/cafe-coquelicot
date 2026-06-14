@@ -6,14 +6,14 @@
 
 ## Scale
 
-2 API routes · 3 database models · 52 UI components · 13 library files · 16 environment variables
+2 API routes · 5 database models · 52 UI components · 13 library files · 16 environment variables
 
 ## Subsystems
 
 - **[Payments](./payments.md)** — 1 routes — touches: auth, payment
 - **[Route](./route.md)** — 1 routes — touches: db
 
-**Database:** drizzle, 3 models — see [database.md](./database.md)
+**Database:** drizzle, 5 models — see [database.md](./database.md)
 
 **UI:** 52 components (react) — see [ui.md](./ui.md)
 

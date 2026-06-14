@@ -54,6 +54,38 @@ export const products = pgTable("products", {
     .defaultNow(),
 });
 
+// Tailles d'un produit : la dimension *vendable et tarifée* (chaque taille a
+// son prix). Optionnel — un produit sans taille est vendu au prix de base.
+export const productSizes = pgTable("product_sizes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  priceCents: integer("price_cents").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// Coloris d'un produit : attribut *cosmétique* (même prix) qui change
+// l'illustration au trait et doit être enregistré sur la commande.
+export const productColors = pgTable("product_colors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  illustrationVariant: integer("illustration_variant").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
   number: text("number").notNull().unique(),
@@ -96,10 +128,25 @@ export const orderItems = pgTable("order_items", {
   // Unités préparées (cases du kanban admin) : compteur 0..qty, borné côté
   // application — les unités d'un même produit sont interchangeables.
   preparedQty: integer("prepared_qty").notNull().default(0),
+  // Variante choisie (taille = prix, coloris = cosmétique). Les *_id servent
+  // à l'analytique (set null si la variante est supprimée) ; l'affichage et le
+  // prix s'appuient sur les snapshots de labels, comme name/price_cents.
+  sizeId: uuid("size_id").references(() => productSizes.id, {
+    onDelete: "set null",
+  }),
+  colorId: uuid("color_id").references(() => productColors.id, {
+    onDelete: "set null",
+  }),
+  sizeLabelSnapshot: text("size_label_snapshot"),
+  colorLabelSnapshot: text("color_label_snapshot"),
 });
 
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
+export type ProductSizeRow = typeof productSizes.$inferSelect;
+export type NewProductSizeRow = typeof productSizes.$inferInsert;
+export type ProductColorRow = typeof productColors.$inferSelect;
+export type NewProductColorRow = typeof productColors.$inferInsert;
 export type OrderRow = typeof orders.$inferSelect;
 export type NewOrderRow = typeof orders.$inferInsert;
 export type OrderItemRow = typeof orderItems.$inferSelect;

@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Schema shapes and field types extracted via AST. Read the actual schema source files before writing migrations or query logic.
 
-**drizzle** — 3 models
+**drizzle** — 5 models
 
 ### products
 
@@ -18,6 +18,30 @@ pk: `id` (uuid)
 - `badge`: text
 - `illustrationVariant`: integer _(default, required)_
 - `active`: boolean _(default, required)_
+
+### product_sizes
+
+pk: `id` (uuid) · fk: productId
+
+- `id`: uuid _(pk)_
+- `productId`: uuid _(fk, required)_
+- `label`: text _(required)_
+- `priceCents`: integer _(required)_
+- `sortOrder`: integer _(default, required)_
+- `active`: boolean _(default, required)_
+- _relations_: productId -> products.id
+
+### product_colors
+
+pk: `id` (uuid) · fk: productId
+
+- `id`: uuid _(pk)_
+- `productId`: uuid _(fk, required)_
+- `label`: text _(required)_
+- `illustrationVariant`: integer _(default, required)_
+- `sortOrder`: integer _(default, required)_
+- `active`: boolean _(default, required)_
+- _relations_: productId -> products.id
 
 ### orders
 
@@ -47,7 +71,7 @@ pk: `id` (uuid) · fk: stripeSessionId
 
 ### order_items
 
-pk: `id` (uuid) · fk: orderId, productId
+pk: `id` (uuid) · fk: orderId, productId, sizeId, colorId
 
 - `id`: uuid _(pk)_
 - `orderId`: uuid _(fk, required)_
@@ -56,7 +80,11 @@ pk: `id` (uuid) · fk: orderId, productId
 - `priceCentsSnapshot`: integer _(required)_
 - `qty`: integer _(required)_
 - `preparedQty`: integer _(default, required)_
-- _relations_: orderId -> orders.id, productId -> products.id
+- `sizeId`: uuid _(fk)_
+- `colorId`: uuid _(fk)_
+- `sizeLabelSnapshot`: text
+- `colorLabelSnapshot`: text
+- _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ## Schema Source Files
 

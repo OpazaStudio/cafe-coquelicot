@@ -12,6 +12,24 @@
 - illustrationVariant: integer (default, required)
 - active: boolean (default, required)
 
+### product_sizes
+- id: uuid (pk)
+- productId: uuid (fk, required)
+- label: text (required)
+- priceCents: integer (required)
+- sortOrder: integer (default, required)
+- active: boolean (default, required)
+- _relations_: productId -> products.id
+
+### product_colors
+- id: uuid (pk)
+- productId: uuid (fk, required)
+- label: text (required)
+- illustrationVariant: integer (default, required)
+- sortOrder: integer (default, required)
+- active: boolean (default, required)
+- _relations_: productId -> products.id
+
 ### orders
 - id: uuid (pk)
 - number: text (unique, required)
@@ -43,4 +61,8 @@
 - priceCentsSnapshot: integer (required)
 - qty: integer (required)
 - preparedQty: integer (default, required)
-- _relations_: orderId -> orders.id, productId -> products.id
+- sizeId: uuid (fk)
+- colorId: uuid (fk)
+- sizeLabelSnapshot: text
+- colorLabelSnapshot: text
+- _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
