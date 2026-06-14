@@ -4,7 +4,7 @@
 
 > 2 routes | 5 models | 52 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
 > **Token savings:** this file is ~4,000 tokens. Without it, AI exploration would cost ~35,000 tokens. **Saves ~31,000 tokens per conversation.**
-> **Last scanned:** 2026-06-14 09:53 — re-run after significant changes
+> **Last scanned:** 2026-06-14 09:57 — re-run after significant changes
 
 ---
 
@@ -267,7 +267,7 @@
 ## Most Imported Files (change these carefully)
 
 - `lib/db/schema.ts` — imported by **6** files
-- `tests/e2e/helpers.ts` — imported by **5** files
+- `tests/e2e/helpers.ts` — imported by **6** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
 - `components/illustrations.tsx` — imported by **4** files
@@ -290,7 +290,7 @@
 ## Import Map (who imports what)
 
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
-- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts`
+- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +1 more
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`
@@ -305,7 +305,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 20 test files found
+> 21 test files found
 
 ## Covered Routes
 
