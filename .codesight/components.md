@@ -33,6 +33,8 @@
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
+- **Vase** — props: variant, className — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, className — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`

@@ -235,6 +235,53 @@ export function Bouquet({ variant = 0, className }: IllustrationProps & { varian
   );
 }
 
+// ─── Vase (produits "vase" : cartes, fiche, suggestion panier) ───
+export function Vase({ variant = 0, className }: IllustrationProps & { variant?: number }) {
+  const variants = [
+    // Variant 0 — vase rond / galet
+    <g key="0" {...stroke}>
+      <path d="M 80 120 Q 64 132 64 162 Q 64 200 100 210 Q 136 200 136 162 Q 136 132 120 120 Z" />
+      <path d="M 80 120 L 78 110 L 122 110 L 120 120" />
+      <ellipse cx="100" cy="110" rx="22" ry="5" />
+    </g>,
+    // Variant 1 — vase haut élancé
+    <g key="1" {...stroke}>
+      <path d="M 86 96 L 82 200 Q 100 210 118 200 L 114 96" />
+      <path d="M 86 96 Q 100 88 114 96" />
+      <ellipse cx="100" cy="96" rx="14" ry="4" />
+      <path d="M 90 150 Q 100 154 110 150" opacity="0.5" />
+    </g>,
+    // Variant 2 — soliflore (col étroit)
+    <g key="2" {...stroke}>
+      <path d="M 94 96 L 92 132 Q 78 150 80 184 Q 86 206 100 206 Q 114 206 120 184 Q 122 150 108 132 L 106 96" />
+      <path d="M 94 96 Q 100 92 106 96" />
+      <ellipse cx="100" cy="96" rx="7" ry="3" />
+    </g>,
+  ];
+  return (
+    <svg viewBox="0 0 200 240" className={className} aria-hidden="true">
+      {variants[variant % variants.length]}
+    </svg>
+  );
+}
+
+// Choisit l'illustration selon la catégorie produit (vase vs bouquet/fleur).
+export function ProductFigure({
+  category,
+  variant,
+  className,
+}: {
+  category: string;
+  variant?: number;
+  className?: string;
+}) {
+  return category === "vase" ? (
+    <Vase variant={variant} className={className} />
+  ) : (
+    <Bouquet variant={variant} className={className} />
+  );
+}
+
 // ─── Simple icons used in prestation cards ─────────────────────
 export function IconWedding({ className }: IllustrationProps) {
   return (

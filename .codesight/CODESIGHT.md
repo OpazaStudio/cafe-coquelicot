@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 56 components | 21 lib files | 21 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~38,500 tokens. **Saves ~34,000 tokens per conversation.**
-> **Last scanned:** 2026-06-19 12:15 — re-run after significant changes
+> 2 routes | 5 models | 58 components | 21 lib files | 21 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~39,100 tokens. **Saves ~34,600 tokens per conversation.**
+> **Last scanned:** 2026-06-19 12:16 — re-run after significant changes
 
 ---
 
@@ -125,6 +125,8 @@
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
+- **Vase** — props: variant, className — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, className — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`
@@ -330,7 +332,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 30 test files found
+> 31 test files found
 
 ## Covered Routes
 
