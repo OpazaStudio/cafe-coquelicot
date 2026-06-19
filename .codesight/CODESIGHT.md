@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 54 components | 18 lib files | 20 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,300 tokens. Without it, AI exploration would cost ~36,900 tokens. **Saves ~32,600 tokens per conversation.**
-> **Last scanned:** 2026-06-19 09:14 — re-run after significant changes
+> 2 routes | 5 models | 54 components | 19 lib files | 20 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,300 tokens. Without it, AI exploration would cost ~37,200 tokens. **Saves ~32,900 tokens per conversation.**
+> **Last scanned:** 2026-06-19 09:18 — re-run after significant changes
 
 ---
 
@@ -180,6 +180,7 @@
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
+- `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
 - `lib/mondial-relay/types.ts`
   - class MondialRelayError
@@ -296,6 +297,7 @@
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
 - `lib/db/seed-data.ts` — imported by **2** files
+- `lib/mondial-relay/types.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/kanban-board.tsx` — imported by **1** files
@@ -304,7 +306,6 @@
 - `app/(admin)/admin/(panel)/revenue-chart.tsx` — imported by **1** files
 - `app/(admin)/admin/login/login-form.tsx` — imported by **1** files
 - `components/newsletter.tsx` — imported by **1** files
-- `components/cart-link.tsx` — imported by **1** files
 
 ## Import Map (who imports what)
 
@@ -324,7 +325,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 26 test files found
+> 27 test files found
 
 ## Covered Routes
 

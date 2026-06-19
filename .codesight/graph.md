@@ -13,6 +13,7 @@
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
 - `lib/db/seed-data.ts` — imported by **2** files
+- `lib/mondial-relay/types.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/kanban-board.tsx` — imported by **1** files
@@ -21,7 +22,6 @@
 - `app/(admin)/admin/(panel)/revenue-chart.tsx` — imported by **1** files
 - `app/(admin)/admin/login/login-form.tsx` — imported by **1** files
 - `components/newsletter.tsx` — imported by **1** files
-- `components/cart-link.tsx` — imported by **1** files
 
 ## Import Map (who imports what)
 

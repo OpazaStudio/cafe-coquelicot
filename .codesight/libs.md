@@ -29,6 +29,7 @@
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
+- `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
 - `lib/mondial-relay/types.ts`
   - class MondialRelayError

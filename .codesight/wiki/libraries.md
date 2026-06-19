@@ -2,11 +2,12 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**18 library files** across 14 modules
+**19 library files** across 14 modules
 
-## Mondial-relay (3 files)
+## Mondial-relay (4 files)
 
 - `lib/mondial-relay/types.ts` — MondialRelayError, MondialRelayClient, RelayShipmentInput, RelayShipmentResult, SenderAddress, MondialRelayConfig
+- `lib/mondial-relay/client.ts` — createMondialRelayClient, getMondialRelayClient
 - `lib/mondial-relay/config.ts` — getMondialRelayConfig, DEFAULT_PARCEL_WEIGHT_GR
 - `lib/mondial-relay/xml.ts` — buildShipmentXml, parseShipmentResponse
 
