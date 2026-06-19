@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 59 components | 21 lib files | 21 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,600 tokens. Without it, AI exploration would cost ~39,500 tokens. **Saves ~34,900 tokens per conversation.**
-> **Last scanned:** 2026-06-19 12:41 — re-run after significant changes
+> 2 routes | 5 models | 59 components | 20 lib files | 21 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~39,200 tokens. **Saves ~34,700 tokens per conversation.**
+> **Last scanned:** 2026-06-19 12:57 — re-run after significant changes
 
 ---
 
@@ -176,7 +176,6 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
-- `lib/cart/vase-upsell.ts` — function shouldSuggestVases: (items, vaseSlugs) => boolean
 - `lib/db/client.ts`
   - function seedIfEmpty: (db) => Promise<boolean>
   - function seedMissingProducts: (db) => Promise<string[]>
@@ -334,7 +333,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 34 test files found
+> 33 test files found
 
 ## Covered Routes
 

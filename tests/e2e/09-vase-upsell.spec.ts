@@ -1,17 +1,17 @@
 import { expect, test } from "@playwright/test";
 import { addToCart } from "./helpers";
 
-test.describe("vases — vente solo + suggestion panier", () => {
-  test("un vase se vend seul (boutique → fiche → panier)", async ({ page }) => {
+test.describe("vases — vente solo + suggestion toujours proposée", () => {
+  test("un vase se vend seul, et la suggestion reste affichée", async ({ page }) => {
     await addToCart(page, "galet");
     await expect(page.getByRole("link", { name: "Panier (1)" })).toBeVisible();
     await page.goto("/panier");
     await expect(page.getByTestId("cart-line-galet")).toBeVisible();
-    // un vase seul ne déclenche pas la suggestion
-    await expect(page.getByTestId("vase-suggestions")).toHaveCount(0);
+    // Vases toujours proposés : la section reste visible même avec un vase au panier.
+    await expect(page.getByTestId("vase-suggestions")).toBeVisible();
   });
 
-  test("la suggestion apparaît avec un bouquet sans vase", async ({ page }) => {
+  test("la suggestion est proposée avec un bouquet au panier", async ({ page }) => {
     await addToCart(page, "rivage");
     await page.goto("/panier");
     await expect(page.getByTestId("vase-suggestions")).toBeVisible();
@@ -20,7 +20,7 @@ test.describe("vases — vente solo + suggestion panier", () => {
     ).toBeVisible();
   });
 
-  test("quick-add depuis la suggestion ajoute le vase et masque la section", async ({
+  test("quick-add ajoute le vase et la suggestion reste affichée", async ({
     page,
   }) => {
     await addToCart(page, "rivage");
@@ -29,7 +29,7 @@ test.describe("vases — vente solo + suggestion panier", () => {
       .getByRole("button", { name: "Ajouter galet au panier" })
       .click();
     await expect(page.getByTestId("cart-line-galet")).toBeVisible();
-    await expect(page.getByTestId("vase-suggestions")).toHaveCount(0);
+    await expect(page.getByTestId("vase-suggestions")).toBeVisible();
   });
 
   test("pas de suggestion sur un panier vide", async ({ page }) => {

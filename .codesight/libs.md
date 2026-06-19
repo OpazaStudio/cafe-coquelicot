@@ -20,7 +20,6 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
-- `lib/cart/vase-upsell.ts` — function shouldSuggestVases: (items, vaseSlugs) => boolean
 - `lib/db/client.ts`
   - function seedIfEmpty: (db) => Promise<boolean>
   - function seedMissingProducts: (db) => Promise<string[]>

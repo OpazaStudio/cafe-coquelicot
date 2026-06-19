@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**21 library files** across 14 modules
+**20 library files** across 14 modules
 
 ## Mondial-relay (5 files)
 
@@ -17,15 +17,14 @@
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, SESSION_COOKIE, SESSION_DURATION_MS
 
-## Cart (2 files)
-
-- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
-- `lib/cart/vase-upsell.ts` — shouldSuggestVases
-
 ## Db (2 files)
 
 - `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
+
+## Cart (1 files)
+
+- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
 
 ## Item-label.ts (1 files)
 

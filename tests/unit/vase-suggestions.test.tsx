@@ -34,8 +34,8 @@ async function waitReady() {
 
 beforeEach(() => window.localStorage.clear());
 
-describe("VaseSuggestions", () => {
-  it("propose un vase quand le panier a des fleurs sans vase", async () => {
+describe("VaseSuggestions (toujours proposés)", () => {
+  it("propose un vase quand le panier contient un article (fleurs)", async () => {
     seedCart([{ slug: "rivage", name: "rivage", priceCents: 4800, qty: 1 }]);
     renderWith();
     await waitReady();
@@ -43,11 +43,11 @@ describe("VaseSuggestions", () => {
     expect(screen.getByText("galet")).toBeTruthy();
   });
 
-  it("ne propose rien si un vase est déjà au panier", async () => {
+  it("propose toujours, même si un vase est déjà au panier", async () => {
     seedCart([{ slug: "galet", name: "galet", priceCents: 2400, qty: 1 }]);
     renderWith();
     await waitReady();
-    expect(screen.queryByTestId("vase-suggestions")).toBeNull();
+    expect(screen.queryByTestId("vase-suggestions")).not.toBeNull();
   });
 
   it("ne propose rien pour un panier vide", async () => {
@@ -56,20 +56,20 @@ describe("VaseSuggestions", () => {
     expect(screen.queryByTestId("vase-suggestions")).toBeNull();
   });
 
-  it("quick-add : ajoute le vase puis masque la suggestion", async () => {
+  it("quick-add : ajoute le vase et la suggestion reste affichée", async () => {
     seedCart([{ slug: "rivage", name: "rivage", priceCents: 4800, qty: 1 }]);
     renderWith();
     await waitReady();
-    expect(screen.queryByTestId("vase-suggestions")).not.toBeNull();
     fireEvent.click(
       screen.getByRole("button", { name: "Ajouter galet au panier" }),
     );
-    await waitFor(() =>
-      expect(screen.queryByTestId("vase-suggestions")).toBeNull(),
-    );
-    const stored = JSON.parse(
-      window.localStorage.getItem("coquelicot.cart.v1") ?? "[]",
-    );
-    expect(stored.some((i: { slug: string }) => i.slug === "galet")).toBe(true);
+    await waitFor(() => {
+      const stored = JSON.parse(
+        window.localStorage.getItem("coquelicot.cart.v1") ?? "[]",
+      );
+      expect(stored.some((i: { slug: string }) => i.slug === "galet")).toBe(true);
+    });
+    // La section reste visible (vases toujours proposés tant qu'il y a un article).
+    expect(screen.queryByTestId("vase-suggestions")).not.toBeNull();
   });
 });
