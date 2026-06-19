@@ -4,7 +4,7 @@
 
 > 2 routes | 5 models | 56 components | 20 lib files | 21 env vars | 0 middleware | 43% test coverage
 > **Token savings:** this file is ~4,400 tokens. Without it, AI exploration would cost ~38,200 tokens. **Saves ~33,800 tokens per conversation.**
-> **Last scanned:** 2026-06-19 12:12 — re-run after significant changes
+> **Last scanned:** 2026-06-19 12:14 — re-run after significant changes
 
 ---
 
@@ -223,12 +223,12 @@
   - _...1 more_
 - `lib/products.ts`
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
+  - function queryActiveVases: (db) => Promise<ShopProduct[]>
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
-  - function listProductsForAdmin: (db) => Promise<
-  - _...6 more_
+  - _...8 more_
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>

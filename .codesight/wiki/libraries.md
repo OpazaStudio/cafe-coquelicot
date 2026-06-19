@@ -48,7 +48,7 @@
 
 ## Products.ts (1 files)
 
-- `lib/products.ts` — queryActiveProducts, queryProductBySlug, getAllProductRows, getProductRow, getProductWithVariants, listProductsForAdmin, …
+- `lib/products.ts` — queryActiveProducts, queryActiveVases, queryProductBySlug, getAllProductRows, getProductRow, getProductWithVariants, …
 
 ## Proxy.ts (1 files)
 

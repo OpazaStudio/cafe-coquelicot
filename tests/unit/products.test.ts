@@ -7,6 +7,7 @@ import {
   getProductWithVariants,
   listProductsForAdmin,
   queryActiveProducts,
+  queryActiveVases,
   queryProductBySlug,
 } from "@/lib/products";
 import { createTestDb } from "../helpers/db";
@@ -84,6 +85,15 @@ describe("queryProductBySlug", () => {
   });
   it("renvoie null pour un slug inconnu", async () => {
     expect(await queryProductBySlug(db, "inexistant")).toBeNull();
+  });
+});
+
+describe("queryActiveVases", () => {
+  it("ne renvoie que les produits de catégorie vase, actifs", async () => {
+    const vases = await queryActiveVases(db);
+    expect(vases.map((v) => v.slug).sort()).toEqual(["carene", "ecume", "galet"]);
+    expect(vases.every((v) => v.category === "vase")).toBe(true);
+    expect(vases.find((v) => v.slug === "galet")!.priceCents).toBe(2400);
   });
 });
 

@@ -70,12 +70,12 @@
   - _...1 more_
 - `lib/products.ts`
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
+  - function queryActiveVases: (db) => Promise<ShopProduct[]>
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
-  - function listProductsForAdmin: (db) => Promise<
-  - _...6 more_
+  - _...8 more_
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>

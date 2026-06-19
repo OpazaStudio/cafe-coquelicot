@@ -120,6 +120,16 @@ export const getActiveProducts = cache(
   async (): Promise<ShopProduct[]> => queryActiveProducts(await getDb()),
 );
 
+// Vases actifs (cross-sell panier). Filtre la requête déjà mise en cache.
+export async function queryActiveVases(db: Db): Promise<ShopProduct[]> {
+  return (await queryActiveProducts(db)).filter((p) => p.category === "vase");
+}
+
+export const getActiveVases = cache(
+  async (): Promise<ShopProduct[]> =>
+    (await getActiveProducts()).filter((p) => p.category === "vase"),
+);
+
 // Sélection de la home, dans l'ordre de HOME_PICKS.
 export const getHomeProducts = cache(async (): Promise<ShopProduct[]> => {
   const all = await getActiveProducts();

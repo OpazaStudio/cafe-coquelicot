@@ -18,6 +18,9 @@ export const SEED_PRODUCTS: NewProductRow[] = [
   { slug: "estran", name: "estran", tag: "Mini bouquet", description: "Pour la table, le bureau, un cadeau.", priceCents: 2200, category: "mini", badge: null, illustrationVariant: 3 },
   { slug: "comptine", name: "comptine", tag: "Bouquet de poche", description: "Le petit geste sincère, ruban assorti.", priceCents: 1600, category: "mini", badge: "Cadeau", illustrationVariant: 0 },
   { slug: "carte-fleurie", name: "carte fleurie", tag: "Carte cadeau", description: "Le bon montant, valable un an en boutique.", priceCents: 2500, category: "mini", badge: null, illustrationVariant: 3 },
+  { slug: "galet", name: "galet", tag: "Vase en grès", description: "Grès émaillé tourné, pour un bouquet rond.", priceCents: 2400, category: "vase", badge: null, illustrationVariant: 0 },
+  { slug: "carene", name: "carène", tag: "Vase haut", description: "Lignes hautes et épurées, pour de longues tiges.", priceCents: 3800, category: "vase", badge: null, illustrationVariant: 1 },
+  { slug: "ecume", name: "écume", tag: "Soliflore", description: "Le petit vase d'une fleur, sur un rebord de fenêtre.", priceCents: 1900, category: "vase", badge: null, illustrationVariant: 2 },
 ];
 
 // Sélection mise en avant sur la home (section Shop), dans cet ordre.
