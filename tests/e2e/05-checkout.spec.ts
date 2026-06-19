@@ -71,7 +71,9 @@ test("paiement Stripe test → confirmation → commande payée", async ({
     });
   });
   // Neutraliser le chargement de jQuery CDN (le stub fournit window.jQuery).
-  await page.route("**/jquery*.js", (route) =>
+  // Scoped au domaine CDN uniquement pour ne pas intercepter le widget MR
+  // (dont l'URL commence aussi par "jquery…").
+  await page.route("https://ajax.googleapis.com/**", (route) =>
     route.fulfill({ contentType: "application/javascript", body: "" }),
   );
 
@@ -144,7 +146,7 @@ test("la commande payée apparaît dans l'admin et suit ses statuts", async ({
   ).toBeVisible();
   await expect(page.getByText("Tabac de la Gare")).toBeVisible();
   await expect(page.getByText("1 rue des Lilas")).toBeVisible();
-  await expect(page.getByText("Mondial Relay")).toBeVisible();
+  await expect(page.getByText("Point relais Mondial Relay")).toBeVisible();
   await expect(page.getByText("Pour les tests, avec amour.")).toBeVisible();
 
   await page.getByRole("button", { name: "Passer en préparation" }).click();
