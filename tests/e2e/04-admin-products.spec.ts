@@ -28,9 +28,9 @@ test.describe("CRUD produits", () => {
     await expect(row).toContainText("29,90€");
     await expect(row).toContainText("En ligne");
 
-    // Visible en boutique
+    // Visible en boutique (17 du seed — dont 3 vases — + le produit créé)
     await page.goto("/boutique");
-    await expect(page.locator(".boutique-grid .product-card")).toHaveCount(15);
+    await expect(page.locator(".boutique-grid .product-card")).toHaveCount(18);
     const card = page.locator(".product-card", { hasText: "pivoine du test" });
     await expect(card).toContainText("dès 29,90€");
     await expect(card).toContainText("Test");
@@ -48,7 +48,7 @@ test.describe("CRUD produits", () => {
     await row.getByRole("button", { name: "Masquer" }).click();
     await expect(row).toContainText("Masqué");
     await page.goto("/boutique");
-    await expect(page.locator(".boutique-grid .product-card")).toHaveCount(14);
+    await expect(page.locator(".boutique-grid .product-card")).toHaveCount(17);
     await expect(
       page.locator(".product-card", { hasText: "pivoine du test" }),
     ).toHaveCount(0);
