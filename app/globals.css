@@ -598,7 +598,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 .prestations__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 28px;
 }
 .prestation-card {
@@ -1472,4 +1472,62 @@ button.product-card__add {
   .checkout-fulfillment {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Suggestion de vases (cross-sell panier) ─────────────────── */
+.vase-suggest {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
+}
+.vase-suggest__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  margin: 0 0 6px;
+}
+.vase-suggest__lead {
+  opacity: 0.7;
+  margin: 0 0 24px;
+}
+.vase-suggest__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+.vase-suggest__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  border-radius: 14px;
+}
+.vase-suggest__media {
+  aspect-ratio: 5 / 6;
+  display: grid;
+  place-items: center;
+}
+.vase-suggest__media svg {
+  width: 64%;
+  height: 64%;
+}
+.vase-suggest__info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.vase-suggest__name {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.vase-suggest__price {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+.vase-suggest__add {
+  align-self: start;
 }

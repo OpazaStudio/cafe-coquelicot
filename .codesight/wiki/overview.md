@@ -23,7 +23,7 @@
 
 Changes to these files have the widest blast radius across the codebase:
 
-- `tests/e2e/helpers.ts` — imported by **7** files
+- `tests/e2e/helpers.ts` — imported by **8** files
 - `components/illustrations.tsx` — imported by **6** files
 - `lib/db/schema.ts` — imported by **6** files
 - `tests/helpers/db.ts` — imported by **5** files
