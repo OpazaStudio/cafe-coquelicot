@@ -54,6 +54,30 @@ export async function seedIfEmpty(db: Db): Promise<boolean> {
   return true;
 }
 
+// Insère les produits du seed dont le `slug` n'existe pas encore (idempotent).
+// Contrairement à `seedIfEmpty` (tout-ou-rien sur base vide), permet d'ajouter
+// de nouveaux produits du catalogue (ex. vases) à une base DÉJÀ peuplée — en
+// local (PGlite) comme sur Supabase. N'insère les variantes (tailles/coloris)
+// que pour les produits réellement créés. Renvoie les slugs insérés.
+export async function seedMissingProducts(db: Db): Promise<string[]> {
+  const existing = await db
+    .select({ slug: schema.products.slug })
+    .from(schema.products);
+  const existingSlugs = new Set(existing.map((r) => r.slug));
+  const missing = SEED_PRODUCTS.filter((p) => !existingSlugs.has(p.slug));
+  if (missing.length === 0) return [];
+  const inserted = await db
+    .insert(schema.products)
+    .values(missing)
+    .returning({ id: schema.products.id, slug: schema.products.slug });
+  const { sizes, colors } = buildChildSeedRows(
+    new Map(inserted.map((p) => [p.slug, p.id])),
+  );
+  if (sizes.length) await db.insert(schema.productSizes).values(sizes);
+  if (colors.length) await db.insert(schema.productColors).values(colors);
+  return inserted.map((p) => p.slug);
+}
+
 // Singleton sur globalThis : survit au HMR de `next dev` et aux multiples
 // évaluations de modules par le bundler.
 const globalForDb = globalThis as unknown as {

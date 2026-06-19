@@ -24,7 +24,7 @@
 
 ## Db (2 files)
 
-- `lib/db/client.ts` — seedIfEmpty, getDb, Db
+- `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
 
 ## Item-label.ts (1 files)
