@@ -132,7 +132,7 @@ function KanbanCard({
       </div>
       <p className="mt-1 font-medium">{order.customerName}</p>
       <p className="text-xs text-stone-500">
-        {order.fulfillment === "poste" ? "Envoi postal" : "Retrait"}
+        {order.fulfillment === "retrait" ? "Retrait" : "Mondial Relay"}
         {order.deliveryDate && <> · souhaité le {order.deliveryDate}</>}
       </p>
       <ul className="mt-2 flex flex-col gap-1.5 border-y border-stone-100 py-2">

@@ -9,6 +9,7 @@ import {
   isShippingCountry,
 } from "@/lib/order-status";
 import { StatusBadge } from "../status-badge";
+import { LabelButton } from "./label-button";
 import { StatusActions } from "./status-actions";
 import { TrackingForm } from "./tracking-form";
 
@@ -77,7 +78,7 @@ export default async function CommandeDetailPage({
                 <dd>
                   {order.deliveryFeeCents > 0
                     ? formatEuros(order.deliveryFeeCents)
-                    : "Retrait atelier — offert"}
+                    : "offert"}
                 </dd>
               </div>
               <div className="flex justify-between text-base font-semibold">
@@ -111,24 +112,25 @@ export default async function CommandeDetailPage({
             )}
             <div className="mt-4 border-t border-stone-200 pt-4">
               <p className="mb-1 font-medium">
-                {order.fulfillment === "poste"
-                  ? "Envoi par la poste"
-                  : "Retrait atelier"}
+                {order.fulfillment === "mondial_relay"
+                  ? "Point relais Mondial Relay"
+                  : order.fulfillment === "poste"
+                    ? "Envoi par la poste"
+                    : "Retrait atelier"}
               </p>
-              {order.fulfillment === "poste" && (
+              {(order.fulfillment === "mondial_relay" || order.fulfillment === "poste") && (
                 <p className="whitespace-pre-line text-stone-600">
+                  {order.relayPointName && <><strong>{order.relayPointName}</strong><br /></>}
                   {order.shippingAddress}
                   {(order.shippingPostalCode || order.shippingCity) && (
-                    <>
-                      <br />
-                      {order.shippingPostalCode} {order.shippingCity}
-                    </>
+                    <><br />{order.shippingPostalCode} {order.shippingCity}</>
                   )}
-                  {order.shippingCountry &&
+                  {order.fulfillment === "poste" && order.shippingCountry &&
                     isShippingCountry(order.shippingCountry) &&
                     order.shippingCountry !== "FR" && (
                       <> — {SHIPPING_COUNTRY_LABELS[order.shippingCountry]}</>
                     )}
+                  {order.relayPointId && <><br /><span className="text-xs text-stone-400">ID relais : {order.relayPointId}</span></>}
                 </p>
               )}
               {order.deliveryDate && (
@@ -137,13 +139,21 @@ export default async function CommandeDetailPage({
                 </p>
               )}
             </div>
-            {order.fulfillment === "poste" && (
+            {order.fulfillment === "mondial_relay" && (
               <div className="mt-4 border-t border-stone-200 pt-4">
-                <p className="mb-2 font-medium">Suivi Colissimo</p>
-                <TrackingForm
-                  orderId={order.id}
-                  trackingNumber={order.trackingNumber}
-                />
+                <p className="mb-2 font-medium">Étiquette Mondial Relay</p>
+                <LabelButton orderId={order.id} hasLabel={!!order.relayLabelUrl} />
+                {order.relayLabelUrl && (
+                  <p className="mt-2">
+                    <a href={order.relayLabelUrl} target="_blank" rel="noopener noreferrer" className="text-wine hover:underline">
+                      Télécharger l&apos;étiquette (PDF)
+                    </a>
+                  </p>
+                )}
+                <div className="mt-3">
+                  <p className="mb-2 font-medium">N° de suivi</p>
+                  <TrackingForm orderId={order.id} trackingNumber={order.trackingNumber} />
+                </div>
               </div>
             )}
             {order.cardMessage && (

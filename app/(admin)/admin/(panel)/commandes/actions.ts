@@ -5,6 +5,7 @@ import * as z from "zod";
 import { verifySession } from "@/lib/auth/dal";
 import { getDb } from "@/lib/db/client";
 import { orderStatus, prepStatusEnum } from "@/lib/db/schema";
+import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";
 import {
   setItemPreparedQty,
   setPrepStatus,
@@ -94,6 +95,22 @@ export async function saveTrackingNumber(
     );
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Erreur inconnue." };
+  }
+  revalidatePath(`/admin/commandes/${orderId}`);
+  return undefined;
+}
+
+export async function generateRelayLabel(orderId: string): Promise<StatusActionState> {
+  await verifySession();
+  if (!z.uuid().safeParse(orderId).success) return { error: "Requête invalide." };
+  try {
+    const db = await getDb();
+    const res = await ensureRelayShipment(db, orderId);
+    if (!res) {
+      return { error: "Étiquette non générée (déjà créée, point relais manquant, ou API Mondial Relay non configurée)." };
+    }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Erreur Mondial Relay." };
   }
   revalidatePath(`/admin/commandes/${orderId}`);
   return undefined;

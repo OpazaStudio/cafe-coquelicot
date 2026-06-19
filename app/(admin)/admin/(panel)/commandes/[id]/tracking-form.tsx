@@ -21,7 +21,7 @@ export function TrackingForm({
       <input
         name="trackingNumber"
         defaultValue={trackingNumber ?? ""}
-        placeholder="N° de suivi Colissimo"
+        placeholder="N° de suivi Mondial Relay"
         maxLength={40}
         className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
       />

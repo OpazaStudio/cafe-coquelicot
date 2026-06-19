@@ -51,7 +51,7 @@ export function OrdersTable({ orders }: { orders: OrderRow[] }) {
                 <div className="text-xs text-stone-500">{o.customerEmail}</div>
               </td>
               <td className="px-4 py-3 text-stone-600">
-                {o.fulfillment === "poste" ? "Envoi postal" : "Retrait"}
+                {o.fulfillment === "retrait" ? "Retrait" : "Mondial Relay"}
               </td>
               <td className="px-4 py-3 font-medium">
                 {formatEuros(o.totalCents)}
