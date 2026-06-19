@@ -33,13 +33,21 @@ export default async function ConfirmationPage({
     try {
       const session = await getStripe().checkout.sessions.retrieve(sessionId);
       if (session.payment_status === "paid") {
-        await markOrderPaidBySession(
+        const paid = await markOrderPaidBySession(
           db,
           sessionId,
           typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id,
         );
+        if (paid) {
+          try {
+            const { ensureRelayShipment } = await import("@/lib/mondial-relay/ensure-shipment");
+            await ensureRelayShipment(db, paid.id);
+          } catch (err) {
+            console.error("[mondial-relay] étiquette non générée (confirmation)", err);
+          }
+        }
       }
     } catch {
       // API injoignable ou session inconnue : on retombe sur l'état en base.
@@ -96,7 +104,9 @@ export default async function ConfirmationPage({
                     {data.order.customerEmail}.{" "}
                     {data.order.fulfillment === "poste"
                       ? "Votre commande partira par la poste très vite."
-                      : "Votre commande vous attendra à l'atelier, 12 rue du Gabut."}
+                      : data.order.fulfillment === "mondial_relay"
+                        ? "Votre commande partira en point relais Mondial Relay très vite."
+                        : "Votre commande vous attendra à l'atelier, 12 rue du Gabut."}
                   </p>
                 </div>
               </>

@@ -114,6 +114,22 @@ describe("POST /api/stripe/webhook", () => {
     expect(after?.order.status).toBe("cancelled");
   });
 
+  it("traite une commande mondial_relay sans env MR (skip étiquette)", async () => {
+    const db = await getDb();
+    const { order } = await createPendingOrder(db, {
+      name: "Camille", email: "c@x.fr", phone: "+33612345678",
+      fulfillment: "mondial_relay", relayPointId: "012345", relayPointName: "T",
+      relayStreet: "1 rue X", relayPostalCode: "17000", relayCity: "La Rochelle",
+    }, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_test_wh_mr");
+    const payload = checkoutCompletedPayload("cs_test_wh_mr");
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+    expect((await post(payload, signature)).status).toBe(200);
+    const after = await getOrderBySessionId(db, "cs_test_wh_mr");
+    expect(after?.order.status).toBe("paid");
+    expect(after?.order.relayShipmentNumber).toBeNull(); // pas d'env MR → skip
+  });
+
   it("répond 200 aux événements ignorés (signés)", async () => {
     const payload = JSON.stringify({
       id: "evt_test_3",

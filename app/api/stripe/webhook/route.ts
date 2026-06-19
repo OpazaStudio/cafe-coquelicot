@@ -3,6 +3,7 @@
 // (idempotent) pour le dev local sans `stripe listen`.
 import type Stripe from "stripe";
 import { getDb } from "@/lib/db/client";
+import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";
 import {
   cancelOrderBySession,
   markOrderPaidBySession,
@@ -43,11 +44,18 @@ export async function POST(request: Request) {
     case "checkout.session.async_payment_succeeded": {
       const session = event.data.object;
       if (session.payment_status === "paid") {
-        await markOrderPaidBySession(
+        const order = await markOrderPaidBySession(
           db,
           session.id,
           paymentIntentId(session.payment_intent),
         );
+        if (order) {
+          try {
+            await ensureRelayShipment(db, order.id);
+          } catch (err) {
+            console.error("[mondial-relay] étiquette non générée (webhook)", err);
+          }
+        }
       }
       break;
     }
