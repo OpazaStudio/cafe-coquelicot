@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Script from "next/script";
 
 export type RelaySelection = {
@@ -30,6 +30,11 @@ export function RelayPicker({
   onSelect: (s: RelaySelection) => void;
 }) {
   const ready = useRef(false);
+  // Always hold the latest onSelect so the widget callback never calls a stale closure.
+  const onSelectRef = useRef(onSelect);
+  useLayoutEffect(() => {
+    onSelectRef.current = onSelect;
+  });
 
   function init() {
     const $ = window.jQuery;
@@ -42,7 +47,7 @@ export function RelayPicker({
       AllowedCountries: "FR",
       EnableGeolocalisatedSearch: true,
       OnParcelShopSelected: (data: Record<string, string>) => {
-        onSelect({
+        onSelectRef.current({
           id: data.ID,
           name: data.Nom ?? data.name ?? "",
           street: data.Adresse1 ?? data.Adresse ?? "",
@@ -53,9 +58,10 @@ export function RelayPicker({
     });
   }
 
+  // init runs once at mount: the Mondial Relay widget cannot be re-initialized,
+  // so deps are intentionally empty.
   useEffect(() => {
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -71,6 +77,8 @@ export function RelayPicker({
         onLoad={init}
       />
       <div id="mr-widget" />
+      {/* Widget target required by MR_ParcelShopPicker — NOT submitted with the form.
+          Relay data flows via onSelect → parent state → the named hidden inputs in the form. */}
       <input type="hidden" id="mr-relay-id" />
       {value && (
         <p className="relay-picker__selected" data-testid="relay-selected">
