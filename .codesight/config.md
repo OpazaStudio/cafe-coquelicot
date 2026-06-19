@@ -12,6 +12,7 @@
 - `MONDIAL_RELAY_API_PASSWORD` **required** — lib/mondial-relay/config.ts
 - `MONDIAL_RELAY_API_URL` **required** — lib/mondial-relay/config.ts
 - `MONDIAL_RELAY_CUSTOMER_ID` **required** — lib/mondial-relay/config.ts
+- `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` **required** — components/relay-picker.tsx
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local

@@ -5,15 +5,10 @@ import { useActionState, useState } from "react";
 import { useCart } from "@/lib/cart/cart-context";
 import { composeItemName } from "@/lib/item-label";
 import { formatEuros } from "@/lib/money";
-import {
-  SHIPPING_COUNTRY_CODES,
-  SHIPPING_COUNTRY_LABELS,
-  MONDIAL_RELAY_FEE_CENTS,
-  type Fulfillment,
-  type ShippingCountryCode,
-} from "@/lib/order-status";
+import { MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
 import { startCheckout, type CheckoutState } from "@/app/checkout/actions";
 import { ArrowRight } from "./illustrations";
+import { RelayPicker, type RelaySelection } from "./relay-picker";
 
 function tomorrowISO(): string {
   const d = new Date();
@@ -23,8 +18,7 @@ function tomorrowISO(): string {
 
 export function CheckoutForm() {
   const { items, subtotalCents, ready } = useCart();
-  const [fulfillment, setFulfillment] = useState<Fulfillment>("retrait");
-  const [country, setCountry] = useState<ShippingCountryCode>("FR");
+  const [relay, setRelay] = useState<RelaySelection | null>(null);
   const [state, action, pending] = useActionState<CheckoutState, FormData>(
     startCheckout,
     undefined,
@@ -47,7 +41,7 @@ export function CheckoutForm() {
     );
   }
 
-  const feeCents = fulfillment === "poste" ? MONDIAL_RELAY_FEE_CENTS : 0;
+  const feeCents = MONDIAL_RELAY_FEE_CENTS;
   const itemsPayload = JSON.stringify(
     items.map((i) => ({
       slug: i.slug,
@@ -79,117 +73,37 @@ export function CheckoutForm() {
             />
           </label>
           <label className="form-field">
-            <span>Téléphone</span>
-            <input name="phone" autoComplete="tel" placeholder="06 12 34 56 78" />
+            <span>Téléphone *</span>
+            <input name="phone" required autoComplete="tel" placeholder="06 12 34 56 78" />
           </label>
         </fieldset>
 
         <fieldset className="checkout-fieldset">
-          <legend className="eyebrow">Retrait ou envoi postal</legend>
-          <div className="checkout-fulfillment" role="radiogroup">
-            <label className={`checkout-choice${fulfillment === "retrait" ? " is-active" : ""}`}>
-              <input
-                type="radio"
-                name="fulfillment"
-                value="retrait"
-                checked={fulfillment === "retrait"}
-                onChange={() => setFulfillment("retrait")}
-              />
-              <span className="checkout-choice__title">Retrait atelier</span>
-              <span className="checkout-choice__desc">
-                12 rue du Gabut, La Rochelle — gratuit
-              </span>
-            </label>
-            <label className={`checkout-choice${fulfillment === "poste" ? " is-active" : ""}`}>
-              <input
-                type="radio"
-                name="fulfillment"
-                value="poste"
-                checked={fulfillment === "poste"}
-                onChange={() => setFulfillment("poste")}
-              />
-              <span className="checkout-choice__title">Envoi par la poste</span>
-              <span className="checkout-choice__desc">
-                Colissimo, France et pays limitrophes —{" "}
-                {formatEuros(MONDIAL_RELAY_FEE_CENTS)}
-              </span>
-            </label>
-          </div>
-
-          {fulfillment === "poste" && (
+          <legend className="eyebrow">Livraison en point relais</legend>
+          <p className="body">
+            Vos achats sont livrés en point relais <strong>Mondial Relay</strong> (France) —{" "}
+            {formatEuros(MONDIAL_RELAY_FEE_CENTS)}.
+          </p>
+          <RelayPicker value={relay} onSelect={setRelay} />
+          {relay && (
             <>
-              <label className="form-field">
-                <span>Adresse d&apos;expédition *</span>
-                <input
-                  name="shippingAddress"
-                  required
-                  maxLength={200}
-                  autoComplete="street-address"
-                  placeholder="3 quai Valin"
-                />
-              </label>
-              <label className="form-field">
-                <span>Code postal *</span>
-                <input
-                  name="shippingPostalCode"
-                  required
-                  minLength={2}
-                  maxLength={10}
-                  autoComplete="postal-code"
-                  inputMode={country === "FR" ? "numeric" : "text"}
-                  pattern={country === "FR" ? "\\d{5}" : undefined}
-                  placeholder={country === "FR" ? "17000" : ""}
-                />
-              </label>
-              <label className="form-field">
-                <span>Ville *</span>
-                <input
-                  name="shippingCity"
-                  required
-                  maxLength={100}
-                  autoComplete="address-level2"
-                  placeholder="La Rochelle"
-                />
-              </label>
-              <label className="form-field">
-                <span>Pays *</span>
-                <select
-                  name="shippingCountry"
-                  value={country}
-                  onChange={(e) =>
-                    setCountry(e.target.value as ShippingCountryCode)
-                  }
-                >
-                  {SHIPPING_COUNTRY_CODES.map((code) => (
-                    <option key={code} value={code}>
-                      {SHIPPING_COUNTRY_LABELS[code]}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <input type="hidden" name="relayPointId" value={relay.id} />
+              <input type="hidden" name="relayPointName" value={relay.name} />
+              <input type="hidden" name="relayStreet" value={relay.street} />
+              <input type="hidden" name="relayPostalCode" value={relay.postalCode} />
+              <input type="hidden" name="relayCity" value={relay.city} />
+              <input type="hidden" name="relayCountry" value="FR" />
             </>
           )}
-
           <label className="form-field">
             <span>
-              {fulfillment === "poste"
-                ? "Date d'expédition souhaitée"
-                : "Date de retrait souhaitée"}{" "}
-              <em>(optionnel — sous réserve de confirmation)</em>
+              Date de livraison souhaitée <em>(optionnel — sous réserve)</em>
             </span>
             <input type="date" name="deliveryDate" min={tomorrowISO()} />
           </label>
-
           <label className="form-field">
-            <span>
-              Message pour la carte <em>(optionnel)</em>
-            </span>
-            <textarea
-              name="cardMessage"
-              rows={2}
-              maxLength={300}
-              placeholder="Joyeux anniversaire…"
-            />
+            <span>Message pour la carte <em>(optionnel)</em></span>
+            <textarea name="cardMessage" rows={2} maxLength={300} placeholder="Joyeux anniversaire…" />
           </label>
         </fieldset>
       </div>
@@ -211,8 +125,8 @@ export function CheckoutForm() {
           <span>{formatEuros(subtotalCents)}</span>
         </div>
         <div className="cart-summary__row">
-          <span>{fulfillment === "poste" ? "Envoi postal" : "Retrait"}</span>
-          <span>{feeCents === 0 ? "offert" : formatEuros(feeCents)}</span>
+          <span>Livraison (point relais)</span>
+          <span>{formatEuros(feeCents)}</span>
         </div>
         <div className="cart-summary__row cart-summary__row--total">
           <span>Total</span>
@@ -229,10 +143,11 @@ export function CheckoutForm() {
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || !relay}
           className="btn btn--filled cart-summary__cta"
         >
-          {pending ? "Redirection…" : "Payer avec Stripe"} <ArrowRight />
+          {pending ? "Redirection…" : relay ? "Payer avec Stripe" : "Choisissez un point relais"}{" "}
+          <ArrowRight />
         </button>
         <p className="cart-summary__note">
           Paiement sécurisé par Stripe. Vous serez redirigé·e vers la page de

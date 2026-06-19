@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 54 components | 20 lib files | 20 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,400 tokens. Without it, AI exploration would cost ~37,400 tokens. **Saves ~33,100 tokens per conversation.**
-> **Last scanned:** 2026-06-19 09:28 — re-run after significant changes
+> 2 routes | 5 models | 55 components | 20 lib files | 21 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,400 tokens. Without it, AI exploration would cost ~37,900 tokens. **Saves ~33,500 tokens per conversation.**
+> **Last scanned:** 2026-06-19 09:35 — re-run after significant changes
 
 ---
 
@@ -136,6 +136,7 @@
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
 - **Newsletter** [client] — `components/newsletter.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
+- **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
 - **SiteHeader** — `components/sections.tsx`
 - **Hero** — props: bg — `components/sections.tsx`
 - **Shop** — props: bg, products — `components/sections.tsx`
@@ -255,6 +256,7 @@
 - `MONDIAL_RELAY_API_PASSWORD` **required** — lib/mondial-relay/config.ts
 - `MONDIAL_RELAY_API_URL` **required** — lib/mondial-relay/config.ts
 - `MONDIAL_RELAY_CUSTOMER_ID` **required** — lib/mondial-relay/config.ts
+- `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` **required** — components/relay-picker.tsx
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local

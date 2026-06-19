@@ -6,7 +6,7 @@
 
 ## Scale
 
-2 API routes · 5 database models · 54 UI components · 20 library files · 20 environment variables
+2 API routes · 5 database models · 55 UI components · 20 library files · 21 environment variables
 
 ## Subsystems
 
@@ -15,7 +15,7 @@
 
 **Database:** drizzle, 5 models — see [database.md](./database.md)
 
-**UI:** 54 components (react) — see [ui.md](./ui.md)
+**UI:** 55 components (react) — see [ui.md](./ui.md)
 
 **Libraries:** 20 files — see [libraries.md](./libraries.md)
 
@@ -38,6 +38,7 @@ Changes to these files have the widest blast radius across the codebase:
 - `MONDIAL_RELAY_API_PASSWORD` — `lib/mondial-relay/config.ts`
 - `MONDIAL_RELAY_API_URL` — `lib/mondial-relay/config.ts`
 - `MONDIAL_RELAY_CUSTOMER_ID` — `lib/mondial-relay/config.ts`
+- `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` — `components/relay-picker.tsx`
 - `NODE_ENV` — `lib/auth/dal.ts`
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 
