@@ -38,4 +38,4 @@ Changes to these files have the widest blast radius across the codebase:
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-06-14_
+_Back to [index.md](./index.md) · Generated 2026-06-19_
