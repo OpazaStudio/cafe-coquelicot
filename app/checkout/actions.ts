@@ -10,11 +10,6 @@ import {
 } from "@/lib/orders";
 import { composeItemName } from "@/lib/item-label";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
-import {
-  isShippingCountry,
-  type ShippingCountryCode,
-} from "@/lib/order-status";
-
 const ItemsSchema = z
   .array(
     z.object({
@@ -27,63 +22,19 @@ const ItemsSchema = z
   .min(1, { error: "Le panier est vide." })
   .max(50);
 
-const CheckoutSchema = z
-  .object({
-    name: z
-      .string()
-      .trim()
-      .min(1, { error: "Votre nom est requis." })
-      .max(120),
-    email: z.email({ error: "Adresse email invalide." }),
-    phone: z.string().trim().max(25).optional(),
-    fulfillment: z.enum(["retrait", "poste"], {
-      error: "Choisissez retrait ou envoi postal.",
-    }),
-    shippingAddress: z.string().trim().max(200).optional(),
-    shippingPostalCode: z.string().trim().max(10).optional(),
-    shippingCity: z.string().trim().max(100).optional(),
-    shippingCountry: z.string().trim().optional(),
-    deliveryDate: z
-      .union([z.literal(""), z.iso.date({ error: "Date invalide." })])
-      .optional(),
-    cardMessage: z.string().trim().max(300, { error: "300 caractères max." }).optional(),
-  })
-  .superRefine((v, ctx) => {
-    if (v.fulfillment !== "poste") return;
-    if ((v.shippingAddress ?? "").length < 5) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Adresse d'expédition requise.",
-        path: ["shippingAddress"],
-      });
-    }
-    const country = v.shippingCountry ?? "";
-    if (!isShippingCountry(country)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Pays de destination non desservi.",
-        path: ["shippingCountry"],
-      });
-      return; // la validation du code postal dépend du pays
-    }
-    const pc = v.shippingPostalCode ?? "";
-    const pcOk =
-      country === "FR" ? /^\d{5}$/.test(pc) : pc.length >= 2 && pc.length <= 10;
-    if (!pcOk) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Code postal invalide.",
-        path: ["shippingPostalCode"],
-      });
-    }
-    if (!(v.shippingCity ?? "").trim()) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Ville requise.",
-        path: ["shippingCity"],
-      });
-    }
-  });
+const CheckoutSchema = z.object({
+  name: z.string().trim().min(1, { error: "Votre nom est requis." }).max(120),
+  email: z.email({ error: "Adresse email invalide." }),
+  phone: z.string().trim().min(6, { error: "Téléphone requis (notification du point relais)." }).max(25),
+  relayPointId: z.string().trim().min(1, { error: "Choisissez un point relais." }).max(20),
+  relayPointName: z.string().trim().min(1).max(120),
+  relayStreet: z.string().trim().min(1).max(200),
+  relayPostalCode: z.string().trim().regex(/^\d{5}$/, { error: "Code postal du relais invalide." }),
+  relayCity: z.string().trim().min(1).max(100),
+  relayCountry: z.literal("FR", { error: "Mondial Relay : France uniquement." }),
+  deliveryDate: z.union([z.literal(""), z.iso.date({ error: "Date invalide." })]).optional(),
+  cardMessage: z.string().trim().max(300, { error: "300 caractères max." }).optional(),
+});
 
 export type CheckoutState = { error: string } | undefined;
 
@@ -102,11 +53,12 @@ export async function startCheckout(
     name: formData.get("name"),
     email: formData.get("email"),
     phone: formData.get("phone") ?? "",
-    fulfillment: formData.get("fulfillment"),
-    shippingAddress: formData.get("shippingAddress") ?? "",
-    shippingPostalCode: formData.get("shippingPostalCode") ?? "",
-    shippingCity: formData.get("shippingCity") ?? "",
-    shippingCountry: formData.get("shippingCountry") ?? "",
+    relayPointId: formData.get("relayPointId") ?? "",
+    relayPointName: formData.get("relayPointName") ?? "",
+    relayStreet: formData.get("relayStreet") ?? "",
+    relayPostalCode: formData.get("relayPostalCode") ?? "",
+    relayCity: formData.get("relayCity") ?? "",
+    relayCountry: formData.get("relayCountry") ?? "",
     deliveryDate: formData.get("deliveryDate") ?? "",
     cardMessage: formData.get("cardMessage") ?? "",
   });
@@ -123,13 +75,12 @@ export async function startCheckout(
         name: parsed.data.name,
         email: parsed.data.email,
         phone: parsed.data.phone,
-        fulfillment: parsed.data.fulfillment,
-        shippingAddress: parsed.data.shippingAddress,
-        shippingPostalCode: parsed.data.shippingPostalCode,
-        shippingCity: parsed.data.shippingCity,
-        shippingCountry: parsed.data.shippingCountry as
-          | ShippingCountryCode
-          | undefined,
+        fulfillment: "mondial_relay",
+        relayPointId: parsed.data.relayPointId,
+        relayPointName: parsed.data.relayPointName,
+        relayStreet: parsed.data.relayStreet,
+        relayPostalCode: parsed.data.relayPostalCode,
+        relayCity: parsed.data.relayCity,
         deliveryDate: parsed.data.deliveryDate || undefined,
         cardMessage: parsed.data.cardMessage,
       },
@@ -167,7 +118,7 @@ export async function startCheckout(
                 price_data: {
                   currency: "eur",
                   unit_amount: order.deliveryFeeCents,
-                  product_data: { name: "Envoi postal — Colissimo" },
+                  product_data: { name: "Livraison Mondial Relay — point relais" },
                 },
               },
             ]

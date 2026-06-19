@@ -56,13 +56,18 @@ export type CheckoutCustomerInput = {
   email: string;
   phone?: string;
   fulfillment: Fulfillment;
-  // Champs poste — complétude validée en amont (checkout action) ; les
-  // lignes migrées d'avant l'envoi postal peuvent être partielles.
+  // Point relais Mondial Relay (mode mondial_relay).
+  relayPointId?: string;
+  relayPointName?: string;
+  relayStreet?: string;
+  relayPostalCode?: string;
+  relayCity?: string;
+  // Champs legacy (poste) — conservés pour les commandes d'avant.
   shippingAddress?: string;
   shippingPostalCode?: string;
   shippingCity?: string;
   shippingCountry?: ShippingCountryCode;
-  deliveryDate?: string; // YYYY-MM-DD
+  deliveryDate?: string;
   cardMessage?: string;
 };
 
@@ -177,8 +182,10 @@ export async function createPendingOrder(
   });
 
   const subtotalCents = resolved.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
+  const isRelay = customer.fulfillment === "mondial_relay";
   const isPoste = customer.fulfillment === "poste";
-  const deliveryFeeCents = isPoste ? MONDIAL_RELAY_FEE_CENTS : 0;
+  const deliveryFeeCents =
+    customer.fulfillment === "retrait" ? 0 : MONDIAL_RELAY_FEE_CENTS;
 
   return db.transaction(async (tx) => {
     const [order] = await tx
@@ -190,10 +197,24 @@ export async function createPendingOrder(
         customerEmail: customer.email,
         customerPhone: customer.phone || null,
         fulfillment: customer.fulfillment,
-        shippingAddress: isPoste ? (customer.shippingAddress ?? null) : null,
-        shippingPostalCode: isPoste ? (customer.shippingPostalCode ?? null) : null,
-        shippingCity: isPoste ? (customer.shippingCity ?? null) : null,
-        shippingCountry: isPoste ? (customer.shippingCountry ?? null) : null,
+        shippingAddress: isRelay
+          ? (customer.relayStreet ?? null)
+          : isPoste
+            ? (customer.shippingAddress ?? null)
+            : null,
+        shippingPostalCode: isRelay
+          ? (customer.relayPostalCode ?? null)
+          : isPoste
+            ? (customer.shippingPostalCode ?? null)
+            : null,
+        shippingCity: isRelay
+          ? (customer.relayCity ?? null)
+          : isPoste
+            ? (customer.shippingCity ?? null)
+            : null,
+        shippingCountry: isRelay ? "FR" : isPoste ? (customer.shippingCountry ?? null) : null,
+        relayPointId: isRelay ? (customer.relayPointId ?? null) : null,
+        relayPointName: isRelay ? (customer.relayPointName ?? null) : null,
         deliveryDate: customer.deliveryDate || null,
         cardMessage: customer.cardMessage || null,
         subtotalCents,
@@ -478,7 +499,7 @@ export async function setItemPreparedQty(
   });
 }
 
-/** N° de suivi (mode poste uniquement) : posé/effacé par l'admin, jamais côté client. */
+/** N° de suivi (mode poste ou mondial_relay) : posé/effacé par l'admin, jamais côté client. */
 export async function setTrackingNumber(
   db: Db,
   orderId: string,
@@ -487,9 +508,9 @@ export async function setTrackingNumber(
   const updated = await db
     .update(orders)
     .set({ trackingNumber })
-    .where(and(eq(orders.id, orderId), eq(orders.fulfillment, "poste")))
+    .where(and(eq(orders.id, orderId), inArray(orders.fulfillment, ["poste", "mondial_relay"])))
     .returning({ id: orders.id });
   if (updated.length === 0) {
-    throw new Error("Commande introuvable ou sans envoi postal.");
+    throw new Error("Commande introuvable ou sans expédition.");
   }
 }

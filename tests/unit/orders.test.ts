@@ -445,7 +445,7 @@ describe("setTrackingNumber", () => {
       { slug: "rivage", qty: 1 },
     ]);
     await expect(setTrackingNumber(db, order.id, "X1")).rejects.toThrow(
-      /introuvable ou sans envoi postal/,
+      /introuvable ou sans expédition/,
     );
     await expect(
       setTrackingNumber(db, "00000000-0000-0000-0000-000000000000", "X1"),
@@ -591,6 +591,42 @@ describe("setItemPreparedQty (cases de préparation)", () => {
     await expect(
       setItemPreparedQty(db, "00000000-0000-0000-0000-000000000000", 1),
     ).rejects.toThrow(/Article introuvable/);
+  });
+});
+
+describe("createPendingOrder — Mondial Relay", () => {
+  it("stocke le point relais et applique le forfait", async () => {
+    const { order } = await createPendingOrder(
+      db,
+      {
+        name: "Camille Martin",
+        email: "c@x.fr",
+        phone: "+33612345678",
+        fulfillment: "mondial_relay",
+        relayPointId: "012345",
+        relayPointName: "Tabac de la Gare",
+        relayStreet: "1 rue des Lilas",
+        relayPostalCode: "17000",
+        relayCity: "La Rochelle",
+      },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    expect(order.fulfillment).toBe("mondial_relay");
+    expect(order.relayPointId).toBe("012345");
+    expect(order.shippingAddress).toBe("1 rue des Lilas");
+    expect(order.shippingCountry).toBe("FR");
+    expect(order.deliveryFeeCents).toBe(MONDIAL_RELAY_FEE_CENTS);
+  });
+
+  it("setTrackingNumber fonctionne pour mondial_relay", async () => {
+    const { order } = await createPendingOrder(db, {
+      name: "C", email: "c@x.fr", phone: "+33612345678",
+      fulfillment: "mondial_relay", relayPointId: "012345", relayPointName: "T",
+      relayStreet: "1 rue X", relayPostalCode: "17000", relayCity: "La Rochelle",
+    }, [{ slug: "rivage", qty: 1 }]);
+    await setTrackingNumber(db, order.id, "12345678");
+    const [after] = await db.select().from(orders).where(eq(orders.id, order.id));
+    expect(after.trackingNumber).toBe("12345678");
   });
 });
 
