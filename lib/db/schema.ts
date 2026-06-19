@@ -26,7 +26,11 @@ export const orderStatus = pgEnum("order_status", [
   "cancelled",
 ]);
 
-export const fulfillmentEnum = pgEnum("fulfillment", ["retrait", "poste"]);
+export const fulfillmentEnum = pgEnum("fulfillment", [
+  "retrait",
+  "poste",
+  "mondial_relay",
+]);
 
 export const prepStatusEnum = pgEnum("prep_status", [
   "todo",
@@ -98,6 +102,12 @@ export const orders = pgTable("orders", {
   shippingPostalCode: text("shipping_postal_code"),
   shippingCity: text("shipping_city"),
   shippingCountry: text("shipping_country"),
+  // Mondial Relay : point relais sélectionné + suivi de l'expédition.
+  // L'adresse du relais est portée par shipping_address/postal_code/city/country.
+  relayPointId: text("relay_point_id"),
+  relayPointName: text("relay_point_name"),
+  relayShipmentNumber: text("relay_shipment_number"),
+  relayLabelUrl: text("relay_label_url"),
   trackingNumber: text("tracking_number"),
   // Kanban de préparation (admin) — dimension séparée du statut commande.
   prepStatus: prepStatusEnum("prep_status").notNull().default("todo"),

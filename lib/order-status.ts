@@ -60,6 +60,7 @@ const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 const TERMINAL_BY_FULFILLMENT: Record<Fulfillment, OrderStatus> = {
   poste: "shipped",
   retrait: "picked_up",
+  mondial_relay: "shipped",
 };
 
 export function statusTransitions(

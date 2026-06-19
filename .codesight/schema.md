@@ -42,6 +42,10 @@
 - shippingPostalCode: text
 - shippingCity: text
 - shippingCountry: text
+- relayPointId: text (fk)
+- relayPointName: text
+- relayShipmentNumber: text
+- relayLabelUrl: text
 - trackingNumber: text
 - prepStatus: prepStatusEnum (default, required)
 - prepDoneAt: timestamp

@@ -45,7 +45,7 @@ pk: `id` (uuid) · fk: productId
 
 ### orders
 
-pk: `id` (uuid) · fk: stripeSessionId
+pk: `id` (uuid) · fk: relayPointId, stripeSessionId
 
 - `id`: uuid _(pk)_
 - `number`: text _(unique, required)_
@@ -58,6 +58,10 @@ pk: `id` (uuid) · fk: stripeSessionId
 - `shippingPostalCode`: text
 - `shippingCity`: text
 - `shippingCountry`: text
+- `relayPointId`: text _(fk)_
+- `relayPointName`: text
+- `relayShipmentNumber`: text
+- `relayLabelUrl`: text
 - `trackingNumber`: text
 - `prepStatus`: prepStatusEnum _(default, required)_
 - `prepDoneAt`: timestamp
@@ -92,7 +96,7 @@ Read and edit these files when adding columns, creating migrations, or changing 
 
 - `lib/db/schema.ts` — imported by **6** files
 - `lib/db/client.ts` — imported by **4** files
-- `tests/helpers/db.ts` — imported by **3** files
+- `tests/helpers/db.ts` — imported by **4** files
 - `lib/db/seed-data.ts` — imported by **2** files
 
 ---

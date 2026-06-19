@@ -8,8 +8,8 @@
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
 - `lib/db/client.ts` — imported by **4** files
+- `tests/helpers/db.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **3** files
-- `tests/helpers/db.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
 - `lib/db/seed-data.ts` — imported by **2** files
@@ -31,7 +31,7 @@
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - `lib/db/client.ts` ← `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/seed.ts`
+- `tests/helpers/db.ts` ← `tests/unit/orders.test.ts`, `tests/unit/products.test.ts`, `tests/unit/schema-relay.test.ts`, `tests/unit/stats.test.ts`
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
-- `tests/helpers/db.ts` ← `tests/unit/orders.test.ts`, `tests/unit/products.test.ts`, `tests/unit/stats.test.ts`
 - `app/(admin)/admin/login/actions.ts` ← `app/(admin)/admin/(panel)/layout.tsx`, `app/(admin)/admin/login/login-form.tsx`
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
