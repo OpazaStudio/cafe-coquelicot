@@ -31,6 +31,7 @@
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
+- `lib/mondial-relay/ensure-shipment.ts` — function ensureRelayShipment: (db, orderId, client) => void
 - `lib/mondial-relay/types.ts`
   - class MondialRelayError
   - interface MondialRelayClient

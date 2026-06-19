@@ -6,7 +6,7 @@
 
 ## Scale
 
-2 API routes · 5 database models · 54 UI components · 19 library files · 20 environment variables
+2 API routes · 5 database models · 54 UI components · 20 library files · 20 environment variables
 
 ## Subsystems
 
@@ -17,7 +17,7 @@
 
 **UI:** 54 components (react) — see [ui.md](./ui.md)
 
-**Libraries:** 19 files — see [libraries.md](./libraries.md)
+**Libraries:** 20 files — see [libraries.md](./libraries.md)
 
 ## High-Impact Files
 
@@ -26,9 +26,9 @@ Changes to these files have the widest blast radius across the codebase:
 - `tests/e2e/helpers.ts` — imported by **7** files
 - `lib/db/schema.ts` — imported by **6** files
 - `components/illustrations.tsx` — imported by **5** files
+- `tests/helpers/db.ts` — imported by **5** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
-- `lib/db/client.ts` — imported by **4** files
 
 ## Required Environment Variables
 
