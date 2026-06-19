@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { orders } from "@/lib/db/schema";
 import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";

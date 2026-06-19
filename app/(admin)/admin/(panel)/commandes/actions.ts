@@ -7,6 +7,7 @@ import { getDb } from "@/lib/db/client";
 import { orderStatus, prepStatusEnum } from "@/lib/db/schema";
 import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";
 import {
+  getOrderWithItems,
   setItemPreparedQty,
   setPrepStatus,
   setTrackingNumber,
@@ -107,7 +108,16 @@ export async function generateRelayLabel(orderId: string): Promise<StatusActionS
     const db = await getDb();
     const res = await ensureRelayShipment(db, orderId);
     if (!res) {
-      return { error: "Étiquette non générée (déjà créée, point relais manquant, ou API Mondial Relay non configurée)." };
+      const existing = await getOrderWithItems(db, orderId);
+      if (existing?.order.relayShipmentNumber) {
+        // Étiquette déjà créée : succès idempotent, on rafraîchit juste l'affichage.
+        revalidatePath(`/admin/commandes/${orderId}`);
+        return undefined;
+      }
+      return {
+        error:
+          "Étiquette non générée (point relais manquant ou API Mondial Relay non configurée).",
+      };
     }
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Erreur Mondial Relay." };

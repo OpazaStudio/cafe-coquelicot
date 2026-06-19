@@ -184,6 +184,8 @@ export async function createPendingOrder(
   const subtotalCents = resolved.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
   const isRelay = customer.fulfillment === "mondial_relay";
   const isPoste = customer.fulfillment === "poste";
+  // Seul `mondial_relay` est créé par le checkout aujourd'hui ; `poste` est un
+  // mode historique. Tout envoi (non-retrait) porte le forfait Mondial Relay.
   const deliveryFeeCents =
     customer.fulfillment === "retrait" ? 0 : MONDIAL_RELAY_FEE_CENTS;
 
