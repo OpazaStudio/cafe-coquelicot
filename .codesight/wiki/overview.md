@@ -6,7 +6,7 @@
 
 ## Scale
 
-2 API routes · 5 database models · 54 UI components · 15 library files · 16 environment variables
+2 API routes · 5 database models · 54 UI components · 18 library files · 20 environment variables
 
 ## Subsystems
 
@@ -17,7 +17,7 @@
 
 **UI:** 54 components (react) — see [ui.md](./ui.md)
 
-**Libraries:** 15 files — see [libraries.md](./libraries.md)
+**Libraries:** 18 files — see [libraries.md](./libraries.md)
 
 ## High-Impact Files
 
@@ -34,6 +34,10 @@ Changes to these files have the widest blast radius across the codebase:
 
 - `CI` — `playwright.config.ts`
 - `E2E_TEST_HOOKS` — `app/api/e2e/orders/route.ts`
+- `MONDIAL_RELAY_API_LOGIN` — `lib/mondial-relay/config.ts`
+- `MONDIAL_RELAY_API_PASSWORD` — `lib/mondial-relay/config.ts`
+- `MONDIAL_RELAY_API_URL` — `lib/mondial-relay/config.ts`
+- `MONDIAL_RELAY_CUSTOMER_ID` — `lib/mondial-relay/config.ts`
 - `NODE_ENV` — `lib/auth/dal.ts`
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 

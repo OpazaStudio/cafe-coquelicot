@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 54 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,100 tokens. Without it, AI exploration would cost ~35,600 tokens. **Saves ~31,600 tokens per conversation.**
-> **Last scanned:** 2026-06-19 09:10 — re-run after significant changes
+> 2 routes | 5 models | 54 components | 18 lib files | 20 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,300 tokens. Without it, AI exploration would cost ~36,900 tokens. **Saves ~32,600 tokens per conversation.**
+> **Last scanned:** 2026-06-19 09:14 — re-run after significant changes
 
 ---
 
@@ -180,6 +180,15 @@
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
+- `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
+- `lib/mondial-relay/types.ts`
+  - class MondialRelayError
+  - interface MondialRelayClient
+  - type RelayShipmentInput
+  - type RelayShipmentResult
+  - type SenderAddress
+  - type MondialRelayConfig
+- `lib/mondial-relay/xml.ts` — function buildShipmentXml: (input, config) => string, function parseShipmentResponse: (xml) => RelayShipmentResult
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string
@@ -240,6 +249,10 @@
 - `CI` **required** — playwright.config.ts
 - `DATABASE_URL` (has default) — .env.local
 - `E2E_TEST_HOOKS` **required** — app/api/e2e/orders/route.ts
+- `MONDIAL_RELAY_API_LOGIN` **required** — lib/mondial-relay/config.ts
+- `MONDIAL_RELAY_API_PASSWORD` **required** — lib/mondial-relay/config.ts
+- `MONDIAL_RELAY_API_URL` **required** — lib/mondial-relay/config.ts
+- `MONDIAL_RELAY_CUSTOMER_ID` **required** — lib/mondial-relay/config.ts
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local
@@ -311,7 +324,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 25 test files found
+> 26 test files found
 
 ## Covered Routes
 

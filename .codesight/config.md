@@ -8,6 +8,10 @@
 - `CI` **required** — playwright.config.ts
 - `DATABASE_URL` (has default) — .env.local
 - `E2E_TEST_HOOKS` **required** — app/api/e2e/orders/route.ts
+- `MONDIAL_RELAY_API_LOGIN` **required** — lib/mondial-relay/config.ts
+- `MONDIAL_RELAY_API_PASSWORD` **required** — lib/mondial-relay/config.ts
+- `MONDIAL_RELAY_API_URL` **required** — lib/mondial-relay/config.ts
+- `MONDIAL_RELAY_CUSTOMER_ID` **required** — lib/mondial-relay/config.ts
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local

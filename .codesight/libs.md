@@ -29,6 +29,15 @@
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
+- `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
+- `lib/mondial-relay/types.ts`
+  - class MondialRelayError
+  - interface MondialRelayClient
+  - type RelayShipmentInput
+  - type RelayShipmentResult
+  - type SenderAddress
+  - type MondialRelayConfig
+- `lib/mondial-relay/xml.ts` — function buildShipmentXml: (input, config) => string, function parseShipmentResponse: (xml) => RelayShipmentResult
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string

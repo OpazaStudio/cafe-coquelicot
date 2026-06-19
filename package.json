@@ -19,6 +19,7 @@
     "@electric-sql/pglite": "^0.5.1",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
+    "fast-xml-parser": "^5.9.3",
     "jose": "^6.2.3",
     "next": "16.2.9",
     "postgres": "^3.4.9",
