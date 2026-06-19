@@ -15,6 +15,7 @@ export const productCategory = pgEnum("product_category", [
   "compo",
   "branches",
   "mini",
+  "vase",
 ]);
 
 export const orderStatus = pgEnum("order_status", [

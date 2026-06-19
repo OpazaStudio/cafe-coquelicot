@@ -6,6 +6,7 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   compo: "Compositions",
   branches: "Branches & feuillages",
   mini: "Petits formats",
+  vase: "Vases",
 };
 
 // Les 6 variantes d'illustration au trait (components/illustrations.tsx).

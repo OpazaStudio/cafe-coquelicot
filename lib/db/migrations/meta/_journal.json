@@ -43,6 +43,13 @@
       "when": 1781859833245,
       "tag": "0005_bright_nightcrawler",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781871153609,
+      "tag": "0006_careless_queen_noir",
+      "breakpoints": true
     }
   ]
 }
