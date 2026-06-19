@@ -22,4 +22,12 @@ describe("shouldSuggestVases", () => {
   it("ne propose pas pour un panier vide", () => {
     expect(shouldSuggestVases([], vaseSlugs)).toBe(false);
   });
+  it("un slug hors des vases actifs compte comme fleur (vase désactivé — limite documentée)", () => {
+    const cart: Cart = addItem([], {
+      slug: "galet-desactive",
+      name: "galet (ancien)",
+      priceCents: 2400,
+    });
+    expect(shouldSuggestVases(cart, vaseSlugs)).toBe(true);
+  });
 });
