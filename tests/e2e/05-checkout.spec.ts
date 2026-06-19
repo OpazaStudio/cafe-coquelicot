@@ -59,23 +59,28 @@ test("paiement Stripe test → confirmation → commande payée", async ({
 }) => {
   test.setTimeout(240_000);
 
-  // Stub du widget Mondial Relay (parcelshop-picker) : émet OnParcelShopSelected
-  // avec un relais FR fixe dès le chargement, sans appel réseau réel.
-  await page.route("**/parcelshop-picker/**", async (route) => {
-    await route.fulfill({
-      contentType: "application/javascript",
-      body: `window.jQuery = window.jQuery || ((sel) => ({ MR_ParcelShopPicker: (o) => {
-        const data = { ID: "012345", Nom: "Tabac de la Gare", Adresse1: "1 rue des Lilas", CP: "17000", Ville: "La Rochelle" };
-        setTimeout(() => o.OnParcelShopSelected(data), 50);
-      }}));`,
-    });
-  });
-  // Neutraliser le chargement de jQuery CDN (le stub fournit window.jQuery).
-  // Scoped au domaine CDN uniquement pour ne pas intercepter le widget MR
-  // (dont l'URL commence aussi par "jquery…").
-  await page.route("https://ajax.googleapis.com/**", (route) =>
-    route.fulfill({ contentType: "application/javascript", body: "" }),
-  );
+  // Stub du widget Mondial Relay : RelayPicker charge jQuery → plugin en séquence,
+  // puis appelle $.fn.MR_ParcelShopPicker. On injecte un faux plugin jQuery AVANT
+  // le chargement de la page, et on neutralise les CDN pour que le chargeur
+  // séquentiel résolve sans réseau et sans écraser le faux jQuery.
+  await page.addInitScript(`
+    (function () {
+      var relay = { ID: "012345", Nom: "Tabac de la Gare", Adresse1: "1 rue des Lilas", CP: "17000", Ville: "La Rochelle" };
+      function jq() {
+        return { MR_ParcelShopPicker: function (o) { return window.jQuery.fn.MR_ParcelShopPicker(o); } };
+      }
+      jq.fn = { MR_ParcelShopPicker: function (o) { setTimeout(function () { o.OnParcelShopSelected(relay); }, 0); } };
+      window.jQuery = jq;
+    })();
+  `);
+  for (const cdn of [
+    "https://ajax.googleapis.com/**",
+    "**/parcelshop-picker/**",
+  ]) {
+    await page.route(cdn, (route) =>
+      route.fulfill({ contentType: "application/javascript", body: "" }),
+    );
+  }
 
   // Panier : rivage (48€) + 2 × estran (22€) = 92€
   await page.goto("/boutique");
