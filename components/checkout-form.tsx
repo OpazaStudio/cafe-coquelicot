@@ -8,7 +8,7 @@ import { formatEuros } from "@/lib/money";
 import {
   SHIPPING_COUNTRY_CODES,
   SHIPPING_COUNTRY_LABELS,
-  SHIPPING_FEE_CENTS,
+  MONDIAL_RELAY_FEE_CENTS,
   type Fulfillment,
   type ShippingCountryCode,
 } from "@/lib/order-status";
@@ -47,7 +47,7 @@ export function CheckoutForm() {
     );
   }
 
-  const feeCents = fulfillment === "poste" ? SHIPPING_FEE_CENTS : 0;
+  const feeCents = fulfillment === "poste" ? MONDIAL_RELAY_FEE_CENTS : 0;
   const itemsPayload = JSON.stringify(
     items.map((i) => ({
       slug: i.slug,
@@ -111,7 +111,7 @@ export function CheckoutForm() {
               <span className="checkout-choice__title">Envoi par la poste</span>
               <span className="checkout-choice__desc">
                 Colissimo, France et pays limitrophes —{" "}
-                {formatEuros(SHIPPING_FEE_CENTS)}
+                {formatEuros(MONDIAL_RELAY_FEE_CENTS)}
               </span>
             </label>
           </div>

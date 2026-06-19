@@ -18,7 +18,7 @@ import {
 } from "./db/schema";
 import {
   canTransition,
-  SHIPPING_FEE_CENTS,
+  MONDIAL_RELAY_FEE_CENTS,
   type Fulfillment,
   type ShippingCountryCode,
 } from "./order-status";
@@ -29,7 +29,7 @@ import {
   type PrepStatus,
 } from "./prep-status";
 
-export { SHIPPING_FEE_CENTS, type Fulfillment };
+export { MONDIAL_RELAY_FEE_CENTS, type Fulfillment };
 
 export class CheckoutError extends Error {}
 
@@ -178,7 +178,7 @@ export async function createPendingOrder(
 
   const subtotalCents = resolved.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
   const isPoste = customer.fulfillment === "poste";
-  const deliveryFeeCents = isPoste ? SHIPPING_FEE_CENTS : 0;
+  const deliveryFeeCents = isPoste ? MONDIAL_RELAY_FEE_CENTS : 0;
 
   return db.transaction(async (tx) => {
     const [order] = await tx

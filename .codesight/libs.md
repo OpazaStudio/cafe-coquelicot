@@ -38,7 +38,7 @@
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
   - function canTransition: (from, to, fulfillment) => boolean
   - type ShippingCountryCode
-  - const SHIPPING_FEE_CENTS
+  - const MONDIAL_RELAY_FEE_CENTS
   - const SHIPPING_COUNTRY_CODES
   - _...2 more_
 - `lib/orders.ts`

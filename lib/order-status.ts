@@ -5,32 +5,15 @@ import type { Fulfillment, OrderStatus } from "./db/schema";
 
 export type { Fulfillment };
 
-// Tarif provisoire (montant Colissimo réel inconnu à ce jour) — à ajuster ici.
-export const SHIPPING_FEE_CENTS = 790;
+// Forfait Mondial Relay (point relais) — à caler sur le contrat. Provisoire.
+export const MONDIAL_RELAY_FEE_CENTS = 490;
 
-export const SHIPPING_COUNTRY_CODES = [
-  "FR",
-  "BE",
-  "LU",
-  "DE",
-  "CH",
-  "IT",
-  "ES",
-  "MC",
-  "AD",
-] as const;
+// France uniquement (cf. spec) — aucune expédition à l'étranger.
+export const SHIPPING_COUNTRY_CODES = ["FR"] as const;
 export type ShippingCountryCode = (typeof SHIPPING_COUNTRY_CODES)[number];
 
 export const SHIPPING_COUNTRY_LABELS: Record<ShippingCountryCode, string> = {
   FR: "France",
-  BE: "Belgique",
-  LU: "Luxembourg",
-  DE: "Allemagne",
-  CH: "Suisse",
-  IT: "Italie",
-  ES: "Espagne",
-  MC: "Monaco",
-  AD: "Andorre",
 };
 
 export function isShippingCountry(code: string): code is ShippingCountryCode {

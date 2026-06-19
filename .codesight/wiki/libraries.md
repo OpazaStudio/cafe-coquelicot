@@ -28,7 +28,7 @@
 
 ## Order-status.ts (1 files)
 
-- `lib/order-status.ts` — isShippingCountry, statusTransitions, canTransition, ShippingCountryCode, SHIPPING_FEE_CENTS, SHIPPING_COUNTRY_CODES, …
+- `lib/order-status.ts` — isShippingCountry, statusTransitions, canTransition, ShippingCountryCode, MONDIAL_RELAY_FEE_CENTS, SHIPPING_COUNTRY_CODES, …
 
 ## Orders.ts (1 files)
 

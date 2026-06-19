@@ -9,7 +9,7 @@ import {
   productSizes,
   products,
 } from "@/lib/db/schema";
-import { SHIPPING_FEE_CENTS } from "@/lib/order-status";
+import { MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
 import {
   cancelOrderBySession,
   attachStripeSession,
@@ -74,8 +74,8 @@ describe("createPendingOrder", () => {
       [{ slug: "estran", qty: 1 }], // 2200
     );
     expect(order.fulfillment).toBe("poste");
-    expect(order.deliveryFeeCents).toBe(SHIPPING_FEE_CENTS);
-    expect(order.totalCents).toBe(2200 + SHIPPING_FEE_CENTS);
+    expect(order.deliveryFeeCents).toBe(MONDIAL_RELAY_FEE_CENTS);
+    expect(order.totalCents).toBe(2200 + MONDIAL_RELAY_FEE_CENTS);
     expect(order.shippingAddress).toContain("quai Valin");
     expect(order.shippingPostalCode).toBe("17000");
     expect(order.shippingCity).toBe("La Rochelle");

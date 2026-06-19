@@ -4,7 +4,7 @@
 
 > 2 routes | 5 models | 54 components | 15 lib files | 16 env vars | 0 middleware | 43% test coverage
 > **Token savings:** this file is ~4,100 tokens. Without it, AI exploration would cost ~35,600 tokens. **Saves ~31,600 tokens per conversation.**
-> **Last scanned:** 2026-06-19 09:05 — re-run after significant changes
+> **Last scanned:** 2026-06-19 09:10 — re-run after significant changes
 
 ---
 
@@ -189,7 +189,7 @@
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
   - function canTransition: (from, to, fulfillment) => boolean
   - type ShippingCountryCode
-  - const SHIPPING_FEE_CENTS
+  - const MONDIAL_RELAY_FEE_CENTS
   - const SHIPPING_COUNTRY_CODES
   - _...2 more_
 - `lib/orders.ts`
@@ -311,7 +311,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 24 test files found
+> 25 test files found
 
 ## Covered Routes
 
