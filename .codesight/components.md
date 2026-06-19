@@ -57,4 +57,5 @@
 - **About** — props: bg — `components/sections.tsx`
 - **Contact** — props: bg — `components/sections.tsx`
 - **SiteFooter** — `components/sections.tsx`
+- **VaseSuggestions** [client] — props: vases — `components/vase-suggestions.tsx`
 - **CartProvider** [client] — `lib/cart/cart-context.tsx`

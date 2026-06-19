@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 58 components | 21 lib files | 21 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~39,100 tokens. **Saves ~34,600 tokens per conversation.**
-> **Last scanned:** 2026-06-19 12:16 — re-run after significant changes
+> 2 routes | 5 models | 59 components | 21 lib files | 21 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~39,500 tokens. **Saves ~34,900 tokens per conversation.**
+> **Last scanned:** 2026-06-19 12:17 — re-run after significant changes
 
 ---
 
@@ -149,6 +149,7 @@
 - **About** — props: bg — `components/sections.tsx`
 - **Contact** — props: bg — `components/sections.tsx`
 - **SiteFooter** — `components/sections.tsx`
+- **VaseSuggestions** [client] — props: vases — `components/vase-suggestions.tsx`
 - **CartProvider** [client] — `lib/cart/cart-context.tsx`
 
 ---
@@ -294,8 +295,8 @@
 ## Most Imported Files (change these carefully)
 
 - `tests/e2e/helpers.ts` — imported by **7** files
+- `components/illustrations.tsx` — imported by **6** files
 - `lib/db/schema.ts` — imported by **6** files
-- `components/illustrations.tsx` — imported by **5** files
 - `tests/helpers/db.ts` — imported by **5** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
@@ -317,8 +318,8 @@
 ## Import Map (who imports what)
 
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +2 more
+- `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
-- `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`, `components/product-detail.tsx`
 - `tests/helpers/db.ts` ← `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/products.test.ts`, `tests/unit/schema-relay.test.ts`, `tests/unit/stats.test.ts`
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
@@ -332,7 +333,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 31 test files found
+> 32 test files found
 
 ## Covered Routes
 
