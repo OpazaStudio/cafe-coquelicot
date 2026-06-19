@@ -10,7 +10,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { ProductCategory } from "@/lib/db/schema";
 import type { ShopProduct } from "@/lib/products";
-import { Bouquet } from "./illustrations";
+import { ProductFigure } from "./illustrations";
 
 const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "tout", label: "Tout" },
@@ -19,6 +19,7 @@ const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "compo", label: "Compositions" },
   { key: "branches", label: "Branches & feuillages" },
   { key: "mini", label: "Petits formats" },
+  { key: "vase", label: "Vases" },
 ];
 
 export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
@@ -62,12 +63,12 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
 // Carte présentationnelle : un lien vers la page produit, où se fait toute la
 // sélection (taille/coloris/quantité) et l'ajout au panier.
 function ProductCard(product: ShopProduct) {
-  const { slug, name, tag, desc, badge, price, variant } = product;
+  const { slug, name, tag, desc, badge, price, variant, category } = product;
   return (
     <Link href={`/boutique/${slug}`} className="product-card">
       <div className="product-card__media">
         {badge && <span className="product-card__badge">{badge}</span>}
-        <Bouquet variant={variant} />
+        <ProductFigure category={category} variant={variant} />
       </div>
       <div>
         <p className="eyebrow" style={{ opacity: 0.6, marginBottom: 6 }}>{tag}</p>

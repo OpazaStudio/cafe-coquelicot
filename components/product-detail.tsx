@@ -9,7 +9,7 @@ import type { ShopColor, ShopProduct, ShopSize } from "@/lib/products";
 import { useCart } from "@/lib/cart/cart-context";
 import { MAX_QTY } from "@/lib/cart/cart";
 import { formatEuros } from "@/lib/money";
-import { Bouquet, ArrowRight } from "./illustrations";
+import { ProductFigure, ArrowRight } from "./illustrations";
 
 export function ProductDetail({ product }: { product: ShopProduct }) {
   const { name, tag, desc, badge, sizes, colors } = product;
@@ -47,7 +47,7 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
     <div className="product-page">
       <div className="product-page__media">
         {badge && <span className="product-card__badge">{badge}</span>}
-        <Bouquet variant={illustration} />
+        <ProductFigure category={product.category} variant={illustration} />
       </div>
       <div className="product-page__info">
         <p className="eyebrow">{tag}</p>

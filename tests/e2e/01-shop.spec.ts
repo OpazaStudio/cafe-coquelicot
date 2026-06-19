@@ -30,6 +30,13 @@ test.describe("vitrine — catalogue depuis la base", () => {
     for (const name of ["sirocco", "solana", "alizé"]) {
       await expect(cards.filter({ hasText: name })).toHaveCount(1);
     }
+
+    await page.getByRole("button", { name: "Vases" }).click();
+    await expect(cards).toHaveCount(3);
+    for (const name of ["galet", "carène", "écume"]) {
+      await expect(cards.filter({ hasText: name })).toHaveCount(1);
+    }
+
     await page.getByRole("button", { name: "Tout", exact: true }).click();
     await expect(cards).toHaveCount(17);
   });
