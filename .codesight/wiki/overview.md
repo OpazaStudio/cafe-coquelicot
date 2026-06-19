@@ -34,11 +34,6 @@ Changes to these files have the widest blast radius across the codebase:
 
 - `CI` — `playwright.config.ts`
 - `E2E_TEST_HOOKS` — `app/api/e2e/orders/route.ts`
-- `MONDIAL_RELAY_API_LOGIN` — `lib/mondial-relay/config.ts`
-- `MONDIAL_RELAY_API_PASSWORD` — `lib/mondial-relay/config.ts`
-- `MONDIAL_RELAY_API_URL` — `lib/mondial-relay/config.ts`
-- `MONDIAL_RELAY_CUSTOMER_ID` — `lib/mondial-relay/config.ts`
-- `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` — `components/relay-picker.tsx`
 - `NODE_ENV` — `lib/auth/dal.ts`
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 

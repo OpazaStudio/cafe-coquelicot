@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 2 routes | 5 models | 56 components | 20 lib files | 21 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~38,200 tokens. **Saves ~33,800 tokens per conversation.**
-> **Last scanned:** 2026-06-19 09:54 — re-run after significant changes
+> **Token savings:** this file is ~4,400 tokens. Without it, AI exploration would cost ~38,200 tokens. **Saves ~33,800 tokens per conversation.**
+> **Last scanned:** 2026-06-19 09:59 — re-run after significant changes
 
 ---
 
@@ -253,11 +253,11 @@
 - `CI` **required** — playwright.config.ts
 - `DATABASE_URL` (has default) — .env.local
 - `E2E_TEST_HOOKS` **required** — app/api/e2e/orders/route.ts
-- `MONDIAL_RELAY_API_LOGIN` **required** — lib/mondial-relay/config.ts
-- `MONDIAL_RELAY_API_PASSWORD` **required** — lib/mondial-relay/config.ts
-- `MONDIAL_RELAY_API_URL` **required** — lib/mondial-relay/config.ts
-- `MONDIAL_RELAY_CUSTOMER_ID` **required** — lib/mondial-relay/config.ts
-- `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` **required** — components/relay-picker.tsx
+- `MONDIAL_RELAY_API_LOGIN` (has default) — .env.local
+- `MONDIAL_RELAY_API_PASSWORD` (has default) — .env.local
+- `MONDIAL_RELAY_API_URL` (has default) — .env.local
+- `MONDIAL_RELAY_CUSTOMER_ID` (has default) — .env.local
+- `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` (has default) — .env.local
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local

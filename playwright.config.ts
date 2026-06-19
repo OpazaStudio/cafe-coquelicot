@@ -40,6 +40,11 @@ export default defineConfig({
       // Forcer PGlite (pas Supabase) : .env.local définit DATABASE_URL mais
       // Next.js ne l'écrase pas si la variable est déjà dans process.env.
       DATABASE_URL: "",
+      // Pas d'appel Mondial Relay réel en e2e → ensureRelayShipment saute.
+      MONDIAL_RELAY_API_URL: "",
+      MONDIAL_RELAY_API_LOGIN: "",
+      MONDIAL_RELAY_API_PASSWORD: "",
+      MONDIAL_RELAY_CUSTOMER_ID: "",
       // Transmettre les clés Stripe au processus serveur (le webServer.env
       // remplace process.env, donc les variables chargées par loadEnvConfig
       // ne sont pas héritées automatiquement).
