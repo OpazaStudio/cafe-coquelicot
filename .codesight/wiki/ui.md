@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**59 components** (react)
+**63 components** (react)
 
 ## Client Components
 
@@ -19,9 +19,12 @@
 - **CartView** — `components/cart-view.tsx`
 - **CheckoutForm** — `components/checkout-form.tsx`
 - **ClearCart** — `components/clear-cart.tsx`
+- **CookieBanner** — `components/consent/cookie-banner.tsx`
+- **ManageCookiesButton** — `components/consent/manage-cookies-button.tsx`
+- **ContactForm** — `components/contact-form.tsx`
 - **Effects** — `components/effects.tsx`
-- **Newsletter** — `components/newsletter.tsx`
 - **ProductDetail** — props: product — `components/product-detail.tsx`
+- **PurchaseTracking** — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** — props: value, onSelect — `components/relay-picker.tsx`
 - **VaseSuggestions** — props: vases — `components/vase-suggestions.tsx`
 - **CartProvider** — `lib/cart/cart-context.tsx`
@@ -45,6 +48,7 @@
 - **RootLayout** — `app/layout.tsx`
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
+- **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
 - **Vase** — props: variant, className — `components/illustrations.tsx`

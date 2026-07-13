@@ -17,7 +17,12 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   const [size, setSize] = useState<ShopSize | null>(sizes[0] ?? null);
   const [color, setColor] = useState<ShopColor | null>(colors[0] ?? null);
   const [qty, setQty] = useState(1);
+  // `added` : libellé transitoire « Ajouté ✓ » (repasse à false sur minuteur).
+  // `hasAdded` : reste vrai une fois ajouté → le lien panier ne disparaît jamais
+  // sous le focus. `announce` : message vocal pour lecteurs d'écran (aria-live).
   const [added, setAdded] = useState(false);
+  const [hasAdded, setHasAdded] = useState(false);
+  const [announce, setAnnounce] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
@@ -39,6 +44,9 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
       qty,
     );
     setAdded(true);
+    setHasAdded(true);
+    const unit = qty > 1 ? `${qty} × ` : "";
+    setAnnounce(`${unit}${name} ajouté au panier.`);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setAdded(false), 1600);
   }
@@ -106,14 +114,18 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
             <button
               type="button"
               aria-label="Réduire la quantité"
+              disabled={qty <= 1}
               onClick={() => setQty((q) => Math.max(1, q - 1))}
             >
               −
             </button>
-            <span data-testid="product-qty">{qty}</span>
+            <span data-testid="product-qty" aria-live="polite" aria-atomic="true">
+              {qty}
+            </span>
             <button
               type="button"
               aria-label="Augmenter la quantité"
+              disabled={qty >= MAX_QTY}
               onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))}
             >
               +
@@ -134,11 +146,14 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
             {added ? <>Ajouté ✓</> : <>Ajouter au panier <ArrowRight /></>}
           </button>
         </div>
-        {added && (
+        {hasAdded && (
           <Link href="/panier" className="link-arrow product-page__cart-link">
             Voir le panier <ArrowRight />
           </Link>
         )}
+        <p className="sr-only" role="status" aria-live="polite">
+          {announce}
+        </p>
       </div>
     </div>
   );

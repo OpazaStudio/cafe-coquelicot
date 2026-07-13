@@ -6,7 +6,7 @@
 
 ## Scale
 
-2 API routes · 5 database models · 59 UI components · 20 library files · 21 environment variables
+2 API routes · 5 database models · 63 UI components · 24 library files · 25 environment variables
 
 ## Subsystems
 
@@ -15,9 +15,9 @@
 
 **Database:** drizzle, 5 models — see [database.md](./database.md)
 
-**UI:** 59 components (react) — see [ui.md](./ui.md)
+**UI:** 63 components (react) — see [ui.md](./ui.md)
 
-**Libraries:** 20 files — see [libraries.md](./libraries.md)
+**Libraries:** 24 files — see [libraries.md](./libraries.md)
 
 ## High-Impact Files
 
@@ -34,8 +34,8 @@ Changes to these files have the widest blast radius across the codebase:
 
 - `CI` — `playwright.config.ts`
 - `E2E_TEST_HOOKS` — `app/api/e2e/orders/route.ts`
-- `NODE_ENV` — `lib/auth/dal.ts`
+- `NODE_ENV` — `app/contact/actions.ts`
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-06-19_
+_Back to [index.md](./index.md) · Generated 2026-07-13_

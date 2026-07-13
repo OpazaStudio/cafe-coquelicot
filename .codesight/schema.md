@@ -53,6 +53,7 @@
 - cardMessage: text
 - subtotalCents: integer (required)
 - deliveryFeeCents: integer (default, required)
+- cardFeeCents: integer (default, required)
 - totalCents: integer (required)
 - stripeSessionId: text (unique, fk)
 - stripePaymentIntent: text

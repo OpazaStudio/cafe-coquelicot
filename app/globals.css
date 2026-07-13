@@ -14,7 +14,7 @@
   /* Defaults — sections override these via data-bg attrs */
   --bg: var(--linen);
   --fg: var(--burgundy);
-  --muted: rgba(135, 12, 32, 0.55);
+  --muted: rgba(135, 12, 32, 0.74);
   --line: rgba(135, 12, 32, 0.2);
 
   /* Type families — populated by next/font in app/layout.tsx */
@@ -27,6 +27,26 @@
   --container-px: 48px;
   --stack-gap: 24px;
   --grain-opacity: 0.35;
+
+  /* Échelle z-index sémantique — jamais de valeur magique éparse.
+     raised (stickers en flux) < sticky (header fixe) < overlay (bandeau cookie)
+     < skip-link (au-dessus du header au focus) < grain (calque papier, pointer-events:none). */
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-overlay: 1000;
+  --z-skip-link: 1100;
+  --z-grain: 2000;
+
+  /* Signal d'erreur — un rouge « danger » hors palette de marque (plus vif que le
+     burgundy, pour se lire comme une alerte et non comme un aplat de marque),
+     décliné pour fond clair (checkout sur linen) et fond foncé (contact sur burgundy). */
+  --danger: #a4001d;
+  --danger-ink: var(--danger);
+  --danger-surface: color-mix(in srgb, var(--danger) 8%, transparent);
+  --danger-border: color-mix(in srgb, var(--danger) 30%, transparent);
+  --danger-ink-on-dark: #ffe2da;
+  --danger-surface-on-dark: color-mix(in srgb, #ff4d4d 24%, transparent);
+  --danger-border-on-dark: color-mix(in srgb, #ffb3a7 55%, transparent);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -45,9 +65,59 @@ a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
 ::selection { background: var(--burgundy); color: var(--linen); }
 
+/* ── Skip link ────────────────────────────────────────────────── */
+/* Première cible clavier : contourne le header fixe pour aller au contenu.
+   Pill de marque, masquée hors écran jusqu'au focus (glisse depuis le haut). */
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: var(--z-skip-link);
+  padding: 12px 22px;
+  background: var(--burgundy);
+  color: var(--linen);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transform: translateY(-160%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--linen);
+  outline-offset: 2px;
+}
+/* Conteneur ciblé par le skip link : focus programmatique sans halo sur la
+   région entière (le défilement vers le haut fait office de retour visuel). */
+main[tabindex]:focus {
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skip-link { transition: none; }
+  .vase-suggest__media svg { transition: none; }
+  .vase-suggest__card:hover .vase-suggest__media svg { transform: none; }
+}
+
+/* ── Masqué visuellement, lu par les lecteurs d'écran ─────────────
+   Pour les titres de structure (ex. coiffer la grille catalogue) qui
+   n'ont pas de place dans la composition imprimée mais rétablissent la
+   hiérarchie h1→h2→h3. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Paper grain overlay ──────────────────────────────────────── */
 .grain {
-  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  position: fixed; inset: 0; pointer-events: none; z-index: var(--z-grain);
   mix-blend-mode: multiply;
   opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch' seed='3'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.28  0 0 0 0 0.18  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -61,7 +131,9 @@ section[data-section] {
   padding: var(--section-py) 0;
   position: relative;
   --line: color-mix(in srgb, var(--fg) 22%, transparent);
-  --muted: color-mix(in srgb, var(--fg) 60%, transparent);
+  /* 74 % d'encre : corps atténué (About/produits/stats) + placeholders
+     conformes AA (≥4.5:1 sur linen ; ≈5.0:1 burgundy/linen). No-Gray Rule. */
+  --muted: color-mix(in srgb, var(--fg) 74%, transparent);
 }
 
 /* Section background variants */
@@ -119,7 +191,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .site-header {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
   padding: 18px var(--container-px);
   display: flex;
   align-items: center;
@@ -259,11 +331,22 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   background: transparent;
   color: var(--fg);
 }
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .btn__arrow {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn:hover .btn__arrow {
   transform: translateX(4px);
+}
+/* Focus clavier à l'encre de la section (l'anneau UA générique n'est pas à la
+   marque et manque de contraste sur les pills pleines). */
+.btn:focus-visible,
+.link-arrow:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
 }
 
 .link-arrow {
@@ -343,6 +426,13 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .product-card:hover .product-card__media svg {
   transform: scale(1.08) rotate(-2deg);
 }
+/* Focus clavier aux couleurs de la section (l'anneau UA générique ne suffit
+   pas à la marque). Suit l'encre courante, offset pour dégager le média. */
+.product-card:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
 .product-card__badge {
   position: absolute;
   top: 14px; left: 14px;
@@ -355,6 +445,12 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   text-transform: uppercase;
   font-weight: 500;
   border: 1px solid currentColor;
+}
+/* Tag de carte : encre atténuée dérivée de la section (No-Gray Rule, ≥4.5:1 AA
+   sur linen). Remplace un opacity:0.6 inline qui tombait à ≈3.6:1. */
+.product-card__tag {
+  color: var(--muted);
+  margin-bottom: 6px;
 }
 .product-card__name {
   font-family: var(--font-display);
@@ -389,9 +485,12 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   gap: 8px;
 }
 .variant-option {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 13px;
   letter-spacing: 0.02em;
-  padding: 7px 14px;
+  padding: 8px 18px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
@@ -455,18 +554,36 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .product-qty {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 2px 6px;
 }
 .product-qty button {
-  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 20px;
   line-height: 1;
-  width: 20px;
   background: none;
   cursor: pointer;
   color: var(--fg);
+  border-radius: 999px;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.product-qty button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+.product-qty button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.product-qty span {
+  min-width: 2ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 .product-page__buy {
   display: flex;
@@ -598,7 +715,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 .prestations__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 28px;
 }
 .prestation-card {
@@ -693,7 +810,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   font-size: 28px;
   line-height: 1;
   transform: rotate(8deg);
-  z-index: 2;
+  z-index: var(--z-raised);
 }
 .about__title {
   font-size: clamp(56px, 7vw, 120px);
@@ -766,10 +883,9 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 
 /* ── Contact ─────────────────────────────────────────────────── */
 .contact__inner {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 80px;
-  align-items: start;
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
 }
 .contact__title {
   font-size: clamp(64px, 9vw, 160px);
@@ -783,118 +899,64 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   color: color-mix(in srgb, var(--fg) 75%, transparent);
 }
 .contact__sub {
-  margin-top: 32px;
-  max-width: 460px;
+  margin: 32px auto 0;
+  max-width: 480px;
 }
-.contact__info {
+
+/* Formulaire de contact */
+.contact-form {
   margin-top: 56px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.contact-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 26px;
 }
-.contact__info-label {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
+/* Champ piège anti-spam : retiré du rendu, du tab order et de l'arbre
+   d'accessibilité — et surtout ignoré par l'autofill (qui sinon le remplit
+   et fait passer un vrai message pour du spam). Reste soumis pour les bots. */
+.contact-form__honeypot {
+  display: none;
 }
-.contact__info-value {
-  font-family: var(--font-display);
-  font-size: 28px;
-  line-height: 1.05;
-  text-transform: lowercase;
+.contact-form__submit {
+  align-self: center;
+  margin-top: 8px;
 }
-.contact__info-value--small {
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.45;
-  text-transform: none;
-}
-
-/* Newsletter form */
-.newsletter {
-  padding: 40px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-.newsletter__eyebrow {
-  margin-bottom: 24px;
-}
-.newsletter__title {
-  font-family: var(--font-display);
-  font-size: 48px;
-  line-height: 0.95;
-  text-transform: lowercase;
-  margin: 0 0 16px;
-}
-.newsletter__sub {
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--muted);
-  margin: 0 0 28px;
-}
-.newsletter__form {
-  display: flex;
-  gap: 12px;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 10px;
-}
-.newsletter__input {
-  flex: 1;
-  background: transparent;
-  border: 0;
-  font-family: var(--font-body);
-  font-size: 16px;
-  color: inherit;
-  outline: none;
-  padding: 8px 0;
-}
-.newsletter__input::placeholder {
-  color: var(--muted);
-}
-.newsletter__btn {
-  background: transparent;
-  border: 0;
-  color: inherit;
-  font-family: var(--font-body);
-  font-size: 13px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+/* Erreur lisible sur la section burgundy : texte clair + boîte rouge translucide
+   (signal « danger » sans dépendre de --fg, qui y vaut le crème linen). */
+.contact-form__error {
+  margin: 0;
+  font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
-  padding: 8px 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  color: var(--danger-ink-on-dark);
+  background: var(--danger-surface-on-dark);
+  border: 1px solid var(--danger-border-on-dark);
+  border-radius: 6px;
+  padding: 10px 14px;
 }
-.newsletter__success {
-  margin-top: 16px;
+/* Région live : vide tant que le formulaire est affiché (aucune marge pour ne
+   pas décaler le formulaire), centrée + espacée une fois remplie au succès. */
+.contact-form__done {
+  text-align: center;
+}
+.contact-form__done:not(:empty) {
+  margin-top: 56px;
+}
+.contact-form__done-title {
   font-family: var(--font-script);
-  font-size: 22px;
+  font-size: 56px;
+  line-height: 1;
   color: var(--fg);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 0.4s;
+  margin: 0;
 }
-.newsletter__success.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.contact__map {
-  margin-top: 32px;
-  aspect-ratio: 4 / 3;
-  background: color-mix(in srgb, var(--fg) 10%, transparent);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-.contact__map svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+.contact-form__done-text {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 16px;
 }
 
 /* ── Footer ──────────────────────────────────────────────────── */
@@ -1027,6 +1089,10 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .boutique-filter:hover {
   border-color: var(--fg);
 }
+.boutique-filter:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
 .boutique-filter.is-active {
   background: var(--fg);
   color: var(--bg);
@@ -1036,6 +1102,13 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   margin: 28px 0 48px;
   font-size: 13px;
   letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.boutique-empty {
+  padding: 48px 0 8px;
+  max-width: 52ch;
+  font-size: 17px;
+  line-height: 1.55;
   color: var(--muted);
 }
 
@@ -1153,7 +1226,6 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   .shop__grid { grid-template-columns: repeat(2, 1fr); }
   .prestations__grid { grid-template-columns: 1fr; }
   .about__inner { grid-template-columns: 1fr; }
-  .contact__inner { grid-template-columns: 1fr; }
   .site-footer__top { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 700px) {
@@ -1161,7 +1233,72 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   .site-header__nav { display: none; }
   .shop__grid { grid-template-columns: 1fr; }
   .gallery__grid { grid-auto-rows: 60px; }
-  .contact__info { grid-template-columns: 1fr; }
+  .contact-form__row { grid-template-columns: 1fr; }
+}
+
+/* ── Mobile display titles & footer tap targets (<768px) ─────────
+   Bagel Fat One est une graisse très large : aux planchers de clamp()
+   desktop, un mot long et indivisible ("coquelicot", "prestations")
+   dépasse la largeur d'un conteneur mobile et se fait rogner par
+   body{overflow-x:hidden}. On abaisse les planchers pour que le mot le
+   plus large tienne dès 320px (plafonds calés sur la valeur desktop à
+   768px → pas d'à-coup à la frontière), et on agrandit les cibles
+   tactiles du footer. */
+@media (max-width: 768px) {
+  .hero__display  { font-size: clamp(48px, 13vw, 84px); }
+  .shop__title,
+  .gallery__title { font-size: clamp(42px, 11vw, 60px); }
+  .about__title   { font-size: clamp(42px, 11vw, 54px); }
+  .prestations__title,
+  .contact__title { font-size: clamp(44px, 12vw, 68px); }
+  /* Boutique : mêmes planchers abaissés que les autres titres display, sinon
+     "boutique" (Bagel Fat One, très large) dépasse 320px et se fait rogner par
+     body{overflow-x:hidden}. Pente 9vw conservée → continuité exacte à 768px. */
+  .boutique-hero__title { font-size: clamp(40px, 9vw, 84px); }
+  .boutique-bespoke__quote { font-size: clamp(38px, 7vw, 68px); }
+
+  /* Les illustrations SVG (héro, about) portent une largeur intrinsèque
+     qui, via min-width:auto des items de grille, gonfle la piste 1fr
+     au-delà du viewport (l'image et le sticker débordent à droite).
+     min-width:0 laisse la piste retomber à la largeur disponible. */
+  .hero__inner > *,
+  .about__inner > * { min-width: 0; }
+
+  /* Les deux CTA du héro passent à la ligne plutôt que de déborder. */
+  .hero__cta { flex-wrap: wrap; }
+
+  /* Trois stats sur une rangée : "+200" en display 48px ne rentre pas à
+     3 colonnes sous 360px. On réduit le chiffre, recalé sur 48px dès ~600px. */
+  .about__stat-num { font-size: clamp(34px, 8vw, 48px); }
+  .about__stats { gap: 16px; }
+
+  /* Footer : une seule colonne pour que le wordmark occupe toute la
+     largeur, et des liens en lignes pleines de 44px min. */
+  .site-footer__top {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-bottom: 48px;
+  }
+  .site-footer__brand { font-size: clamp(52px, 14vw, 76px); }
+  .site-footer__col ul { gap: 0; }
+  .site-footer__col a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 16px;
+    opacity: 0.9;
+  }
+  .site-footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .site-footer__legal { gap: 4px 10px; }
+  .site-footer__cookies {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────
@@ -1250,9 +1387,12 @@ button.product-card__add {
   border: 0;
   color: inherit;
   font: inherit;
-  font-size: 16px;
-  width: 28px;
-  height: 28px;
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   cursor: pointer;
   line-height: 1;
@@ -1260,6 +1400,11 @@ button.product-card__add {
 .cart-line__qty button:hover {
   background: var(--fg);
   color: var(--bg);
+}
+.cart-line__qty button:focus-visible,
+.cart-line__remove:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
 }
 .cart-line__qty span {
   min-width: 24px;
@@ -1278,7 +1423,13 @@ button.product-card__add {
   color: var(--muted);
   font-size: 14px;
   cursor: pointer;
-  padding: 6px;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
 }
 .cart-line__remove:hover {
   color: var(--fg);
@@ -1424,9 +1575,9 @@ button.product-card__add {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: #a4001d;
-  background: color-mix(in srgb, #a4001d 8%, transparent);
-  border: 1px solid color-mix(in srgb, #a4001d 30%, transparent);
+  color: var(--danger-ink);
+  background: var(--danger-surface);
+  border: 1px solid var(--danger-border);
   border-radius: 6px;
   padding: 10px 14px;
 }
@@ -1478,15 +1629,16 @@ button.product-card__add {
 .vase-suggest {
   margin-top: 56px;
   padding-top: 40px;
-  border-top: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
+  border-top: 1px solid var(--line);
 }
 .vase-suggest__title {
   font-family: var(--font-display);
   font-size: clamp(1.4rem, 3vw, 2rem);
+  text-transform: lowercase;
   margin: 0 0 6px;
 }
 .vase-suggest__lead {
-  opacity: 0.7;
+  color: var(--muted);
   margin: 0 0 24px;
 }
 .vase-suggest__grid {
@@ -1495,24 +1647,32 @@ button.product-card__add {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
+/* Pas de carte chrome : le cross-sell reprend le média illustré au trait du
+   catalogue (fond teinté à l'encre de section), pas une boîte bordée. */
 .vase-suggest__card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  border-radius: 14px;
 }
 .vase-suggest__media {
-  aspect-ratio: 5 / 6;
+  aspect-ratio: 3 / 4;
+  border-radius: 6px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
   display: grid;
   place-items: center;
 }
 .vase-suggest__media svg {
-  width: 64%;
-  height: 64%;
+  width: 60%;
+  height: 60%;
+  color: var(--fg);
+  opacity: 0.7;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vase-suggest__card:hover .vase-suggest__media svg {
+  transform: scale(1.08) rotate(-2deg);
 }
 .vase-suggest__info {
   display: flex;
@@ -1521,13 +1681,111 @@ button.product-card__add {
   gap: 8px;
 }
 .vase-suggest__name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  text-transform: lowercase;
   margin: 0;
-  font-size: 1.05rem;
 }
 .vase-suggest__price {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
-  opacity: 0.8;
+  white-space: nowrap;
 }
 .vase-suggest__add {
   align-self: start;
+}
+
+/* ── Bandeau consentement cookies (RGPD/CNIL) ────────────────── */
+.cookie-banner {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  z-index: var(--z-overlay);
+  background: var(--linen);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
+  animation: cookie-banner-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes cookie-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.cookie-banner__inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 20px 28px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.cookie-banner__text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+.cookie-banner__actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.cookie-banner__actions .btn {
+  padding: 12px 22px;
+  font-size: 12px;
+}
+@media (max-width: 640px) {
+  .cookie-banner {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+  .cookie-banner__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 20px;
+  }
+  .cookie-banner__actions {
+    justify-content: stretch;
+  }
+  .cookie-banner__actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.site-footer__legal {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.site-footer__cookies {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.site-footer__cookies::before {
+  content: "· ";
+  text-decoration: none;
+}
+.site-footer__cookies:hover {
+  opacity: 0.7;
 }

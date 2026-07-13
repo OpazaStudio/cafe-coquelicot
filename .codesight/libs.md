@@ -1,5 +1,20 @@
 # Libraries
 
+- `lib/analytics/consent.ts`
+  - function readConsent: () => ConsentChoice | null
+  - function applyConsent: (choice) => void
+  - function saveConsent: (choice) => void
+  - type ConsentChoice
+  - const CONSENT_STORAGE_KEY
+  - const CONSENT_REOPEN_EVENT
+- `lib/analytics/gtag.ts`
+  - function toGaItem: (i) => GaItem
+  - function trackAddToCart: (item) => void
+  - function trackBeginCheckout: (items, totalCents) => void
+  - function trackPurchase: (purchase) => void
+  - type GaItem
+  - const GA_MEASUREMENT_ID
+  - _...1 more_
 - `lib/auth/dal.ts`
   - function verifySession: () => Promise<SessionPayload>
   - function checkCredentials: (email, password) => Promise<boolean>
@@ -29,6 +44,15 @@
   - function buildChildSeedRows: (idBySlug, string>) => void
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
+- `lib/email/contact.ts`
+  - function parseContactForm: (formData) => ContactParse
+  - function escapeHtml: (value) => string
+  - function buildShopEmail: (input) => EmailContent
+  - function buildAckEmail: (name) => EmailContent
+  - type ContactInput
+  - type ContactParse
+  - _...3 more_
+- `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
@@ -51,8 +75,8 @@
   - function canTransition: (from, to, fulfillment) => boolean
   - type ShippingCountryCode
   - const MONDIAL_RELAY_FEE_CENTS
-  - const SHIPPING_COUNTRY_CODES
-  - _...2 more_
+  - const CARD_FEE_CENTS
+  - _...3 more_
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items) => Promise<

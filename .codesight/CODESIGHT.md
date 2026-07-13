@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 59 components | 20 lib files | 21 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~4,500 tokens. Without it, AI exploration would cost ~39,200 tokens. **Saves ~34,700 tokens per conversation.**
-> **Last scanned:** 2026-06-19 13:03 — re-run after significant changes
+> 2 routes | 5 models | 63 components | 24 lib files | 25 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~5,000 tokens. Without it, AI exploration would cost ~42,100 tokens. **Saves ~37,100 tokens per conversation.**
+> **Last scanned:** 2026-07-13 09:38 — re-run after significant changes
 
 ---
 
@@ -70,6 +70,7 @@
 - cardMessage: text
 - subtotalCents: integer (required)
 - deliveryFeeCents: integer (default, required)
+- cardFeeCents: integer (default, required)
 - totalCents: integer (required)
 - stripeSessionId: text (unique, fk)
 - stripePaymentIntent: text
@@ -122,6 +123,10 @@
 - **CartView** [client] — `components/cart-view.tsx`
 - **CheckoutForm** [client] — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
+- **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
+- **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
+- **ManageCookiesButton** [client] — `components/consent/manage-cookies-button.tsx`
+- **ContactForm** [client] — `components/contact-form.tsx`
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
@@ -137,8 +142,8 @@
 - **ArrowRight** — props: size — `components/illustrations.tsx`
 - **ArrowDiag** — props: size — `components/illustrations.tsx`
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
-- **Newsletter** [client] — `components/newsletter.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
+- **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
 - **SiteHeader** — `components/sections.tsx`
 - **Hero** — props: bg — `components/sections.tsx`
@@ -156,6 +161,21 @@
 
 # Libraries
 
+- `lib/analytics/consent.ts`
+  - function readConsent: () => ConsentChoice | null
+  - function applyConsent: (choice) => void
+  - function saveConsent: (choice) => void
+  - type ConsentChoice
+  - const CONSENT_STORAGE_KEY
+  - const CONSENT_REOPEN_EVENT
+- `lib/analytics/gtag.ts`
+  - function toGaItem: (i) => GaItem
+  - function trackAddToCart: (item) => void
+  - function trackBeginCheckout: (items, totalCents) => void
+  - function trackPurchase: (purchase) => void
+  - type GaItem
+  - const GA_MEASUREMENT_ID
+  - _...1 more_
 - `lib/auth/dal.ts`
   - function verifySession: () => Promise<SessionPayload>
   - function checkCredentials: (email, password) => Promise<boolean>
@@ -185,6 +205,15 @@
   - function buildChildSeedRows: (idBySlug, string>) => void
   - const SEED_PRODUCTS: NewProductRow[]
   - const HOME_PICKS
+- `lib/email/contact.ts`
+  - function parseContactForm: (formData) => ContactParse
+  - function escapeHtml: (value) => string
+  - function buildShopEmail: (input) => EmailContent
+  - function buildAckEmail: (name) => EmailContent
+  - type ContactInput
+  - type ContactParse
+  - _...3 more_
+- `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
@@ -207,8 +236,8 @@
   - function canTransition: (from, to, fulfillment) => boolean
   - type ShippingCountryCode
   - const MONDIAL_RELAY_FEE_CENTS
-  - const SHIPPING_COUNTRY_CODES
-  - _...2 more_
+  - const CARD_FEE_CENTS
+  - _...3 more_
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items) => Promise<
@@ -255,18 +284,22 @@
 - `ADMIN_PASSWORD` (has default) — .env.local
 - `ADMIN_PASSWORD_HASH` (has default) — .env.local
 - `CI` **required** — playwright.config.ts
+- `CONTACT_FROM` (has default) — .env.local
+- `CONTACT_TO` (has default) — .env.local
 - `DATABASE_URL` (has default) — .env.local
 - `E2E_TEST_HOOKS` **required** — app/api/e2e/orders/route.ts
 - `MONDIAL_RELAY_API_LOGIN` (has default) — .env.local
 - `MONDIAL_RELAY_API_PASSWORD` (has default) — .env.local
 - `MONDIAL_RELAY_API_URL` (has default) — .env.local
 - `MONDIAL_RELAY_CUSTOMER_ID` (has default) — .env.local
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` (has default) — .env.local
 - `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` (has default) — .env.local
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (has default) — .env.local
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local
-- `NODE_ENV` **required** — lib/auth/dal.ts
+- `NODE_ENV` **required** — app/contact/actions.ts
 - `PGLITE_DATA_DIR` **required** — lib/db/client.ts
+- `RESEND_API_KEY` (has default) — .env.local
 - `SESSION_SECRET` (has default) — .env.local
 - `STRIPE_PUBLIC_KEY` (has default) — .env.local
 - `STRIPE_RESTRICTED_KEY` (has default) — .env.local
@@ -285,6 +318,7 @@
 - drizzle-orm: ^0.45.2
 - next: 16.2.9
 - react: 19.2.4
+- resend: ^6.16.0
 - stripe: ^22.2.0
 - zod: ^4.4.3
 
@@ -318,7 +352,7 @@
 ## Import Map (who imports what)
 
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +3 more
-- `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/newsletter.tsx`, `components/product-detail.tsx` +1 more
+- `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
 - `tests/helpers/db.ts` ← `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/products.test.ts`, `tests/unit/schema-relay.test.ts`, `tests/unit/seed-missing.test.ts` +1 more
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
@@ -333,7 +367,7 @@
 # Test Coverage
 
 > **43%** of routes and models are covered by tests
-> 33 test files found
+> 34 test files found
 
 ## Covered Routes
 

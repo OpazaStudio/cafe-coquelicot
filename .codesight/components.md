@@ -30,6 +30,10 @@
 - **CartView** [client] — `components/cart-view.tsx`
 - **CheckoutForm** [client] — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
+- **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
+- **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
+- **ManageCookiesButton** [client] — `components/consent/manage-cookies-button.tsx`
+- **ContactForm** [client] — `components/contact-form.tsx`
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
@@ -45,8 +49,8 @@
 - **ArrowRight** — props: size — `components/illustrations.tsx`
 - **ArrowDiag** — props: size — `components/illustrations.tsx`
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
-- **Newsletter** [client] — `components/newsletter.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
+- **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
 - **SiteHeader** — `components/sections.tsx`
 - **Hero** — props: bg — `components/sections.tsx`

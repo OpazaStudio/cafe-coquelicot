@@ -1,6 +1,6 @@
 # cafe-coquelicot — Wiki
 
-_Generated 2026-06-19 — re-run `npx codesight --wiki` if the codebase has changed._
+_Generated 2026-07-13 — re-run `npx codesight --wiki` if the codebase has changed._
 
 Structural map compiled from source code via AST. No LLM — deterministic, 200ms.
 
@@ -19,8 +19,8 @@ Structural map compiled from source code via AST. No LLM — deterministic, 200m
 
 - Routes: **2**
 - Models: **5**
-- Components: **59**
-- Env vars: **4** required, **17** with defaults
+- Components: **63**
+- Env vars: **4** required, **21** with defaults
 
 ## How to Use
 
@@ -47,4 +47,4 @@ These exist in your codebase but are **not** reflected in wiki articles:
 When in doubt, search the source. The wiki is a starting point, not a complete inventory.
 
 ---
-_Last compiled: 2026-06-19 · 7 articles · [codesight](https://github.com/Houseofmvps/codesight)_
+_Last compiled: 2026-07-13 · 7 articles · [codesight](https://github.com/Houseofmvps/codesight)_

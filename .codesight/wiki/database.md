@@ -69,6 +69,7 @@ pk: `id` (uuid) · fk: relayPointId, stripeSessionId
 - `cardMessage`: text
 - `subtotalCents`: integer _(required)_
 - `deliveryFeeCents`: integer _(default, required)_
+- `cardFeeCents`: integer _(default, required)_
 - `totalCents`: integer _(required)_
 - `stripeSessionId`: text _(unique, fk)_
 - `stripePaymentIntent`: text
