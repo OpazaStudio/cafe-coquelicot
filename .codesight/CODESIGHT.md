@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 63 components | 24 lib files | 25 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~5,000 tokens. Without it, AI exploration would cost ~42,100 tokens. **Saves ~37,100 tokens per conversation.**
-> **Last scanned:** 2026-07-13 09:38 — re-run after significant changes
+> 2 routes | 5 models | 68 components | 24 lib files | 25 env vars | 0 middleware | 43% test coverage
+> **Token savings:** this file is ~5,200 tokens. Without it, AI exploration would cost ~43,700 tokens. **Saves ~38,500 tokens per conversation.**
+> **Last scanned:** 2026-07-13 12:23 — re-run after significant changes
 
 ---
 
@@ -94,11 +94,13 @@
 # Components
 
 - **AdminNav** [client] — `app/(admin)/admin/(panel)/admin-nav.tsx`
+- **AdminSidebar** [client] — `app/(admin)/admin/(panel)/admin-sidebar.tsx`
 - **LabelButton** [client] — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
 - **StatusActions** [client] — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** [client] — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** [client] — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
+- **CommandesLoading** — `app/(admin)/admin/(panel)/commandes/loading.tsx`
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
 - **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
@@ -108,7 +110,10 @@
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
 - **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
+- **Panel** — props: title, className — `app/(admin)/admin/(panel)/ui.tsx`
+- **Pill** — props: tone — `app/(admin)/admin/(panel)/ui.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
 - **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`
@@ -328,6 +333,7 @@
 
 ## Most Imported Files (change these carefully)
 
+- `app/(admin)/admin/(panel)/ui.tsx` — imported by **11** files
 - `tests/e2e/helpers.ts` — imported by **8** files
 - `components/illustrations.tsx` — imported by **6** files
 - `lib/db/schema.ts` — imported by **6** files
@@ -341,16 +347,16 @@
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
 - `lib/db/seed-data.ts` — imported by **2** files
 - `lib/mondial-relay/config.ts` — imported by **2** files
+- `app/(admin)/admin/(panel)/admin-nav.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/kanban-board.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/orders-table.tsx` — imported by **1** files
-- `app/(admin)/admin/(panel)/admin-nav.tsx` — imported by **1** files
-- `app/(admin)/admin/(panel)/revenue-chart.tsx` — imported by **1** files
 
 ## Import Map (who imports what)
 
+- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +6 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +3 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
@@ -360,7 +366,6 @@
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - `lib/db/client.ts` ← `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/seed.ts`
 - `lib/mondial-relay/types.ts` ← `lib/mondial-relay/client.ts`, `lib/mondial-relay/config.ts`, `lib/mondial-relay/ensure-shipment.ts`
-- `app/(admin)/admin/login/actions.ts` ← `app/(admin)/admin/(panel)/layout.tsx`, `app/(admin)/admin/login/login-form.tsx`
 
 ---
 

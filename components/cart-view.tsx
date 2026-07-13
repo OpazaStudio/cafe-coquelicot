@@ -9,7 +9,11 @@ export function CartView() {
   const { items, count, subtotalCents, ready, changeQty, remove } = useCart();
 
   if (!ready) {
-    return <p className="cart-empty body">Chargement du panier…</p>;
+    return (
+      <p className="cart-empty body" role="status">
+        Chargement du panier…
+      </p>
+    );
   }
 
   if (items.length === 0) {
@@ -25,6 +29,7 @@ export function CartView() {
 
   return (
     <div className="cart-grid">
+      <h2 className="sr-only">Vos articles</h2>
       <ul className="cart-list" data-testid="cart-list">
         {items.map((item) => {
           const variant = [item.sizeLabel, item.colorLabel]
@@ -72,7 +77,7 @@ export function CartView() {
 
       <aside className="cart-summary">
         <h2 className="eyebrow">Récapitulatif</h2>
-        <div className="cart-summary__row">
+        <div className="cart-summary__row" aria-live="polite" aria-atomic="true">
           <span>
             Sous-total ({count} article{count > 1 ? "s" : ""})
           </span>

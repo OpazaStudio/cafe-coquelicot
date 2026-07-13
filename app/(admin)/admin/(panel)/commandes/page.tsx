@@ -23,7 +23,7 @@ export default async function CommandesPage({
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Commandes</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted">
             {showTable
               ? `${tableOrders.length} commande${tableOrders.length > 1 ? "s" : ""} au total`
               : "Préparation — les cartes terminées disparaissent après 48h"}
@@ -31,7 +31,7 @@ export default async function CommandesPage({
         </div>
         <nav
           aria-label="Vue des commandes"
-          className="flex rounded-lg border border-stone-200 bg-white p-1 text-sm font-medium"
+          className="flex rounded-lg border border-line bg-surface p-1 text-sm font-medium"
         >
           <ViewLink href="/admin/commandes" active={!showTable}>
             Kanban
@@ -64,8 +64,8 @@ function ViewLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`rounded-md px-3 py-1.5 ${
-        active ? "bg-wine text-linen" : "text-stone-600 hover:bg-stone-100"
+      className={`inline-flex min-h-9 items-center rounded-md px-3 py-1.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none ${
+        active ? "bg-wine text-linen" : "text-muted hover:bg-hover"
       }`}
     >
       {children}

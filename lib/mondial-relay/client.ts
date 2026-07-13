@@ -17,7 +17,16 @@ export function createMondialRelayClient(
       if (!res.ok) {
         throw new MondialRelayError(`HTTP ${res.status} de Mondial Relay.`);
       }
-      return parseShipmentResponse(await res.text());
+      const text = await res.text();
+      try {
+        return parseShipmentResponse(text);
+      } catch (err) {
+        // Diagnostic : la structure XML réelle n'a pas encore été confirmée
+        // contre la sandbox. On logge la réponse brute (serveur) pour pouvoir
+        // ajuster les sélecteurs de parseShipmentResponse.
+        console.error("[mondial-relay] échec parsing réponse expédition :\n", text);
+        throw err;
+      }
     },
   };
 }

@@ -8,6 +8,9 @@ export type { Fulfillment };
 // Forfait Mondial Relay (point relais) — à caler sur le contrat. Provisoire.
 export const MONDIAL_RELAY_FEE_CENTS = 490;
 
+// Supplément carte manuscrite : facturé dès qu'un message est joint à la commande.
+export const CARD_FEE_CENTS = 200;
+
 // France uniquement (cf. spec) — aucune expédition à l'étranger.
 export const SHIPPING_COUNTRY_CODES = ["FR"] as const;
 export type ShippingCountryCode = (typeof SHIPPING_COUNTRY_CODES)[number];

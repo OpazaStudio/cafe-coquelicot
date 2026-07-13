@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-13T00:00:00Z",
+  "title": "Design System: Coquelicot",
+  "extensions": {
+    "colorMeta": {
+      "burgundy": {
+        "role": "primary",
+        "displayName": "Coquelicot Burgundy",
+        "canonical": "oklch(38% 0.16 18)",
+        "tonalRamp": [
+          "oklch(20% 0.09 18)",
+          "oklch(27% 0.12 18)",
+          "oklch(34% 0.15 18)",
+          "oklch(41% 0.16 18)",
+          "oklch(50% 0.16 20)",
+          "oklch(63% 0.13 22)",
+          "oklch(78% 0.08 24)",
+          "oklch(92% 0.03 30)"
+        ]
+      },
+      "linen": {
+        "role": "secondary",
+        "displayName": "Linen Crème",
+        "canonical": "oklch(94% 0.012 72)",
+        "tonalRamp": [
+          "oklch(30% 0.012 72)",
+          "oklch(42% 0.013 72)",
+          "oklch(54% 0.013 72)",
+          "oklch(66% 0.013 72)",
+          "oklch(76% 0.013 72)",
+          "oklch(85% 0.013 72)",
+          "oklch(91% 0.012 72)",
+          "oklch(96% 0.010 72)"
+        ]
+      },
+      "pale-oak": {
+        "role": "secondary",
+        "displayName": "Pale Oak",
+        "canonical": "oklch(85% 0.04 75)",
+        "tonalRamp": [
+          "oklch(32% 0.03 75)",
+          "oklch(44% 0.035 75)",
+          "oklch(55% 0.04 75)",
+          "oklch(65% 0.045 75)",
+          "oklch(74% 0.045 75)",
+          "oklch(81% 0.043 75)",
+          "oklch(87% 0.038 75)",
+          "oklch(93% 0.028 75)"
+        ]
+      },
+      "coffee-bean": {
+        "role": "tertiary",
+        "displayName": "Coffee Bean",
+        "canonical": "oklch(42% 0.05 55)",
+        "tonalRamp": [
+          "oklch(18% 0.03 55)",
+          "oklch(26% 0.04 55)",
+          "oklch(34% 0.05 55)",
+          "oklch(42% 0.05 55)",
+          "oklch(52% 0.05 55)",
+          "oklch(64% 0.045 58)",
+          "oklch(78% 0.035 62)",
+          "oklch(91% 0.02 66)"
+        ]
+      },
+      "espresso": {
+        "role": "neutral",
+        "displayName": "Espresso Noir",
+        "canonical": "oklch(12% 0.02 30)",
+        "tonalRamp": [
+          "oklch(10% 0.02 30)",
+          "oklch(18% 0.025 30)",
+          "oklch(28% 0.03 32)",
+          "oklch(40% 0.03 36)",
+          "oklch(54% 0.028 40)",
+          "oklch(68% 0.022 48)",
+          "oklch(82% 0.015 56)",
+          "oklch(93% 0.01 64)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display — Bagel Fat One", "purpose": "Titres de section et hero, toujours en bas de casse, très grande échelle." },
+      "script": { "displayName": "Script — Caveat", "purpose": "Signatures uniquement : mot-accent penché, prix, sticker. Jamais de texte courant." },
+      "body": { "displayName": "Body — DM Sans", "purpose": "Texte courant et intros, 60–75ch max." },
+      "label": { "displayName": "Label — DM Sans UPPERCASE", "purpose": "Eyebrows, libellés de champ, fils d'Ariane, colonnes de footer." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Courbe par défaut de quasi toutes les transitions (survols, soulignés nav, reveals)." },
+      { "name": "reveal", "value": "opacity 0.9s, transform 0.9s (translateY(28px)→0)", "purpose": "Apparition au scroll, gardée par scripting:enabled + prefers-reduced-motion:no-preference." }
+    ],
+    "breakpoints": [
+      { "name": "lg", "value": "1100px" },
+      { "name": "md", "value": "760px" },
+      { "name": "sm", "value": "700px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (Outline)",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Bouton pill à bord net qui s'inverse au survol ; hérite de l'encre de section (résolu ici sur fond linen).",
+      "html": "<button class=\"ds-btn\">Ajouter au panier <span class=\"ds-btn-arrow\" aria-hidden=\"true\">&rarr;</span></button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 24px; border: 1px solid #870c20; border-radius: 999px; background: transparent; color: #870c20; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; transition: background 0.3s cubic-bezier(0.16,1,0.3,1), color 0.3s cubic-bezier(0.16,1,0.3,1); } .ds-btn:hover { background: #870c20; color: #f3ebe2; } .ds-btn-arrow { transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); } .ds-btn:hover .ds-btn-arrow { transform: translateX(4px); } .ds-btn:focus-visible { outline: 2px solid #870c20; outline-offset: 3px; }"
+    },
+    {
+      "name": "Filled Button",
+      "kind": "button",
+      "refersTo": "button-filled",
+      "description": "Variante pleine burgundy qui se creuse (passe en outline) au survol.",
+      "html": "<button class=\"ds-btn-filled\">Commander</button>",
+      "css": ".ds-btn-filled { display: inline-flex; align-items: center; gap: 10px; padding: 16px 24px; border: 1px solid #870c20; border-radius: 999px; background: #870c20; color: #f3ebe2; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; transition: background 0.3s cubic-bezier(0.16,1,0.3,1), color 0.3s cubic-bezier(0.16,1,0.3,1); } .ds-btn-filled:hover { background: transparent; color: #870c20; } .ds-btn-filled:focus-visible { outline: 2px solid #870c20; outline-offset: 3px; }"
+    },
+    {
+      "name": "Filter / Variant Chip",
+      "kind": "chip",
+      "refersTo": "chip-pill",
+      "description": "Pill de filtre catalogue ou d'option de variante ; état actif en burgundy plein.",
+      "html": "<div style=\"display:flex; gap:8px;\"><button class=\"ds-chip\">Fraîches</button><button class=\"ds-chip ds-chip--active\">Séchées</button></div>",
+      "css": ".ds-chip { border: 1px solid rgba(135,12,32,0.2); background: transparent; color: #870c20; border-radius: 999px; padding: 11px 20px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; letter-spacing: 0.04em; cursor: pointer; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; } .ds-chip:hover { border-color: #870c20; } .ds-chip--active { background: #870c20; border-color: #870c20; color: #f3ebe2; }"
+    },
+    {
+      "name": "Ghost Field",
+      "kind": "input",
+      "refersTo": "input-underline",
+      "description": "Champ de saisie sans boîte : uniquement un soulignement 1px, libellé UPPERCASE au-dessus.",
+      "html": "<label class=\"ds-field\"><span>Adresse e-mail</span><input type=\"email\" placeholder=\"vous@exemple.fr\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; color: #870c20; } .ds-field span { font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; } .ds-field input { background: transparent; border: 0; border-bottom: 1px solid rgba(135,12,32,0.2); border-radius: 0; font-family: 'DM Sans', system-ui, sans-serif; font-size: 16px; color: #130105; padding: 8px 0 10px; outline: none; } .ds-field input::placeholder { color: rgba(135,12,32,0.55); } .ds-field input:focus { border-bottom-color: #870c20; }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Carte bordée plate (prestations, perks) ; se retourne en burgundy plein au survol. Zéro ombre.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card-title\">mariages</h3><p class=\"ds-card-desc\">Compositions sur mesure, cérémonie et réception, pensées avec vous.</p><span class=\"ds-card-price\">sur devis</span></article>",
+      "css": ".ds-card { padding: 40px 32px; border: 1px solid rgba(135,12,32,0.2); border-radius: 8px; background: #f3ebe2; color: #870c20; display: flex; flex-direction: column; gap: 20px; max-width: 300px; transition: background 0.4s cubic-bezier(0.16,1,0.3,1), color 0.4s cubic-bezier(0.16,1,0.3,1); } .ds-card:hover { background: #870c20; color: #f3ebe2; } .ds-card-title { font-family: 'Bagel Fat One', system-ui, sans-serif; font-weight: 400; font-size: 44px; line-height: 0.9; text-transform: lowercase; margin: 0; } .ds-card-desc { font-family: 'DM Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5; color: color-mix(in srgb, currentColor 75%, transparent); margin: 0; } .ds-card-price { font-family: 'Caveat', cursive; font-size: 28px; margin-top: auto; }"
+    },
+    {
+      "name": "Link Arrow",
+      "kind": "custom",
+      "refersTo": "button-outline",
+      "description": "Lien texte souligné dont l'espace de la flèche s'ouvre au survol.",
+      "html": "<a href=\"#\" class=\"ds-link-arrow\">Voir la boutique <span aria-hidden=\"true\">&rarr;</span></a>",
+      "css": ".ds-link-arrow { display: inline-flex; align-items: center; gap: 8px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: #870c20; padding-bottom: 4px; border-bottom: 1px solid currentColor; transition: gap 0.3s cubic-bezier(0.16,1,0.3,1); } .ds-link-arrow:hover { gap: 16px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "L'Affiche d'Atelier",
+    "overview": "Coquelicot se conçoit comme une affiche imprimée d'atelier, pas comme un site de fleuriste. Le système emprunte au flyer rivage : un display chunky et gras (Bagel Fat One) porté en très grand, des aplats de couleur franche qui saturent des sections entières, un grain papier posé en overlay multiply sur toute la page, et des accents manuscrits à la Caveat qui signent l'ensemble comme une main l'aurait fait. L'atmosphère est joyeuse, franche, généreuse — la couleur et la typographie ne s'excusent jamais. La tension qui tient le système : le fond est bruyant, le détail est calme. L'audace vit dans le color-drench et l'échelle typographique ; les composants eux-mêmes sont délicats et retenus — champs en simple soulignement, filets de 1px, pills à bord net, transitions longues et douces.",
+    "keyCharacteristics": [
+      "Affiche imprimée : type géant + grain papier + couleur pleine.",
+      "Color-drench par section : cinq peaux, une par section, jamais de dégradé.",
+      "Illustrations SVG au trait en currentColor, qui héritent de l'encre de la section.",
+      "Bruyant au fond, retenu au détail : l'audace est dans la couleur et l'échelle, pas dans le chrome.",
+      "Accent manuscrit (Caveat) comme signature, jamais comme texte courant."
+    ],
+    "rules": [
+      { "name": "The Section-Drench Rule", "body": "Chaque section commet un seul couple --bg / --fg pris dans les cinq encres (linen, burgundy, pale-oak, coffee-bean, espresso). Toute la section en découle. Jamais deux fonds dans une même section, jamais de dégradé.", "section": "colors" },
+      { "name": "The No-Gray Rule", "body": "Le texte atténué et les filets ne sont jamais un gris neutre : ils sont une transparence de l'encre de section (--muted = color-mix(var(--fg) 60%), --line = 22%).", "section": "colors" },
+      { "name": "The Lowercase Display Rule", "body": "Bagel Fat One est toujours en text-transform: lowercase. Les capitales cassent la rondeur pop du flyer.", "section": "typography" },
+      { "name": "The Script-Signs-Only Rule", "body": "Caveat ne sert qu'à signer : un mot dans un titre, un prix, un sticker. Jamais de phrase courante.", "section": "typography" },
+      { "name": "The Flat-Paper State", "body": "Aucune box-shadow dans tout le système ; la profondeur vient des teintes color-mix, des filets 1px et du grain. Le survol inverse la couleur, il ne soulève pas. Doctrine à rediscuter avant toute exception.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do appliquer la Section-Drench Rule : un seul couple fond/encre par section, pris dans les cinq encres.",
+      "Do dériver --muted et --line de l'encre de section (color-mix de --fg), jamais un gris importé.",
+      "Do garder Bagel Fat One en bas de casse, toujours, à grande échelle.",
+      "Do réserver Caveat aux signatures (mot-accent, prix, sticker), jamais au texte courant.",
+      "Do faire inverser les boutons (fond↔encre) au survol plutôt que les soulever.",
+      "Do garder les champs en ghost field (soulignement 1px, pas de boîte) et vérifier le contraste du placeholder (≥4.5:1) sur les sections foncées.",
+      "Do garder le grain papier et les illustrations au trait currentColor.",
+      "Do fournir une alternative prefers-reduced-motion à toute animation, sans masquer le contenu par défaut."
+    ],
+    "donts": [
+      "Don't ressembler à Interflora / Aquarelle : catalogue froid, grilles de cartes chrome identiques, bandeaux promo.",
+      "Don't virer au luxe minimaliste froid (noir-blanc-or distant) ni au corporate/SaaS aseptisé.",
+      "Don't tomber dans l'écolo cliché (kraft, feuilles vertes, jute) pour dire durable.",
+      "Don't introduire de dégradé, ni de texte en dégradé (background-clip: text).",
+      "Don't ajouter de bordure latérale colorée >1px comme décor de carte ou d'alerte.",
+      "Don't poser de glassmorphism ni d'ombre par défaut ; le système est plat.",
+      "Don't mettre Bagel Fat One en capitales, ni du corps de texte en manuscrit.",
+      "Don't dépasser ~75ch de largeur de lecture sur le texte courant."
+    ]
+  }
+}

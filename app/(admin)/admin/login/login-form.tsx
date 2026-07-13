@@ -19,7 +19,7 @@ export function LoginForm() {
           required
           autoComplete="username"
           placeholder="lea@coquelicot-lr.fr"
-          className="rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-wine focus:ring-2 focus:ring-wine/15"
+          className="rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-wine focus:ring-2 focus:ring-wine/25"
         />
       </label>
       <label className="flex flex-col gap-1.5">
@@ -31,18 +31,18 @@ export function LoginForm() {
           name="password"
           required
           autoComplete="current-password"
-          className="rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-wine focus:ring-2 focus:ring-wine/15"
+          className="rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-wine focus:ring-2 focus:ring-wine/25"
         />
       </label>
       {state?.error && (
-        <p role="alert" className="text-sm font-medium text-red-700">
+        <p role="alert" className="text-sm font-medium text-danger">
           {state.error}
         </p>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-lg bg-wine px-4 py-2.5 font-semibold text-linen transition hover:bg-wine-dark disabled:opacity-60"
+        className="mt-2 rounded-lg bg-wine px-4 py-2.5 font-semibold text-linen transition hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60 motion-reduce:transition-none"
       >
         {pending ? "Connexion…" : "Se connecter"}
       </button>

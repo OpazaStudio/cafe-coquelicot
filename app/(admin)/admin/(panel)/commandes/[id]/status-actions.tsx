@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import type { Fulfillment, OrderStatus } from "@/lib/db/schema";
 import { statusTransitions, STATUS_LABELS } from "@/lib/order-status";
+import { btnDanger, btnPrimary } from "../../ui";
 import { changeOrderStatus, type StatusActionState } from "../actions";
 
 const ACTION_LABELS: Partial<Record<OrderStatus, string>> = {
@@ -32,7 +33,7 @@ export function StatusActions({
   const targets = statusTransitions(status, fulfillment);
   if (targets.length === 0) {
     return (
-      <p className="text-sm text-stone-500">
+      <p className="text-sm text-muted">
         Statut final — plus aucune transition possible.
       </p>
     );
@@ -47,17 +48,13 @@ export function StatusActions({
           name="to"
           value={to}
           disabled={pending}
-          className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition disabled:opacity-60 ${
-            to === "cancelled"
-              ? "border border-red-200 text-red-700 hover:bg-red-50"
-              : "bg-wine text-linen hover:bg-wine-dark"
-          }`}
+          className={to === "cancelled" ? btnDanger : btnPrimary}
         >
           {ACTION_LABELS[to] ?? STATUS_LABELS[to]}
         </button>
       ))}
       {state?.error && (
-        <p role="alert" className="text-sm font-medium text-red-700">
+        <p role="alert" className="text-sm font-medium text-danger">
           {state.error}
         </p>
       )}

@@ -20,7 +20,7 @@ export default async function BoutiquePage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="contenu" tabIndex={-1}>
         {/* Boutique intro */}
         <section data-section data-bg="linen" className="boutique-hero">
           <div className="container">
@@ -48,7 +48,7 @@ export default async function BoutiquePage() {
         </section>
 
         {/* Reassurance strip */}
-        <section data-section data-bg="burgundy" className="boutique-perks">
+        {/* <section data-section data-bg="burgundy" className="boutique-perks">
           <div className="container">
             <div className="boutique-perks__grid reveal">
               <div className="boutique-perk">
@@ -77,16 +77,16 @@ export default async function BoutiquePage() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Bespoke CTA */}
         <section data-section data-bg="coffee-bean-2" className="boutique-bespoke">
           <div className="container">
             <div className="boutique-bespoke__inner reveal">
               <p className="eyebrow">Une envie particulière ?</p>
-              <p className="boutique-bespoke__quote">
+              <h2 className="boutique-bespoke__quote">
                 on compose aussi <span className="script">sur mesure.</span>
-              </p>
+              </h2>
               <p className="body body--lg boutique-bespoke__sub">
                 Mariage, événement, cadeau d&apos;entreprise ou simple coup de
                 cœur — dites-nous ce que vous imaginez, on s&apos;occupe du reste.

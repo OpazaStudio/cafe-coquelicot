@@ -8,6 +8,7 @@ import {
   SHIPPING_COUNTRY_LABELS,
   isShippingCountry,
 } from "@/lib/order-status";
+import { Panel } from "../../ui";
 import { StatusBadge } from "../status-badge";
 import { LabelButton } from "./label-button";
 import { StatusActions } from "./status-actions";
@@ -35,7 +36,7 @@ export default async function CommandeDetailPage({
   return (
     <>
       <p className="mb-2 text-sm">
-        <Link href="/admin/commandes" className="text-stone-500 hover:underline">
+        <Link href="/admin/commandes" className="text-muted hover:underline">
           ← Commandes
         </Link>
       </p>
@@ -48,10 +49,7 @@ export default async function CommandeDetailPage({
 
       <div className="grid max-w-4xl gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="flex flex-col gap-6">
-          <section className="rounded-xl border border-stone-200 bg-white p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-              Articles
-            </h2>
+          <Panel title="Articles">
             <ul className="flex flex-col gap-3">
               {items.map((item) => (
                 <li
@@ -60,7 +58,7 @@ export default async function CommandeDetailPage({
                 >
                   <span>
                     <span className="font-semibold">{item.nameSnapshot}</span>{" "}
-                    <span className="text-stone-500">× {item.qty}</span>
+                    <span className="text-muted">× {item.qty}</span>
                   </span>
                   <span className="font-medium">
                     {formatEuros(item.priceCentsSnapshot * item.qty)}
@@ -68,49 +66,49 @@ export default async function CommandeDetailPage({
                 </li>
               ))}
             </ul>
-            <dl className="mt-5 flex flex-col gap-1.5 border-t border-stone-200 pt-4 text-sm">
+            <dl className="mt-5 flex flex-col gap-1.5 border-t border-line pt-4 text-sm">
               <div className="flex justify-between">
-                <dt className="text-stone-500">Sous-total</dt>
+                <dt className="text-muted">Sous-total</dt>
                 <dd>{formatEuros(order.subtotalCents)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-stone-500">Expédition</dt>
+                <dt className="text-muted">Expédition</dt>
                 <dd>
                   {order.deliveryFeeCents > 0
                     ? formatEuros(order.deliveryFeeCents)
                     : "offert"}
                 </dd>
               </div>
+              {order.cardFeeCents > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-muted">Carte manuscrite</dt>
+                  <dd>{formatEuros(order.cardFeeCents)}</dd>
+                </div>
+              )}
               <div className="flex justify-between text-base font-semibold">
                 <dt>Total</dt>
                 <dd>{formatEuros(order.totalCents)}</dd>
               </div>
             </dl>
-          </section>
+          </Panel>
 
-          <section className="rounded-xl border border-stone-200 bg-white p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-              Changer le statut
-            </h2>
+          <Panel title="Changer le statut">
             <StatusActions
               orderId={order.id}
               status={order.status}
               fulfillment={order.fulfillment}
             />
-          </section>
+          </Panel>
         </div>
 
         <div className="flex flex-col gap-6">
-          <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-              Client
-            </h2>
+          <Panel title="Client" className="text-sm">
             <p className="font-semibold">{order.customerName}</p>
-            <p className="text-stone-600">{order.customerEmail}</p>
+            <p className="text-muted">{order.customerEmail}</p>
             {order.customerPhone && (
-              <p className="text-stone-600">{order.customerPhone}</p>
+              <p className="text-muted">{order.customerPhone}</p>
             )}
-            <div className="mt-4 border-t border-stone-200 pt-4">
+            <div className="mt-4 border-t border-line pt-4">
               <p className="mb-1 font-medium">
                 {order.fulfillment === "mondial_relay"
                   ? "Point relais Mondial Relay"
@@ -119,7 +117,7 @@ export default async function CommandeDetailPage({
                     : "Retrait atelier"}
               </p>
               {(order.fulfillment === "mondial_relay" || order.fulfillment === "poste") && (
-                <p className="whitespace-pre-line text-stone-600">
+                <p className="whitespace-pre-line text-muted">
                   {order.relayPointName && <><strong>{order.relayPointName}</strong><br /></>}
                   {order.shippingAddress}
                   {(order.shippingPostalCode || order.shippingCity) && (
@@ -130,17 +128,17 @@ export default async function CommandeDetailPage({
                     order.shippingCountry !== "FR" && (
                       <> — {SHIPPING_COUNTRY_LABELS[order.shippingCountry]}</>
                     )}
-                  {order.relayPointId && <><br /><span className="text-xs text-stone-400">ID relais : {order.relayPointId}</span></>}
+                  {order.relayPointId && <><br /><span className="text-xs text-muted">ID relais : {order.relayPointId}</span></>}
                 </p>
               )}
               {order.deliveryDate && (
-                <p className="mt-1 text-stone-600">
+                <p className="mt-1 text-muted">
                   Date souhaitée : {order.deliveryDate}
                 </p>
               )}
             </div>
             {order.fulfillment === "mondial_relay" && (
-              <div className="mt-4 border-t border-stone-200 pt-4">
+              <div className="mt-4 border-t border-line pt-4">
                 <p className="mb-2 font-medium">Étiquette Mondial Relay</p>
                 <LabelButton orderId={order.id} hasLabel={!!order.relayLabelUrl} />
                 {order.relayLabelUrl && (
@@ -157,33 +155,30 @@ export default async function CommandeDetailPage({
               </div>
             )}
             {order.cardMessage && (
-              <div className="mt-4 border-t border-stone-200 pt-4">
+              <div className="mt-4 border-t border-line pt-4">
                 <p className="mb-1 font-medium">Message pour la carte</p>
-                <p className="whitespace-pre-line text-stone-600">
+                <p className="whitespace-pre-line text-muted">
                   « {order.cardMessage} »
                 </p>
               </div>
             )}
-          </section>
+          </Panel>
 
-          <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-              Paiement
-            </h2>
-            <p className="text-stone-600">
+          <Panel title="Paiement" className="text-sm">
+            <p className="text-muted">
               Passée le {dateFmt.format(order.createdAt)}
             </p>
             {order.stripeSessionId && (
-              <p className="mt-2 break-all text-xs text-stone-400">
+              <p className="mt-2 break-all text-xs text-muted">
                 Session : {order.stripeSessionId}
               </p>
             )}
             {order.stripePaymentIntent && (
-              <p className="mt-1 break-all text-xs text-stone-400">
+              <p className="mt-1 break-all text-xs text-muted">
                 PaymentIntent : {order.stripePaymentIntent}
               </p>
             )}
-          </section>
+          </Panel>
         </div>
       </div>
     </>

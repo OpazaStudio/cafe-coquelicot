@@ -85,18 +85,6 @@ export function HeroStorefront({ className }: IllustrationProps) {
 
         {/* Sandwich board */}
         <path d="M 60 700 L 80 600 L 96 600 L 96 700" />
-        <text x="78" y="640" style={scriptFont} fontSize="14" fill="currentColor" stroke="none"
-              textAnchor="middle">
-          ouvert
-        </text>
-        <text x="78" y="660" style={scriptFont} fontSize="11" fill="currentColor" stroke="none"
-              textAnchor="middle">
-          fleurs
-        </text>
-        <text x="78" y="676" style={scriptFont} fontSize="11" fill="currentColor" stroke="none"
-              textAnchor="middle">
-          bouquets
-        </text>
 
         {/* Plants outside */}
         <path d="M 520 700 Q 520 660 530 640 Q 540 660 540 700" />

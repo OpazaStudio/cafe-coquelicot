@@ -18,6 +18,7 @@ import {
 } from "./db/schema";
 import {
   canTransition,
+  CARD_FEE_CENTS,
   MONDIAL_RELAY_FEE_CENTS,
   type Fulfillment,
   type ShippingCountryCode,
@@ -188,6 +189,9 @@ export async function createPendingOrder(
   // mode historique. Tout envoi (non-retrait) porte le forfait Mondial Relay.
   const deliveryFeeCents =
     customer.fulfillment === "retrait" ? 0 : MONDIAL_RELAY_FEE_CENTS;
+  // Carte manuscrite : supplément dès qu'un message non vide est joint.
+  const cardMessage = customer.cardMessage?.trim() || null;
+  const cardFeeCents = cardMessage ? CARD_FEE_CENTS : 0;
 
   return db.transaction(async (tx) => {
     const [order] = await tx
@@ -218,10 +222,11 @@ export async function createPendingOrder(
         relayPointId: isRelay ? (customer.relayPointId ?? null) : null,
         relayPointName: isRelay ? (customer.relayPointName ?? null) : null,
         deliveryDate: customer.deliveryDate || null,
-        cardMessage: customer.cardMessage || null,
+        cardMessage,
         subtotalCents,
         deliveryFeeCents,
-        totalCents: subtotalCents + deliveryFeeCents,
+        cardFeeCents,
+        totalCents: subtotalCents + deliveryFeeCents + cardFeeCents,
       })
       .returning();
 

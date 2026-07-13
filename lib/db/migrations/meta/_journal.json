@@ -50,6 +50,13 @@
       "when": 1781871153609,
       "tag": "0006_careless_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783930054916,
+      "tag": "0007_card_fee",
+      "breakpoints": true
     }
   ]
 }

@@ -1,11 +1,13 @@
 # Components
 
 - **AdminNav** [client] — `app/(admin)/admin/(panel)/admin-nav.tsx`
+- **AdminSidebar** [client] — `app/(admin)/admin/(panel)/admin-sidebar.tsx`
 - **LabelButton** [client] — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
 - **StatusActions** [client] — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** [client] — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** [client] — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
+- **CommandesLoading** — `app/(admin)/admin/(panel)/commandes/loading.tsx`
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
 - **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
@@ -15,7 +17,10 @@
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
 - **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
+- **Panel** — props: title, className — `app/(admin)/admin/(panel)/ui.tsx`
+- **Pill** — props: tone — `app/(admin)/admin/(panel)/ui.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
 - **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`

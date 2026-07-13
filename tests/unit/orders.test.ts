@@ -9,7 +9,7 @@ import {
   productSizes,
   products,
 } from "@/lib/db/schema";
-import { MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
+import { CARD_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
 import {
   cancelOrderBySession,
   attachStripeSession,
@@ -92,6 +92,28 @@ describe("createPendingOrder", () => {
     expect(order.shippingPostalCode).toBeNull();
     expect(order.shippingCity).toBeNull();
     expect(order.shippingCountry).toBeNull();
+  });
+
+  it("facture le supplément carte dès qu'un message est joint", async () => {
+    const { order } = await createPendingOrder(
+      db,
+      { ...camille, cardMessage: "  Joyeux anniversaire  " },
+      [{ slug: "estran", qty: 1 }], // 2200
+    );
+    expect(order.cardMessage).toBe("Joyeux anniversaire");
+    expect(order.cardFeeCents).toBe(CARD_FEE_CENTS);
+    expect(order.totalCents).toBe(2200 + CARD_FEE_CENTS);
+  });
+
+  it("ne facture pas la carte sans message (ou message vide)", async () => {
+    const { order } = await createPendingOrder(
+      db,
+      { ...camille, cardMessage: "   " },
+      [{ slug: "estran", qty: 1 }], // 2200
+    );
+    expect(order.cardMessage).toBeNull();
+    expect(order.cardFeeCents).toBe(0);
+    expect(order.totalCents).toBe(2200);
   });
 
   it("rejette panier vide, produit inconnu et produit masqué", async () => {

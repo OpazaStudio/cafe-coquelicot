@@ -18,6 +18,7 @@ import {
   type Cart,
   type CartItemInput,
 } from "./cart";
+import { trackAddToCart } from "@/lib/analytics/gtag";
 
 const STORAGE_KEY = "coquelicot.cart.v1";
 
@@ -70,8 +71,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, ready]);
 
   const add = useCallback(
-    (item: CartItemInput, qty = 1) =>
-      setItems((cart) => addItem(cart, item, qty)),
+    (item: CartItemInput, qty = 1) => {
+      setItems((cart) => addItem(cart, item, qty));
+      trackAddToCart({
+        slug: item.slug,
+        name: item.name,
+        priceCents: item.priceCents,
+        qty,
+        sizeLabel: item.sizeLabel,
+        colorLabel: item.colorLabel,
+      });
+    },
     [setItems],
   );
   const remove = useCallback(

@@ -1,28 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart/cart-context";
+import { trackBeginCheckout } from "@/lib/analytics/gtag";
 import { composeItemName } from "@/lib/item-label";
 import { formatEuros } from "@/lib/money";
-import { MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
+import { CARD_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
 import { startCheckout, type CheckoutState } from "@/app/checkout/actions";
 import { ArrowRight } from "./illustrations";
 import { RelayPicker, type RelaySelection } from "./relay-picker";
 
-function tomorrowISO(): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
-
 export function CheckoutForm() {
   const { items, subtotalCents, ready } = useCart();
   const [relay, setRelay] = useState<RelaySelection | null>(null);
+  const [hasCard, setHasCard] = useState(false);
   const [state, action, pending] = useActionState<CheckoutState, FormData>(
     startCheckout,
     undefined,
   );
+
+  // begin_checkout : une seule fois, dès que le tunnel s'affiche avec un panier.
+  const beginCheckoutFired = useRef(false);
+  useEffect(() => {
+    if (!ready || items.length === 0 || beginCheckoutFired.current) return;
+    beginCheckoutFired.current = true;
+    trackBeginCheckout(items, subtotalCents + MONDIAL_RELAY_FEE_CENTS);
+  }, [ready, items, subtotalCents]);
 
   if (!ready) {
     return <p className="cart-empty body">Chargement…</p>;
@@ -42,6 +46,7 @@ export function CheckoutForm() {
   }
 
   const feeCents = MONDIAL_RELAY_FEE_CENTS;
+  const cardFeeCents = hasCard ? CARD_FEE_CENTS : 0;
   const itemsPayload = JSON.stringify(
     items.map((i) => ({
       slug: i.slug,
@@ -97,13 +102,16 @@ export function CheckoutForm() {
           )}
           <label className="form-field">
             <span>
-              Date de livraison souhaitée <em>(optionnel — sous réserve)</em>
+              Message pour la carte{" "}
+              <em>(optionnel — carte manuscrite +{formatEuros(CARD_FEE_CENTS)})</em>
             </span>
-            <input type="date" name="deliveryDate" min={tomorrowISO()} />
-          </label>
-          <label className="form-field">
-            <span>Message pour la carte <em>(optionnel)</em></span>
-            <textarea name="cardMessage" rows={2} maxLength={300} placeholder="Joyeux anniversaire…" />
+            <textarea
+              name="cardMessage"
+              rows={2}
+              maxLength={300}
+              placeholder="Joyeux anniversaire…"
+              onChange={(e) => setHasCard(e.target.value.trim().length > 0)}
+            />
           </label>
         </fieldset>
       </div>
@@ -128,10 +136,16 @@ export function CheckoutForm() {
           <span>Livraison (point relais)</span>
           <span>{formatEuros(feeCents)}</span>
         </div>
+        {cardFeeCents > 0 && (
+          <div className="cart-summary__row">
+            <span>Carte manuscrite</span>
+            <span>{formatEuros(cardFeeCents)}</span>
+          </div>
+        )}
         <div className="cart-summary__row cart-summary__row--total">
           <span>Total</span>
           <span data-testid="checkout-total">
-            {formatEuros(subtotalCents + feeCents)}
+            {formatEuros(subtotalCents + feeCents + cardFeeCents)}
           </span>
         </div>
 

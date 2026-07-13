@@ -117,6 +117,7 @@ export const orders = pgTable("orders", {
   cardMessage: text("card_message"),
   subtotalCents: integer("subtotal_cents").notNull(),
   deliveryFeeCents: integer("delivery_fee_cents").notNull().default(0),
+  cardFeeCents: integer("card_fee_cents").notNull().default(0),
   totalCents: integer("total_cents").notNull(),
   stripeSessionId: text("stripe_session_id").unique(),
   stripePaymentIntent: text("stripe_payment_intent"),

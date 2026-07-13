@@ -1,15 +1,16 @@
 // Coquelicot site sections. Static content rendered on the server;
-// interactive bits (newsletter form, reveal, cursor) are client components.
+// interactive bits (contact form, reveal, cursor) are client components.
 
 import type { ComponentType } from "react";
 import Link from "next/link";
 import type { ShopProduct } from "@/lib/products";
 import {
-  HeroStorefront, Bouquet, MapDoodle, AboutFlorist,
+  HeroStorefront, Bouquet, AboutFlorist,
   IconWedding, IconEvent, IconSubscription, IconWorkshop, IconCorporate, IconDelivery,
   ArrowRight, ArrowDiag,
 } from "./illustrations";
-import { Newsletter } from "./newsletter";
+import { ContactForm } from "./contact-form";
+import { ManageCookiesButton } from "./consent/manage-cookies-button";
 import { CartLink } from "./cart-link";
 
 export type SectionBg = "linen" | "burgundy" | "pale-oak" | "coffee-bean" | "coffee-bean-2";
@@ -149,7 +150,6 @@ export function Gallery({ bg }: SectionProps) {
     <section id="gallery" data-section data-bg={bg} className="gallery">
       <div className="container">
         <div className="gallery__head reveal">
-          <p className="eyebrow">L&apos;atelier en images</p>
           <h2 className="display gallery__title">
             on aime
             <br />
@@ -206,12 +206,12 @@ const PRESTATIONS: Prestation[] = [
     desc: "Galas, vernissages, lancements, anniversaires. Installations florales sur-mesure pour transformer un lieu.",
     price: "dès 350€",
   },
-  {
-    Icon: IconSubscription,
-    name: "abonnement",
-    desc: "Un bouquet frais à votre porte chaque semaine, quinzaine ou mois. Vous choisissez la fréquence et le budget.",
-    price: "dès 35€/mois",
-  },
+  // {
+  //   Icon: IconSubscription,
+  //   name: "abonnement",
+  //   desc: "Un bouquet frais à votre porte chaque semaine, quinzaine ou mois. Vous choisissez la fréquence et le budget.",
+  //   price: "dès 35€/mois",
+  // },
   {
     Icon: IconWorkshop,
     name: "ateliers",
@@ -224,12 +224,12 @@ const PRESTATIONS: Prestation[] = [
     desc: "Réception, salle de réunion, vitrine, événement client. Forfait livraison régulière ou prestation ponctuelle.",
     price: "sur devis",
   },
-  {
-    Icon: IconDelivery,
-    name: "livraison",
-    desc: "Livraison en vélo dans toute La Rochelle le jour même, jusqu’à 17h. Au-delà, expédition France métropolitaine.",
-    price: "dès 6€",
-  },
+  // {
+  //   Icon: IconDelivery,
+  //   name: "livraison",
+  //   desc: "Livraison en vélo dans toute La Rochelle le jour même, jusqu’à 17h. Au-delà, expédition France métropolitaine.",
+  //   price: "dès 6€",
+  // },
 ];
 
 export function Prestations({ bg }: SectionProps) {
@@ -237,14 +237,14 @@ export function Prestations({ bg }: SectionProps) {
     <section id="prestations" data-section data-bg={bg} className="prestations">
       <div className="container">
         <div className="prestations__head reveal">
-          <p className="eyebrow">Ce qu&apos;on fait, au-delà du bouquet</p>
           <h2 className="display prestations__title">
             prestations
             <span className="script">sur mesure</span>
           </h2>
           <p className="body body--lg prestations__sub">
-            Du bouquet hebdomadaire à la scénographie d&apos;un mariage entier,
-            on intervient à toutes les échelles. Toujours avec la même exigence.
+            Au-delà du bouquet hebdomadaire, on intervient à toutes les
+            échelles — jusqu&apos;à la scénographie d&apos;un mariage entier.
+            Toujours avec la même exigence.
           </p>
         </div>
         <div className="prestations__grid reveal">
@@ -271,7 +271,6 @@ export function AtelierStrip({ bg }: SectionProps) {
     <section data-section data-bg={bg} className="atelier-strip">
       <div className="container">
         <div className="atelier-strip__inner reveal">
-          <p className="eyebrow">Notre crédo</p>
           <p className="atelier-strip__quote">
             une fleur cueillie aujourd&apos;hui
             <br />
@@ -295,7 +294,6 @@ export function About({ bg }: SectionProps) {
             <AboutFlorist />
           </div>
           <div className="reveal">
-            <p className="eyebrow">L&apos;histoire</p>
             <h2 className="display about__title">
               coquelicot
               <span className="script">c&apos;est qui ?</span>
@@ -335,63 +333,21 @@ export function About({ bg }: SectionProps) {
   );
 }
 
-// ─── Contact + Newsletter ──────────────────────────────────────
+// ─── Contact ───────────────────────────────────────────────────
 export function Contact({ bg }: SectionProps) {
   return (
     <section id="contact" data-section data-bg={bg} className="contact">
       <div className="container">
-        <div className="contact__inner">
-          <div className="reveal">
-            <p className="eyebrow">Venir, écrire, suivre</p>
-            <h2 className="display contact__title">
-              passez
-              <span className="script">nous voir.</span>
-            </h2>
-            <p className="body body--lg contact__sub">
-              L&apos;atelier est ouvert du mardi au samedi.
-              On répond aussi vite que possible — promis.
-            </p>
-            <div className="contact__info">
-              <div>
-                <div className="contact__info-label">Adresse</div>
-                <div className="contact__info-value">
-                  12 rue<br />du gabut
-                </div>
-                <div className="contact__info-value contact__info-value--small" style={{ marginTop: 8 }}>
-                  17000 La Rochelle
-                </div>
-              </div>
-              <div>
-                <div className="contact__info-label">Horaires</div>
-                <div className="contact__info-value contact__info-value--small">
-                  Mardi → Vendredi<br />
-                  9h30 – 13h · 15h – 19h<br /><br />
-                  Samedi<br />
-                  9h30 – 19h non-stop<br /><br />
-                  Dimanche &amp; lundi<br />
-                  fermé
-                </div>
-              </div>
-              <div>
-                <div className="contact__info-label">Téléphone</div>
-                <div className="contact__info-value">05 46 00<br />00 00</div>
-              </div>
-              <div>
-                <div className="contact__info-label">Email</div>
-                <div className="contact__info-value contact__info-value--small">
-                  bonjour@<br />
-                  coquelicot-lr.fr<br /><br />
-                  <a href="#" style={{ borderBottom: "1px solid currentColor" }}>@coquelicot.lr</a>
-                </div>
-              </div>
-            </div>
-            <div className="contact__map">
-              <MapDoodle />
-            </div>
-          </div>
-          <div className="reveal">
-            <Newsletter />
-          </div>
+        <div className="contact__inner reveal">
+          <h2 className="display contact__title">
+            passez
+            <span className="script">nous voir.</span>
+          </h2>
+          <p className="body body--lg contact__sub">
+            Mariage, atelier, commande spéciale ou simple bonjour — écrivez-nous.
+            On répond aussi vite que possible, promis.
+          </p>
+          <ContactForm />
         </div>
       </div>
     </section>
@@ -438,7 +394,10 @@ export function SiteFooter() {
         </div>
         <div className="site-footer__bottom">
           <div>© 2026 Coquelicot — La Rochelle</div>
-          <div>Mentions légales · CGV · Livraison &amp; retours</div>
+          <div className="site-footer__legal">
+            Mentions légales · CGV · Livraison &amp; retours
+            <ManageCookiesButton />
+          </div>
         </div>
       </div>
     </footer>

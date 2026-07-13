@@ -123,6 +123,18 @@ export async function startCheckout(
               },
             ]
           : []),
+        ...(order.cardFeeCents > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency: "eur",
+                  unit_amount: order.cardFeeCents,
+                  product_data: { name: "Carte manuscrite" },
+                },
+              },
+            ]
+          : []),
       ],
       success_url: `${getSiteUrl()}/commande/confirmee?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${getSiteUrl()}/panier`,

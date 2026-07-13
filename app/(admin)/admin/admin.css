@@ -5,15 +5,54 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @theme {
+  /* Marque */
   --color-wine: #870c20;
   --color-wine-dark: #5e0816;
   --color-linen: #f3ebe2;
   --color-oak: #e0caaf;
+
+  /* Couche neutre sémantique — un seul endroit pour régler surfaces,
+     filets et contraste du texte (au lieu de stone-* codé en dur partout). */
+  --color-canvas: #f5f5f4; /* fond de page */
+  --color-surface: #ffffff; /* cartes, panneaux, table */
+  --color-panel: #fafaf9; /* surfaces internes atténuées (en-têtes, colonnes kanban) */
+  --color-line: #e7e5e4; /* filet par défaut */
+  --color-line-soft: #f0efee; /* filet interne discret */
+  --color-hover: #efedeb; /* fond de survol des éléments interactifs (liens nav, boutons fantômes) */
+  --color-fill: #e7e5e4; /* remplissage neutre : compteurs, pastilles neutres (texte : ink) */
+  --color-ink: #1c1917; /* texte principal */
+  --color-muted: #6f6a65; /* texte secondaire — AA (≥4.5:1) sur surface ET panel */
+
+  /* Danger (boutons/liens destructifs) */
+  --color-danger: #b91c1c;
+  --color-danger-line: #fecaca;
+  --color-danger-bg: #fef2f2;
 }
 
-/* Pas de grain papier ni de curseur boutique dans l'admin */
-body:has(.admin-root) .grain {
+/* Chrome de la vitrine (grain papier, bandeau cookies) masqué dans l'admin :
+   le back-office est interne, non tracké, et ce bandeau recouvrait le pied
+   de la sidebar. */
+body:has(.admin-root) :is(.grain, .cookie-banner) {
   display: none;
+}
+
+/* globals.css déclare `a { color: inherit }` SANS cascade layer. Une règle
+   non-layered bat TOUS les @layer, donc écrase les utilitaires text-* de
+   Tailwind (@layer utilities) sur les liens : dans l'admin, un `<a>` en
+   text-linen/text-wine rendait la couleur d'encre héritée (ex. nav active =
+   1,75:1). On restaure les couleurs de marque sur les liens de l'admin via
+   des sélecteurs non-layered de spécificité suffisante. */
+.admin-root a.text-wine {
+  color: var(--color-wine);
+}
+.admin-root a.text-linen {
+  color: var(--color-linen);
+}
+.admin-root a.text-muted {
+  color: var(--color-muted);
+}
+.admin-root a.text-ink {
+  color: var(--color-ink);
 }
 
 @layer base {

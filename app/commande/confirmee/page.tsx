@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/sections";
 import { ClearCart } from "@/components/clear-cart";
+import { PurchaseTracking } from "@/components/purchase-tracking";
 import { ArrowRight } from "@/components/illustrations";
 import { getDb } from "@/lib/db/client";
 import { composeItemName } from "@/lib/item-label";
@@ -58,12 +59,32 @@ export default async function ConfirmationPage({
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="contenu" tabIndex={-1}>
         <section data-section data-bg="linen" className="cart-page">
           <div className="container">
             {data && data.order.status !== "pending" && data.order.status !== "cancelled" ? (
               <>
                 <ClearCart />
+                <PurchaseTracking
+                  transactionId={data.order.number}
+                  valueCents={data.order.totalCents}
+                  shippingCents={data.order.deliveryFeeCents}
+                  items={data.items.map((item) => {
+                    const variant = [
+                      item.sizeLabelSnapshot,
+                      item.colorLabelSnapshot,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+                    return {
+                      item_id: item.productId ?? item.nameSnapshot,
+                      item_name: item.nameSnapshot,
+                      price: item.priceCentsSnapshot / 100,
+                      quantity: item.qty,
+                      ...(variant ? { item_variant: variant } : {}),
+                    };
+                  })}
+                />
                 <h1 className="display cart-page__title">
                   merci !
                   <span className="script">c&apos;est commandé.</span>
@@ -92,6 +113,12 @@ export default async function ConfirmationPage({
                       <li className="cart-summary__row">
                         <span>Envoi postal</span>
                         <span>{formatEuros(data.order.deliveryFeeCents)}</span>
+                      </li>
+                    )}
+                    {data.order.cardFeeCents > 0 && (
+                      <li className="cart-summary__row">
+                        <span>Carte manuscrite</span>
+                        <span>{formatEuros(data.order.cardFeeCents)}</span>
                       </li>
                     )}
                   </ul>

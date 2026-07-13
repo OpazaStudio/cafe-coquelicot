@@ -5,6 +5,7 @@ import { getDb } from "@/lib/db/client";
 import { listProductsForAdmin } from "@/lib/products";
 import { formatEuros } from "@/lib/money";
 import { Bouquet } from "@/components/illustrations";
+import { btnPrimary, card, Pill, rowAction } from "../ui";
 import { deleteProduct, setProductActive } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -26,30 +27,27 @@ export default async function ProduitsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Produits</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted">
             {list.length} produit{list.length > 1 ? "s" : ""} — {visibles} visible
             {visibles > 1 ? "s" : ""} en boutique
           </p>
         </div>
-        <Link
-          href="/admin/produits/nouveau"
-          className="rounded-lg bg-wine px-4 py-2.5 text-sm font-semibold text-linen transition hover:bg-wine-dark"
-        >
+        <Link href="/admin/produits/nouveau" className={btnPrimary}>
           + Nouveau produit
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white">
-        <table className="w-full text-sm">
+      <div className={`overflow-x-auto ${card}`}>
+        <table className="w-full min-w-[48rem] text-sm">
           <thead>
-            <tr className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-500">
-              <th className="px-4 py-3 font-medium">Produit</th>
-              <th className="px-4 py-3 font-medium">Catégorie</th>
-              <th className="px-4 py-3 font-medium">Prix</th>
-              <th className="px-4 py-3 font-medium">Variantes</th>
-              <th className="px-4 py-3 font-medium">Badge</th>
-              <th className="px-4 py-3 font-medium">Statut</th>
-              <th className="px-4 py-3 text-right font-medium">Actions</th>
+            <tr className="border-b border-line bg-panel text-left text-xs uppercase tracking-wide text-muted">
+              <th scope="col" className="px-4 py-3 font-medium">Produit</th>
+              <th scope="col" className="px-4 py-3 font-medium">Catégorie</th>
+              <th scope="col" className="px-4 py-3 font-medium">Prix</th>
+              <th scope="col" className="px-4 py-3 font-medium">Variantes</th>
+              <th scope="col" className="px-4 py-3 font-medium">Badge</th>
+              <th scope="col" className="px-4 py-3 font-medium">Statut</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -57,7 +55,7 @@ export default async function ProduitsPage() {
               <tr
                 key={p.id}
                 data-testid={`product-row-${p.slug}`}
-                className="border-b border-stone-100 last:border-0 hover:bg-stone-50/60"
+                className="border-b border-line-soft last:border-0 hover:bg-panel"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -66,43 +64,37 @@ export default async function ProduitsPage() {
                     </div>
                     <div>
                       <div className="font-semibold">{p.name}</div>
-                      <div className="text-xs text-stone-500">{p.tag}</div>
+                      <div className="text-xs text-muted">{p.tag}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-muted">
                   {CATEGORY_LABELS[p.category]}
                 </td>
                 <td className="px-4 py-3 font-medium">
                   {sizeCount > 0 ? `dès ${formatEuros(fromCents)}` : formatEuros(fromCents)}
                 </td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-muted">
                   {variantSummary(sizeCount, colorCount)}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{p.badge ?? "—"}</td>
+                <td className="px-4 py-3 text-muted">{p.badge ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      p.active
-                        ? "bg-green-100 text-green-800"
-                        : "bg-stone-200 text-stone-600"
-                    }`}
-                  >
+                  <Pill tone={p.active ? "positive" : "neutral"}>
                     {p.active ? "En ligne" : "Masqué"}
-                  </span>
+                  </Pill>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
                     <Link
                       href={`/admin/produits/${p.id}`}
-                      className="rounded-md px-2.5 py-1.5 text-sm font-medium text-wine hover:bg-wine/10"
+                      className={`${rowAction} text-wine hover:bg-wine/10`}
                     >
                       Modifier
                     </Link>
                     <form action={setProductActive.bind(null, p.id, !p.active)}>
                       <button
                         type="submit"
-                        className="rounded-md px-2.5 py-1.5 text-sm text-stone-600 hover:bg-stone-100"
+                        className={`${rowAction} text-muted hover:bg-stone-100`}
                       >
                         {p.active ? "Masquer" : "Publier"}
                       </button>
@@ -110,7 +102,7 @@ export default async function ProduitsPage() {
                     <form action={deleteProduct.bind(null, p.id)}>
                       <button
                         type="submit"
-                        className="rounded-md px-2.5 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                        className={`${rowAction} text-danger hover:bg-danger-bg`}
                       >
                         Supprimer
                       </button>

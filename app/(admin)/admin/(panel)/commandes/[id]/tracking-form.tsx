@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { btnPrimary, input } from "../../ui";
 import { saveTrackingNumber, type StatusActionState } from "../actions";
 
 export function TrackingForm({
@@ -23,17 +24,13 @@ export function TrackingForm({
         defaultValue={trackingNumber ?? ""}
         placeholder="N° de suivi Mondial Relay"
         maxLength={40}
-        className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        className={`${input} sm:flex-1`}
       />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-lg bg-wine px-3.5 py-2 text-sm font-semibold text-linen transition hover:bg-wine-dark disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={btnPrimary}>
         Enregistrer
       </button>
       {state?.error && (
-        <p role="alert" className="text-sm font-medium text-red-700">
+        <p role="alert" className="text-sm font-medium text-danger">
           {state.error}
         </p>
       )}

@@ -32,7 +32,7 @@ export default async function ProduitPage({
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="contenu" tabIndex={-1}>
         <section data-section data-bg="linen" className="product-detail-section">
           <div className="container">
             <nav className="boutique-crumb" aria-label="Fil d'Ariane">

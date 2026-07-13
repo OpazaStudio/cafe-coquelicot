@@ -32,7 +32,12 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
 
   return (
     <>
-      <div className="boutique-filters">
+      <h2 className="sr-only">Le catalogue</h2>
+      <div
+        className="boutique-filters"
+        role="group"
+        aria-label="Filtrer par catégorie"
+      >
         {FILTERS.map((f) => (
           <button
             key={f.key}
@@ -46,16 +51,23 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
         ))}
       </div>
 
-      <p className="boutique-count">
+      <p className="boutique-count" aria-live="polite">
         {products.length} composition{products.length > 1 ? "s" : ""} ·
         cueillies ou réceptionnées le matin même
       </p>
 
-      <div className="shop__grid boutique-grid">
-        {products.map((p) => (
-          <ProductCard key={p.slug} {...p} />
-        ))}
-      </div>
+      {products.length === 0 ? (
+        <p className="boutique-empty">
+          Aucune composition dans cette catégorie pour le moment — revenez vite,
+          le catalogue se renouvelle chaque semaine.
+        </p>
+      ) : (
+        <div className="shop__grid boutique-grid">
+          {products.map((p) => (
+            <ProductCard key={p.slug} {...p} />
+          ))}
+        </div>
+      )}
     </>
   );
 }
@@ -71,7 +83,7 @@ function ProductCard(product: ShopProduct) {
         <ProductFigure category={category} variant={variant} />
       </div>
       <div>
-        <p className="eyebrow" style={{ opacity: 0.6, marginBottom: 6 }}>{tag}</p>
+        <p className="eyebrow product-card__tag">{tag}</p>
         <h3 className="product-card__name">{name}</h3>
       </div>
       <div className="product-card__row">

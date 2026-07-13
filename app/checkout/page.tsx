@@ -12,7 +12,7 @@ export default function CheckoutPage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="contenu" tabIndex={-1}>
         <section data-section data-bg="linen" className="cart-page">
           <div className="container">
             <nav className="boutique-crumb reveal is-visible" aria-label="Fil d'Ariane">

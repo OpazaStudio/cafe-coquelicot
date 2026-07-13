@@ -1,19 +1,25 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
+import { formatEuros } from "@/lib/money";
 import type { DayPoint } from "@/lib/stats";
 
 const dayFmt = new Intl.DateTimeFormat("fr-FR", {
   day: "2-digit",
   month: "2-digit",
+});
+
+// recharts (lib lourde) sorti du bundle initial du dashboard : chargé côté
+// client seulement. La coque ci-dessous (testid + alternative texte) est
+// rendue immédiatement, donc l'a11y et les tests ne dépendent pas du chargement.
+const RevenueChartImpl = dynamic(() => import("./revenue-chart-impl"), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="h-full w-full animate-pulse rounded-lg bg-panel motion-reduce:animate-none"
+      aria-hidden="true"
+    />
+  ),
 });
 
 export function RevenueChart({ data }: { data: DayPoint[] }) {
@@ -23,41 +29,37 @@ export function RevenueChart({ data }: { data: DayPoint[] }) {
     commandes: d.orders,
   }));
 
+  const totalCents = data.reduce((s, d) => s + d.revenueCents, 0);
+  const totalOrders = data.reduce((s, d) => s + d.orders, 0);
+
   return (
-    <div className="h-72 w-full" data-testid="revenue-chart">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 11, fill: "#78716c" }}
-            tickLine={false}
-            axisLine={{ stroke: "#e7e5e4" }}
-            interval="preserveStartEnd"
-          />
-          <YAxis
-            tick={{ fontSize: 11, fill: "#78716c" }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(v: number) => `${v}€`}
-            width={48}
-          />
-          <Tooltip
-            formatter={(value, name) =>
-              name === "euros"
-                ? [`${Number(value).toFixed(2).replace(".", ",")}€`, "CA"]
-                : [String(value), "Commandes"]
-            }
-            labelStyle={{ color: "#44403c", fontWeight: 600 }}
-            contentStyle={{
-              borderRadius: 8,
-              border: "1px solid #e7e5e4",
-              fontSize: 13,
-            }}
-          />
-          <Bar dataKey="euros" fill="#870c20" radius={[3, 3, 0, 0]} maxBarSize={22} />
-        </BarChart>
-      </ResponsiveContainer>
+    <div
+      className="h-72 w-full"
+      data-testid="revenue-chart"
+      role="img"
+      aria-label={`Histogramme du chiffre d'affaires sur ${data.length} jours : ${formatEuros(totalCents)} au total, ${totalOrders} commande${totalOrders > 1 ? "s" : ""}.`}
+    >
+      {/* Alternative textuelle pour lecteurs d'écran (le SVG recharts n'est pas lisible). */}
+      <table className="sr-only">
+        <caption>Chiffre d&apos;affaires par jour</caption>
+        <thead>
+          <tr>
+            <th scope="col">Jour</th>
+            <th scope="col">CA</th>
+            <th scope="col">Commandes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((d) => (
+            <tr key={d.day}>
+              <td>{d.day}</td>
+              <td>{formatEuros(d.revenueCents)}</td>
+              <td>{d.orders}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <RevenueChartImpl points={points} />
     </div>
   );
 }

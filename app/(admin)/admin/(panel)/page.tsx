@@ -10,6 +10,7 @@ import {
 } from "@/lib/stats";
 import { StatusBadge } from "./commandes/status-badge";
 import { RevenueChart } from "./revenue-chart";
+import { card, Panel } from "./ui";
 
 export const dynamic = "force-dynamic";
 
@@ -32,14 +33,14 @@ function KpiCard({
   testId: string;
 }) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-5">
-      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+    <div className={`${card} p-5`}>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">
         {label}
       </p>
       <p className="mt-1.5 text-2xl font-semibold tracking-tight" data-testid={testId}>
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </div>
   );
 }
@@ -58,7 +59,7 @@ export default async function AdminDashboardPage() {
     <>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-muted">
           Chiffres sur les commandes encaissées (payées, en préparation ou
           livrées).
         </p>
@@ -88,20 +89,14 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
-        <section className="rounded-xl border border-stone-200 bg-white p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-            CA des 30 derniers jours
-          </h2>
+        <Panel title="CA des 30 derniers jours">
           <RevenueChart data={byDay} />
-        </section>
+        </Panel>
 
         <div className="flex flex-col gap-6">
-          <section className="rounded-xl border border-stone-200 bg-white p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-              Top produits
-            </h2>
+          <Panel title="Top produits">
             {top.length === 0 ? (
-              <p className="text-sm text-stone-500">
+              <p className="text-sm text-muted">
                 Pas encore de ventes — le classement apparaîtra ici.
               </p>
             ) : (
@@ -112,11 +107,11 @@ export default async function AdminDashboardPage() {
                     className="flex items-center justify-between gap-3 text-sm"
                   >
                     <span>
-                      <span className="mr-2 inline-block w-5 text-right font-semibold text-stone-400">
+                      <span className="mr-2 inline-block w-5 text-right font-semibold text-muted">
                         {i + 1}.
                       </span>
                       <span className="font-medium">{p.name}</span>
-                      <span className="ml-2 text-stone-500">× {p.qty}</span>
+                      <span className="ml-2 text-muted">× {p.qty}</span>
                     </span>
                     <span className="font-medium">
                       {formatEuros(p.revenueCents)}
@@ -125,14 +120,11 @@ export default async function AdminDashboardPage() {
                 ))}
               </ol>
             )}
-          </section>
+          </Panel>
 
-          <section className="rounded-xl border border-stone-200 bg-white p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
-              Dernières commandes
-            </h2>
+          <Panel title="Dernières commandes">
             {recent.length === 0 ? (
-              <p className="text-sm text-stone-500">Aucune commande.</p>
+              <p className="text-sm text-muted">Aucune commande.</p>
             ) : (
               <ul className="flex flex-col gap-3">
                 {recent.map((o) => (
@@ -143,7 +135,7 @@ export default async function AdminDashboardPage() {
                     >
                       {o.number}
                     </Link>
-                    <span className="text-xs text-stone-500">
+                    <span className="text-xs text-muted">
                       {dateFmt.format(o.createdAt)}
                     </span>
                     <span className="font-medium">{formatEuros(o.totalCents)}</span>
@@ -152,7 +144,7 @@ export default async function AdminDashboardPage() {
                 ))}
               </ul>
             )}
-          </section>
+          </Panel>
         </div>
       </div>
     </>

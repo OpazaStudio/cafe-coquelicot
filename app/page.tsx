@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="contenu" tabIndex={-1}>
         <Hero bg="linen" />
         <Shop bg="linen" products={products} />
         <Gallery bg="pale-oak" />
