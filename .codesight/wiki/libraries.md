@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**24 library files** across 16 modules
+**30 library files** across 22 modules
 
 ## Mondial-relay (5 files)
 
@@ -24,7 +24,7 @@
 
 ## Db (2 files)
 
-- `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db
+- `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
 
 ## Email (2 files)
@@ -56,6 +56,10 @@
 
 - `lib/prep-status.ts` — isPrepStatus, derivePrepStatus, isOnBoard, PREP_ORDER, PREP_LABELS, DONE_RETENTION_MS, …
 
+## Product-image.ts (1 files)
+
+- `lib/product-image.ts` — productImageUrl, validateImageFile, sniffImageType, AllowedImageType, ImageValidation, BUCKET, …
+
 ## Products.ts (1 files)
 
 - `lib/products.ts` — queryActiveProducts, queryActiveVases, queryProductBySlug, getAllProductRows, getProductRow, getProductWithVariants, …
@@ -63,6 +67,18 @@
 ## Proxy.ts (1 files)
 
 - `proxy.ts` — proxy, config
+
+## Rate-limit.ts (1 files)
+
+- `lib/rate-limit.ts` — createRateLimiter, RateLimitResult, RateLimiter, LOGIN_ATTEMPT_LIMIT, CONTACT_MESSAGE_LIMIT, loginLimiter, …
+
+## Request-ip.ts (1 files)
+
+- `lib/request-ip.ts` — getRequestIp
+
+## Security-headers.ts (1 files)
+
+- `lib/security-headers.ts` — securityHeaders, HttpHeader
 
 ## Slug.ts (1 files)
 
@@ -72,9 +88,17 @@
 
 - `lib/stats.ts` — getKpis, getRevenueByDay, getTopProducts, getRecentOrders, Kpis, DayPoint, …
 
+## Storage.ts (1 files)
+
+- `lib/storage.ts` — storageConfigured, uploadImage, deleteImage
+
 ## Stripe.ts (1 files)
 
 - `lib/stripe.ts` — getStripe, getSiteUrl
+
+## Uuid.ts (1 files)
+
+- `lib/uuid.ts` — isUuid
 
 ---
 _Back to [overview.md](./overview.md)_

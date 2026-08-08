@@ -5,7 +5,7 @@ import type { ComponentType } from "react";
 import Link from "next/link";
 import type { ShopProduct } from "@/lib/products";
 import {
-  HeroStorefront, Bouquet, AboutFlorist,
+  HeroStorefront, Bouquet, AboutFlorist, ProductFigure,
   IconWedding, IconEvent, IconSubscription, IconWorkshop, IconCorporate, IconDelivery,
   ArrowRight, ArrowDiag,
 } from "./illustrations";
@@ -110,12 +110,18 @@ export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] 
   );
 }
 
-function ProductCard({ slug, name, tag, desc, price, variant, badge }: ShopProduct) {
+function ProductCard({ slug, name, tag, desc, price, variant, badge, category, imagePath, imageBgColor }: ShopProduct) {
   return (
     <Link href={`/boutique/${slug}`} className="product-card">
       <div className="product-card__media">
         {badge && <span className="product-card__badge">{badge}</span>}
-        <Bouquet variant={variant} />
+        <ProductFigure
+          category={category}
+          variant={variant}
+          imagePath={imagePath}
+          imageBgColor={imageBgColor}
+          alt={name}
+        />
       </div>
       <div>
         <p className="eyebrow" style={{ opacity: 0.6, marginBottom: 6 }}>{tag}</p>

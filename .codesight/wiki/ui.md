@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**68 components** (react)
+**69 components** (react)
 
 ## Client Components
 
@@ -12,6 +12,7 @@
 - **StatusActions** — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
+- **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **ProductForm** — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChartImpl** — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
@@ -57,7 +58,7 @@
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
 - **Vase** — props: variant, className — `components/illustrations.tsx`
-- **ProductFigure** — props: category, variant, className — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`

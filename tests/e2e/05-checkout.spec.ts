@@ -89,7 +89,7 @@ test("paiement Stripe test → confirmation → commande payée", async ({
   await addToCart(page, "estran");
   await page.goto("/checkout");
 
-  // Formulaire : Mondial Relay (+4,90€) → total 96,90€
+  // Formulaire : Mondial Relay (+4,90€) + carte manuscrite (+2€) → 98,90€
   await page.getByLabel("Nom complet *").fill("Camille Martin");
   await page.getByLabel("Email *").fill("camille.test@exemple.fr");
   await page.getByLabel("Téléphone").fill("06 12 34 56 78");
@@ -104,7 +104,7 @@ test("paiement Stripe test → confirmation → commande payée", async ({
   await page
     .getByLabel("Message pour la carte", { exact: false })
     .fill("Pour les tests, avec amour.");
-  await expect(page.getByTestId("checkout-total")).toHaveText("96,90€");
+  await expect(page.getByTestId("checkout-total")).toHaveText("98,90€");
 
   await page.getByRole("button", { name: "Payer avec Stripe" }).click();
   await page.waitForURL(/checkout\.stripe\.com/, { timeout: 60_000 });
@@ -116,7 +116,7 @@ test("paiement Stripe test → confirmation → commande payée", async ({
   await expect(confirmation).toBeVisible();
   await expect(confirmation).toContainText("payée");
   await expect(confirmation).toContainText("Total payé");
-  await expect(confirmation).toContainText("96,90€");
+  await expect(confirmation).toContainText("98,90€");
   await expect(confirmation).toContainText("rivage × 1");
   await expect(confirmation).toContainText("estran × 2");
 
@@ -140,7 +140,7 @@ test("la commande payée apparaît dans l'admin et suit ses statuts", async ({
   const row = page.getByTestId(`order-row-${orderNumber}`);
   await expect(row).toBeVisible();
   await expect(row).toContainText("Payée");
-  await expect(row).toContainText("96,90€");
+  await expect(row).toContainText("98,90€");
   await expect(row).toContainText("Mondial Relay");
   await expect(row).toContainText("camille.test@exemple.fr");
 
@@ -175,9 +175,9 @@ test("le dashboard reflète la vente dans les KPIs", async ({ page }) => {
   expect(orderNumber, "le test de paiement doit passer d'abord").toMatch(/^CQ-/);
   await adminLogin(page);
 
-  await expect(page.getByTestId("kpi-revenue")).toHaveText("96,90€");
+  await expect(page.getByTestId("kpi-revenue")).toHaveText("98,90€");
   await expect(page.getByTestId("kpi-orders")).toHaveText("1");
-  await expect(page.getByTestId("kpi-aov")).toHaveText("96,90€");
+  await expect(page.getByTestId("kpi-aov")).toHaveText("98,90€");
   await expect(page.getByTestId("kpi-items")).toHaveText("3");
 
   const top = page.getByTestId("top-products");

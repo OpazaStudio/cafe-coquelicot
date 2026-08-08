@@ -12,9 +12,16 @@ import {
 } from "./db/schema";
 import { HOME_PICKS, SEED_PRODUCTS } from "./db/seed-data";
 import { formatFromPrice } from "./money";
+import { isUuid } from "./uuid";
 
 export type ShopSize = { id: string; label: string; priceCents: number };
-export type ShopColor = { id: string; label: string; illustrationVariant: number };
+export type ShopColor = {
+  id: string;
+  label: string;
+  illustrationVariant: number;
+  imagePath: string | null;
+  imageBgColor: string | null;
+};
 
 // Forme consommée par les cartes produit (boutique + home). Les composants
 // client n'importent ce module que via `import type` (le client db reste côté serveur).
@@ -27,6 +34,8 @@ export type ShopProduct = {
   price: string; // affichage « dès 48€ » (min des tailles, ou prix de base)
   priceCents: number;
   variant: number; // illustration par défaut (aucun coloris)
+  imagePath: string | null; // image produit (null → SVG fallback)
+  imageBgColor: string | null; // fond de l'image (null → fond gris)
   badge: string | null;
   category: ProductCategory;
   sizes: ShopSize[]; // [] si le produit n'a pas de taille
@@ -50,6 +59,8 @@ function assemble(
     price: formatFromPrice(minCents),
     priceCents: minCents,
     variant: row.illustrationVariant,
+    imagePath: row.imagePath,
+    imageBgColor: row.imageBgColor,
     badge: row.badge,
     category: row.category,
     sizes: sizes.map((s) => ({ id: s.id, label: s.label, priceCents: s.priceCents })),
@@ -57,6 +68,8 @@ function assemble(
       id: c.id,
       label: c.label,
       illustrationVariant: c.illustrationVariant,
+      imagePath: c.imagePath,
+      imageBgColor: c.imageBgColor,
     })),
   };
 }
@@ -167,6 +180,7 @@ export async function getAllProductRows(): Promise<ProductRow[]> {
 }
 
 export async function getProductRow(id: string): Promise<ProductRow | null> {
+  if (!isUuid(id)) return null;
   const db = await getDb();
   const rows = await db
     .select()
@@ -185,6 +199,7 @@ export async function getProductWithVariants(
   sizes: ProductSizeRow[];
   colors: ProductColorRow[];
 } | null> {
+  if (!isUuid(id)) return null;
   const [product] = await db
     .select()
     .from(products)

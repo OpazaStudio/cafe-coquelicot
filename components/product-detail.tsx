@@ -26,8 +26,10 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
-  // Le coloris change l'illustration ; la taille porte le prix.
+  // Le coloris change l'illustration/l'image ; la taille porte le prix.
   const illustration = color?.illustrationVariant ?? product.variant;
+  const imagePath = color?.imagePath ?? product.imagePath;
+  const imageBgColor = color?.imageBgColor ?? product.imageBgColor;
   const priceCents = size?.priceCents ?? product.priceCents;
 
   function handleAdd() {
@@ -55,7 +57,14 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
     <div className="product-page">
       <div className="product-page__media">
         {badge && <span className="product-card__badge">{badge}</span>}
-        <ProductFigure category={product.category} variant={illustration} />
+        <ProductFigure
+          category={product.category}
+          variant={illustration}
+          imagePath={imagePath}
+          imageBgColor={imageBgColor}
+          alt={name}
+          sizes="(max-width: 768px) 100vw, 600px"
+        />
       </div>
       <div className="product-page__info">
         <p className="eyebrow">{tag}</p>

@@ -2,11 +2,11 @@
 
 > **Navigation aid.** Route list and file locations extracted via AST. Read the source files listed below before implementing or modifying this subsystem.
 
-The Route subsystem handles **1 routes** and touches: db.
+The Route subsystem handles **1 routes** and touches: auth, db.
 
 ## Routes
 
-- `POST` `/api/e2e/orders` → out: { error } [db]
+- `POST` `/api/e2e/orders` → out: { error } [auth, db]
   `app/api/e2e/orders/route.ts`
 
 ## Source Files

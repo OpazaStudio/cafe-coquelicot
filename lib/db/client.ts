@@ -8,6 +8,10 @@ import { SEED_PRODUCTS, buildChildSeedRows } from "./seed-data";
 // Type commun aux deux drivers (postgres-js en prod, PGlite en local/test).
 export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
 
+// Handle de transaction, tel que reçu par le callback de `db.transaction()`.
+// Évite aux helpers travaillant dans une transaction de caster en `Db`.
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
 const MIGRATIONS_FOLDER = path.join(process.cwd(), "lib", "db", "migrations");
 
 async function createDb(): Promise<Db> {

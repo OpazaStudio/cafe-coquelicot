@@ -50,6 +50,8 @@ export const products = pgTable("products", {
   category: productCategory("category").notNull(),
   badge: text("badge"),
   illustrationVariant: integer("illustration_variant").notNull().default(0),
+  imagePath: text("image_path"),
+  imageBgColor: text("image_bg_color"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -84,6 +86,8 @@ export const productColors = pgTable("product_colors", {
     .references(() => products.id, { onDelete: "cascade" }),
   label: text("label").notNull(),
   illustrationVariant: integer("illustration_variant").notNull().default(0),
+  imagePath: text("image_path"),
+  imageBgColor: text("image_bg_color"),
   sortOrder: integer("sort_order").notNull().default(0),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })

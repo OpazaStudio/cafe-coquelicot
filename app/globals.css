@@ -18,7 +18,7 @@
   --line: rgba(135, 12, 32, 0.2);
 
   /* Type families — populated by next/font in app/layout.tsx */
-  --font-display: var(--font-bagel-fat-one), system-ui, sans-serif;
+  --font-display: var(--font-tangerine), "Apple Chancery", cursive;
   --font-script: var(--font-caveat), cursive;
   --font-body: var(--font-dm-sans), system-ui, sans-serif;
 
@@ -153,10 +153,15 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 
 /* ── Typography classes ───────────────────────────────────────── */
+/* Tangerine est une didone : hauteur d'x minuscule, hampes et jambages très
+   longs. L'interligne 0.88 hérité de l'ancienne display grasse faisait mordre
+   les jambages sur la ligne suivante — on ouvre à 1.04. Le crénage reste
+   légèrement négatif : c'est lui qui tient les sous-titres .script imbriqués
+   (héro, boutique) sur une seule ligne. */
 .display {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 0.88;
+  line-height: 1.04;
   letter-spacing: -0.01em;
   text-transform: lowercase;
   margin: 0;
@@ -208,9 +213,9 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 
 .site-header__logo {
   font-family: var(--font-display);
-  font-size: 28px;
-  line-height: 1;
-  letter-spacing: -0.01em;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: 0;
 }
 .site-header__nav {
   display: flex;
@@ -426,6 +431,16 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .product-card:hover .product-card__media svg {
   transform: scale(1.08) rotate(-2deg);
 }
+/* Image produit (remplace le SVG quand une photo est définie). Remplit le
+   conteneur média ; la couleur de fond éventuelle est portée en inline. */
+.product-media {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.product-media img {
+  object-fit: cover;
+}
 /* Focus clavier aux couleurs de la section (l'anneau UA générique ne suffit
    pas à la marque). Suit l'encre courante, offset pour dégager le média. */
 .product-card:focus-visible {
@@ -454,8 +469,8 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 .product-card__name {
   font-family: var(--font-display);
-  font-size: 32px;
-  line-height: 0.95;
+  font-size: 34px;
+  line-height: 1.05;
   text-transform: lowercase;
   margin: 0;
 }
@@ -525,6 +540,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   justify-content: center;
   aspect-ratio: 1;
   border-radius: 20px;
+  overflow: hidden;
   background: color-mix(in srgb, var(--fg) 5%, transparent);
 }
 .product-page__media svg {
@@ -666,7 +682,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   font-family: var(--font-display);
   font-size: clamp(28px, 3vw, 48px);
   text-transform: lowercase;
-  line-height: 0.9;
+  line-height: 1.05;
   text-align: center;
   padding: 24px;
 }
@@ -747,7 +763,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .prestation-card__name {
   font-family: var(--font-display);
   font-size: 44px;
-  line-height: 0.9;
+  line-height: 1.02;
   text-transform: lowercase;
   margin: 0;
 }
@@ -845,7 +861,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .about__stat-num {
   font-family: var(--font-display);
   font-size: 48px;
-  line-height: 1;
+  line-height: 1.15;
 }
 .about__stat-label {
   font-size: 12px;
@@ -866,7 +882,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .atelier-strip__quote {
   font-family: var(--font-display);
   font-size: clamp(48px, 6.5vw, 120px);
-  line-height: 0.95;
+  line-height: 1.06;
   text-transform: lowercase;
   max-width: 1200px;
   text-wrap: balance;
@@ -975,7 +991,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .site-footer__brand {
   font-family: var(--font-display);
   font-size: clamp(80px, 10vw, 180px);
-  line-height: 0.85;
+  line-height: 1;
   text-transform: lowercase;
   color: var(--burgundy);
 }
@@ -1148,7 +1164,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .boutique-perk__title {
   font-family: var(--font-display);
   font-size: 40px;
-  line-height: 0.9;
+  line-height: 1.02;
   text-transform: lowercase;
   margin: 0;
 }
@@ -1170,7 +1186,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .boutique-bespoke__quote {
   font-family: var(--font-display);
   font-size: clamp(48px, 7vw, 120px);
-  line-height: 0.95;
+  line-height: 1.06;
   text-transform: lowercase;
   margin: 8px 0 0;
 }
@@ -1237,9 +1253,9 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 
 /* ── Mobile display titles & footer tap targets (<768px) ─────────
-   Bagel Fat One est une graisse très large : aux planchers de clamp()
-   desktop, un mot long et indivisible ("coquelicot", "prestations")
-   dépasse la largeur d'un conteneur mobile et se fait rogner par
+   La display a une chasse large : aux planchers de clamp() desktop, un
+   mot long et indivisible ("coquelicot", "prestations") dépasse la
+   largeur d'un conteneur mobile et se fait rogner par
    body{overflow-x:hidden}. On abaisse les planchers pour que le mot le
    plus large tienne dès 320px (plafonds calés sur la valeur desktop à
    768px → pas d'à-coup à la frontière), et on agrandit les cibles
@@ -1252,8 +1268,8 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   .prestations__title,
   .contact__title { font-size: clamp(44px, 12vw, 68px); }
   /* Boutique : mêmes planchers abaissés que les autres titres display, sinon
-     "boutique" (Bagel Fat One, très large) dépasse 320px et se fait rogner par
-     body{overflow-x:hidden}. Pente 9vw conservée → continuité exacte à 768px. */
+     "boutique" dépasse 320px et se fait rogner par body{overflow-x:hidden}.
+     Pente 9vw conservée → continuité exacte à 768px. */
   .boutique-hero__title { font-size: clamp(40px, 9vw, 84px); }
   .boutique-bespoke__quote { font-size: clamp(38px, 7vw, 68px); }
 
@@ -1357,11 +1373,11 @@ button.product-card__add {
 }
 .cart-line__name {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 400;
   text-transform: lowercase;
   margin: 0;
-  line-height: 1;
+  line-height: 1.1;
 }
 .cart-line__variant {
   margin: 4px 0 0;
@@ -1633,7 +1649,8 @@ button.product-card__add {
 }
 .vase-suggest__title {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.15;
   text-transform: lowercase;
   margin: 0 0 6px;
 }
@@ -1660,6 +1677,7 @@ button.product-card__add {
   aspect-ratio: 3 / 4;
   border-radius: 6px;
   overflow: hidden;
+  position: relative;
   background: color-mix(in srgb, var(--fg) 8%, transparent);
   display: grid;
   place-items: center;
@@ -1682,8 +1700,8 @@ button.product-card__add {
 }
 .vase-suggest__name {
   font-family: var(--font-display);
-  font-size: 20px;
-  line-height: 1;
+  font-size: 24px;
+  line-height: 1.15;
   text-transform: lowercase;
   margin: 0;
 }

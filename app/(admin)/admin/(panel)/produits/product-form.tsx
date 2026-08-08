@@ -11,6 +11,7 @@ import type {
 import { Bouquet } from "@/components/illustrations";
 import { btnPrimary } from "../ui";
 import type { ProductFormState } from "./actions";
+import { ImageUpload } from "./image-upload";
 
 type Props = {
   action: (
@@ -38,6 +39,8 @@ type ColorDraft = {
   id?: string;
   label: string;
   illustrationVariant: number;
+  imagePath: string | null;
+  imageBgColor: string | null;
   active: boolean;
 };
 
@@ -69,6 +72,13 @@ export function ProductForm({
     undefined,
   );
   const [variant, setVariant] = useState(product?.illustrationVariant ?? 0);
+  const [productImage, setProductImage] = useState<{
+    imagePath: string | null;
+    imageBgColor: string | null;
+  }>({
+    imagePath: product?.imagePath ?? null,
+    imageBgColor: product?.imageBgColor ?? null,
+  });
   // Compteur pour les clés des lignes ajoutées à la volée.
   const uid = useRef(0);
   const nextKey = () => `new-${uid.current++}`;
@@ -87,6 +97,8 @@ export function ProductForm({
       id: c.id,
       label: c.label,
       illustrationVariant: c.illustrationVariant,
+      imagePath: c.imagePath,
+      imageBgColor: c.imageBgColor,
       active: c.active,
     })),
   );
@@ -133,10 +145,13 @@ export function ProductForm({
         </div>
 
         <div className="flex w-36 flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3">
-          <span className="text-xs text-muted">Aperçu</span>
-          <div className="h-24 w-24 text-wine [&_svg]:h-full [&_svg]:w-full">
-            <Bouquet variant={variant} />
-          </div>
+          <ImageUpload
+            value={productImage.imagePath}
+            bgColor={productImage.imageBgColor}
+            onChange={setProductImage}
+            fallback={<Bouquet variant={variant} />}
+            label="Image du produit"
+          />
         </div>
       </div>
 
@@ -293,8 +308,14 @@ export function ProductForm({
         </legend>
         {colors.map((c, i) => (
           <div key={c.key} className="flex items-end gap-2" data-testid={`color-row-${i}`}>
-            <div className="h-10 w-10 shrink-0 text-wine [&_svg]:h-full [&_svg]:w-full">
-              <Bouquet variant={c.illustrationVariant} />
+            <div className="shrink-0 text-wine">
+              <ImageUpload
+                value={c.imagePath}
+                bgColor={c.imageBgColor}
+                onChange={(v) => updateColor(i, v)}
+                fallback={<Bouquet variant={c.illustrationVariant} />}
+                size="sm"
+              />
             </div>
             <label className="flex flex-1 flex-col gap-1">
               <span className="text-xs text-muted">Libellé</span>
@@ -347,7 +368,7 @@ export function ProductForm({
           onClick={() =>
             setColors((l) => [
               ...l,
-              { key: nextKey(), label: "", illustrationVariant: 0, active: true },
+              { key: nextKey(), label: "", illustrationVariant: 0, imagePath: null, imageBgColor: null, active: true },
             ])
           }
           className="self-start rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
@@ -368,6 +389,9 @@ export function ProductForm({
           Visible en boutique
         </span>
       </label>
+
+      <input type="hidden" name="imagePath" value={productImage.imagePath ?? ""} />
+      <input type="hidden" name="imageBgColor" value={productImage.imageBgColor ?? ""} />
 
       {/* Variantes sérialisées (parsées et validées côté serveur). */}
       <input type="hidden" name="sizes" value={JSON.stringify(sizes)} />

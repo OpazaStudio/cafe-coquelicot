@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Bagel_Fat_One, Caveat, DM_Sans } from "next/font/google";
+import { Caveat, DM_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import { Effects } from "@/components/effects";
@@ -8,10 +9,20 @@ import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { CookieBanner } from "@/components/consent/cookie-banner";
 
-const bagelFatOne = Bagel_Fat_One({
+// Tangerine (fichiers fournis dans /fonts) — didone à fort contraste, plus large
+// à corps égal que la display qu'elle remplace : « coquelicot » mesurait 795px
+// là où l'ancienne en faisait 733, soit un héro et un wordmark de pied de page
+// qui débordaient de leur colonne. `size-adjust: 92%` recale l'avance sur
+// l'ancienne chasse, ce qui garde valides toutes les `font-size` et les
+// planchers de clamp() déjà calibrés dans globals.css.
+const tangerine = localFont({
+  src: "../fonts/tangerine/TangerineRegular.woff2",
   weight: "400",
-  subsets: ["latin"],
-  variable: "--font-bagel-fat-one",
+  style: "normal",
+  display: "swap",
+  variable: "--font-tangerine",
+  adjustFontFallback: "Times New Roman",
+  declarations: [{ prop: "size-adjust", value: "92%" }],
 });
 
 const caveat = Caveat({
@@ -38,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${bagelFatOne.variable} ${caveat.variable} ${dmSans.variable}`}
+      className={`${tangerine.variable} ${caveat.variable} ${dmSans.variable}`}
     >
       <body>
         <a href="#contenu" className="skip-link">

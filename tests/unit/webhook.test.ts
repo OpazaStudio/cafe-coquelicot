@@ -14,7 +14,7 @@ import {
 const stripe = new Stripe("sk_test_dummy_key_for_signatures");
 const secret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-function checkoutCompletedPayload(sessionId: string) {
+function checkoutCompletedPayload(sessionId: string, orderId?: string) {
   return JSON.stringify({
     id: "evt_test_1",
     object: "event",
@@ -26,6 +26,7 @@ function checkoutCompletedPayload(sessionId: string) {
         object: "checkout.session",
         payment_status: "paid",
         payment_intent: "pi_test_webhook",
+        ...(orderId ? { metadata: { orderId } } : {}),
       },
     },
   });
@@ -74,6 +75,50 @@ describe("POST /api/stripe/webhook", () => {
     const after = await getOrderBySessionId(db, "cs_test_wh_ok");
     expect(after?.order.status).toBe("paid");
     expect(after?.order.stripePaymentIntent).toBe("pi_test_webhook");
+  });
+
+  // Si attachStripeSession a échoué après la création de la session Stripe
+  // (app/checkout/actions.ts), la commande n'a pas de stripeSessionId et le
+  // paiement serait irréconciliable. metadata.orderId sert de filet.
+  it("réconcilie via metadata.orderId quand stripeSessionId n'a pas été attaché", async () => {
+    const db = await getDb();
+    const { order } = await createPendingOrder(
+      db,
+      { name: "Camille", email: "camille@exemple.fr", fulfillment: "retrait" },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    // Volontairement PAS d'attachStripeSession.
+    const payload = checkoutCompletedPayload("cs_test_wh_orphan", order.id);
+    const signature = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret,
+    });
+
+    expect((await post(payload, signature)).status).toBe(200);
+
+    const after = await getOrderBySessionId(db, "cs_test_wh_orphan");
+    expect(after?.order.id).toBe(order.id);
+    expect(after?.order.status).toBe("paid");
+    // La ligne est réparée : le sessionId est posé pour les relances.
+    expect(after?.order.stripeSessionId).toBe("cs_test_wh_orphan");
+    expect(after?.order.stripePaymentIntent).toBe("pi_test_webhook");
+  });
+
+  it("ignore un metadata.orderId qui ne correspond à aucune commande pending", async () => {
+    const db = await getDb();
+    const { order } = await createPendingOrder(
+      db,
+      { name: "Camille", email: "camille@exemple.fr", fulfillment: "retrait" },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    await attachStripeSession(db, order.id, "cs_test_wh_done");
+    const payload = checkoutCompletedPayload("cs_test_wh_done", order.id);
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+    expect((await post(payload, signature)).status).toBe(200);
+    // Rejeu du même événement : idempotent, la commande reste paid.
+    expect((await post(payload, signature)).status).toBe(200);
+    const after = await getOrderBySessionId(db, "cs_test_wh_done");
+    expect(after?.order.status).toBe("paid");
   });
 
   it("rejette une signature invalide sans toucher la commande", async () => {

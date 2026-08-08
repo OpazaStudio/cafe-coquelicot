@@ -24,7 +24,13 @@ export function VaseSuggestions({ vases }: { vases: ShopProduct[] }) {
         {vases.map((v) => (
           <li key={v.slug} className="vase-suggest__card">
             <div className="vase-suggest__media">
-              <ProductFigure category={v.category} variant={v.variant} />
+              <ProductFigure
+                category={v.category}
+                variant={v.variant}
+                imagePath={v.imagePath}
+                imageBgColor={v.imageBgColor}
+                alt={v.name}
+              />
             </div>
             <div className="vase-suggest__info">
               <h3 className="vase-suggest__name">{v.name}</h3>

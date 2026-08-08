@@ -14,6 +14,7 @@
 - `MONDIAL_RELAY_API_PASSWORD` (has default) — .env.local
 - `MONDIAL_RELAY_API_URL` (has default) — .env.local
 - `MONDIAL_RELAY_CUSTOMER_ID` (has default) — .env.local
+- `NETLIFY` **required** — app/api/e2e/orders/route.ts
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (has default) — .env.local
 - `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` (has default) — .env.local
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
@@ -21,12 +22,15 @@
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local
 - `NODE_ENV` **required** — app/contact/actions.ts
 - `PGLITE_DATA_DIR` **required** — lib/db/client.ts
+- `RENDER` **required** — app/api/e2e/orders/route.ts
 - `RESEND_API_KEY` (has default) — .env.local
 - `SESSION_SECRET` (has default) — .env.local
 - `STRIPE_PUBLIC_KEY` (has default) — .env.local
 - `STRIPE_RESTRICTED_KEY` (has default) — .env.local
 - `STRIPE_SECRET_KEY` (has default) — .env.local
 - `STRIPE_WEBHOOK_SECRET` (has default) — .env.local
+- `SUPABASE_SECRET_KEY` (has default) — .env.local
+- `VERCEL` **required** — app/api/e2e/orders/route.ts
 
 ## Config Files
 
@@ -37,6 +41,7 @@
 
 ## Key Dependencies
 
+- @supabase/supabase-js: ^2.110.3
 - drizzle-orm: ^0.45.2
 - next: 16.2.9
 - react: 19.2.4

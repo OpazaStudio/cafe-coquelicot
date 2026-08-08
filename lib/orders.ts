@@ -29,6 +29,7 @@ import {
   DONE_RETENTION_MS,
   type PrepStatus,
 } from "./prep-status";
+import { isUuid } from "./uuid";
 
 export { MONDIAL_RELAY_FEE_CENTS, type Fulfillment };
 
@@ -258,18 +259,28 @@ export async function attachStripeSession(
     .where(eq(orders.id, orderId));
 }
 
-/** Passage pending → paid, idempotent (webhook ET page de confirmation l'appellent). */
+/**
+ * Passage pending → paid, idempotent (webhook ET page de confirmation l'appellent).
+ *
+ * `fallbackOrderId` (metadata.orderId de la session Stripe) est un filet :
+ * `attachStripeSession` est appelé APRÈS la création de la session Stripe
+ * (app/checkout/actions.ts), donc une écriture ratée laisse une commande
+ * pending sans `stripe_session_id` — irréconciliable si on ne cherchait que
+ * par session. On répare alors la ligne en y posant le sessionId.
+ */
 export async function markOrderPaidBySession(
   db: Db,
   stripeSessionId: string,
   stripePaymentIntent?: string | null,
+  fallbackOrderId?: string | null,
 ): Promise<OrderRow | null> {
+  const paidFields = {
+    status: "paid" as const,
+    ...(stripePaymentIntent ? { stripePaymentIntent } : {}),
+  };
   const updated = await db
     .update(orders)
-    .set({
-      status: "paid",
-      ...(stripePaymentIntent ? { stripePaymentIntent } : {}),
-    })
+    .set(paidFields)
     .where(
       and(
         eq(orders.stripeSessionId, stripeSessionId),
@@ -277,7 +288,23 @@ export async function markOrderPaidBySession(
       ),
     )
     .returning();
-  return updated[0] ?? null;
+  if (updated[0]) return updated[0];
+
+  // isUuid : metadata vient de Stripe (signature vérifiée) mais reste une
+  // chaîne libre — un id malformé doit rendre null, pas casser la requête.
+  if (!isUuid(fallbackOrderId)) return null;
+  const repaired = await db
+    .update(orders)
+    .set({ ...paidFields, stripeSessionId })
+    .where(
+      and(
+        eq(orders.id, fallbackOrderId),
+        eq(orders.status, "pending"),
+        isNull(orders.stripeSessionId),
+      ),
+    )
+    .returning();
+  return repaired[0] ?? null;
 }
 
 /** Checkout abandonné (session Stripe expirée) : pending → cancelled. */

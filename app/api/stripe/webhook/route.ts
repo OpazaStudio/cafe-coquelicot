@@ -48,6 +48,7 @@ export async function POST(request: Request) {
           db,
           session.id,
           paymentIntentId(session.payment_intent),
+          session.metadata?.orderId,
         );
         if (order) {
           try {

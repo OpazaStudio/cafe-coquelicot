@@ -68,6 +68,18 @@ describe("getProductWithVariants", () => {
     expect(data!.sizes.find((s) => s.label === "Petit")!.active).toBe(false);
     expect(data!.colors.map((c) => c.label)).toEqual(["Naturel", "Blanc"]);
   });
+
+  // Sans cette garde, Postgres lève « invalid input syntax for type uuid »
+  // et la page /admin/produits/[id] répond 500 au lieu de 404.
+  it("renvoie null (sans throw) quand l'id n'est pas un uuid", async () => {
+    expect(await getProductWithVariants(db, "pas-un-uuid")).toBeNull();
+  });
+
+  it("renvoie null pour un uuid bien formé mais inconnu", async () => {
+    expect(
+      await getProductWithVariants(db, "00000000-0000-4000-8000-000000000000"),
+    ).toBeNull();
+  });
 });
 
 describe("queryProductBySlug", () => {
@@ -107,5 +119,23 @@ describe("listProductsForAdmin", () => {
     const rivage = list.find((p) => p.row.slug === "rivage")!;
     expect(rivage.sizeCount).toBe(0);
     expect(rivage.fromCents).toBe(4800);
+  });
+});
+
+describe("assemble expose les champs image", () => {
+  it("mappe imagePath/imageBgColor du produit", async () => {
+    await db
+      .update(products)
+      .set({ imagePath: "hero.png", imageBgColor: "#faf0e6" })
+      .where(eq(products.slug, "rivage"));
+    const p = await queryProductBySlug(db, "rivage");
+    expect(p?.imagePath).toBe("hero.png");
+    expect(p?.imageBgColor).toBe("#faf0e6");
+  });
+
+  it("un produit sans image expose null", async () => {
+    const p = await queryProductBySlug(db, "rivage");
+    expect(p?.imagePath).toBeNull();
+    expect(p?.imageBgColor).toBeNull();
   });
 });

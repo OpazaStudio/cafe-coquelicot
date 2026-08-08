@@ -1,6 +1,9 @@
 // Line-art SVG illustrations à la flyer Rivage.
 // Stroke uses currentColor so they inherit the section's --fg.
 
+import Image from "next/image";
+import { productImageUrl } from "@/lib/product-image";
+
 const stroke = {
   fill: "none",
   stroke: "currentColor",
@@ -253,16 +256,43 @@ export function Vase({ variant = 0, className }: IllustrationProps & { variant?:
   );
 }
 
-// Choisit l'illustration selon la catégorie produit (vase vs bouquet/fleur).
+// Choisit l'illustration selon la catégorie produit (vase vs bouquet/fleur),
+// ou affiche l'image uploadée si le produit/coloris en a une.
 export function ProductFigure({
   category,
   variant,
+  imagePath,
+  imageBgColor,
+  alt,
   className,
+  sizes = "(max-width: 640px) 50vw, 320px",
 }: {
   category: string;
   variant?: number;
+  imagePath?: string | null;
+  imageBgColor?: string | null;
+  alt?: string;
   className?: string;
+  sizes?: string;
 }) {
+  // I5 : NEXT_PUBLIC_SUPABASE_URL est inliné au build, donc disponible côté
+  // client comme serveur — si absent, productImageUrl renverrait une URL à
+  // base vide (image cassée) au lieu de retomber sur le SVG.
+  if (imagePath && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    return (
+      <span
+        className="product-media"
+        style={imageBgColor ? { background: imageBgColor } : undefined}
+      >
+        <Image
+          src={productImageUrl(imagePath)}
+          alt={alt ?? ""}
+          fill
+          sizes={sizes}
+        />
+      </span>
+    );
+  }
   return category === "vase" ? (
     <Vase variant={variant} className={className} />
   ) : (

@@ -40,6 +40,7 @@
   - function seedMissingProducts: (db) => Promise<string[]>
   - function getDb: () => Promise<Db>
   - type Db
+  - type Tx
 - `lib/db/seed-data.ts`
   - function buildChildSeedRows: (idBySlug, string>) => void
   - const SEED_PRODUCTS: NewProductRow[]
@@ -81,7 +82,7 @@
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
-  - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?) => Promise<OrderRow | null>
+  - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
   - function getOrderBySessionId: (db, stripeSessionId) => Promise<
   - _...11 more_
@@ -93,6 +94,14 @@
   - const PREP_LABELS: Record<PrepStatus, string>
   - const DONE_RETENTION_MS
   - _...1 more_
+- `lib/product-image.ts`
+  - function productImageUrl: (path) => string
+  - function validateImageFile: (file) => ImageValidation
+  - function sniffImageType: (bytes) => AllowedImageType | null
+  - type AllowedImageType
+  - type ImageValidation
+  - const BUCKET
+  - _...2 more_
 - `lib/products.ts`
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
@@ -101,6 +110,16 @@
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
   - _...8 more_
+- `lib/rate-limit.ts`
+  - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
+  - type RateLimitResult
+  - type RateLimiter
+  - const LOGIN_ATTEMPT_LIMIT
+  - const CONTACT_MESSAGE_LIMIT
+  - const loginLimiter: RateLimiter
+  - _...1 more_
+- `lib/request-ip.ts` — function getRequestIp: () => Promise<string>
+- `lib/security-headers.ts` — function securityHeaders: (isProduction) => HttpHeader[], type HttpHeader
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>
@@ -110,5 +129,10 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/storage.ts`
+  - function storageConfigured: () => boolean
+  - function uploadImage: (file) => Promise<
+  - function deleteImage: (path) => Promise<void>
 - `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
+- `lib/uuid.ts` — function isUuid: (value) => value is string
 - `proxy.ts` — function proxy: (request) => void, const config

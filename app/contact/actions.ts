@@ -6,6 +6,8 @@ import {
   buildShopEmail,
   parseContactForm,
 } from "@/lib/email/contact";
+import { contactLimiter } from "@/lib/rate-limit";
+import { getRequestIp } from "@/lib/request-ip";
 
 export type ContactState =
   | { status: "success" }
@@ -24,6 +26,18 @@ export async function sendContactMessage(
   }
   const input = parsed.data;
 
+  // Plafond APRÈS validation : une saisie invalide ne consomme pas le quota
+  // d'un visiteur légitime. L'accusé de réception partant vers l'adresse
+  // saisie, la clé est l'IP — changer d'adresse ne relâche pas le compteur.
+  const gate = contactLimiter(await getRequestIp());
+  if (!gate.ok) {
+    const minutes = Math.max(1, Math.ceil(gate.retryAfterMs / 60_000));
+    return {
+      status: "error",
+      message: `Trop de messages envoyés. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""} ou écrivez-nous directement à bonjour@coquelicot-lr.fr.`,
+    };
+  }
+
   const mailer = getMailer();
   if (!mailer) {
     // Pas de clé API : erreur explicite en prod, succès simulé en dev (testable).
@@ -35,10 +49,8 @@ export async function sendContactMessage(
           "L'envoi est momentanément indisponible. Réessayez plus tard ou écrivez-nous directement.",
       };
     }
-    console.warn(
-      "[contact] RESEND_API_KEY absente — envoi simulé (dev).",
-      { email: input.email },
-    );
+    // Pas de PII dans les logs : l'adresse du visiteur n'y a rien à faire.
+    console.warn("[contact] RESEND_API_KEY absente — envoi simulé (dev).");
     return { status: "success" };
   }
 

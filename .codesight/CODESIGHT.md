@@ -2,15 +2,16 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 2 routes | 5 models | 68 components | 24 lib files | 25 env vars | 0 middleware | 43% test coverage
-> **Token savings:** this file is ~5,200 tokens. Without it, AI exploration would cost ~43,700 tokens. **Saves ~38,500 tokens per conversation.**
-> **Last scanned:** 2026-07-13 12:23 — re-run after significant changes
+> 3 routes | 5 models | 69 components | 30 lib files | 29 env vars | 5 middleware | 38% test coverage
+> **Token savings:** this file is ~5,700 tokens. Without it, AI exploration would cost ~47,900 tokens. **Saves ~42,200 tokens per conversation.**
+> **Last scanned:** 2026-08-08 20:06 — re-run after significant changes
 
 ---
 
 # Routes
 
-- `POST` `/api/e2e/orders` → out: { error } [db] ✓
+- `POST` `/api/admin/product-image` → out: { error } [auth, payment, upload]
+- `POST` `/api/e2e/orders` → out: { error } [auth, db] ✓
 - `POST` `/api/stripe/webhook` [auth, payment]
 
 ---
@@ -27,6 +28,8 @@
 - category: productCategory (required)
 - badge: text
 - illustrationVariant: integer (default, required)
+- imagePath: text
+- imageBgColor: text
 - active: boolean (default, required)
 
 ### product_sizes
@@ -43,6 +46,8 @@
 - productId: uuid (fk, required)
 - label: text (required)
 - illustrationVariant: integer (default, required)
+- imagePath: text
+- imageBgColor: text
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
 - _relations_: productId -> products.id
@@ -107,6 +112,7 @@
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
+- **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
 - **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
@@ -136,7 +142,7 @@
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
 - **Vase** — props: variant, className — `components/illustrations.tsx`
-- **ProductFigure** — props: category, variant, className — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`
@@ -206,6 +212,7 @@
   - function seedMissingProducts: (db) => Promise<string[]>
   - function getDb: () => Promise<Db>
   - type Db
+  - type Tx
 - `lib/db/seed-data.ts`
   - function buildChildSeedRows: (idBySlug, string>) => void
   - const SEED_PRODUCTS: NewProductRow[]
@@ -247,7 +254,7 @@
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
-  - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?) => Promise<OrderRow | null>
+  - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
   - function getOrderBySessionId: (db, stripeSessionId) => Promise<
   - _...11 more_
@@ -259,6 +266,14 @@
   - const PREP_LABELS: Record<PrepStatus, string>
   - const DONE_RETENTION_MS
   - _...1 more_
+- `lib/product-image.ts`
+  - function productImageUrl: (path) => string
+  - function validateImageFile: (file) => ImageValidation
+  - function sniffImageType: (bytes) => AllowedImageType | null
+  - type AllowedImageType
+  - type ImageValidation
+  - const BUCKET
+  - _...2 more_
 - `lib/products.ts`
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
@@ -267,6 +282,16 @@
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
   - _...8 more_
+- `lib/rate-limit.ts`
+  - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
+  - type RateLimitResult
+  - type RateLimiter
+  - const LOGIN_ATTEMPT_LIMIT
+  - const CONTACT_MESSAGE_LIMIT
+  - const loginLimiter: RateLimiter
+  - _...1 more_
+- `lib/request-ip.ts` — function getRequestIp: () => Promise<string>
+- `lib/security-headers.ts` — function securityHeaders: (isProduction) => HttpHeader[], type HttpHeader
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>
@@ -276,7 +301,12 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/storage.ts`
+  - function storageConfigured: () => boolean
+  - function uploadImage: (file) => Promise<
+  - function deleteImage: (path) => Promise<void>
 - `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
+- `lib/uuid.ts` — function isUuid: (value) => value is string
 - `proxy.ts` — function proxy: (request) => void, const config
 
 ---
@@ -297,6 +327,7 @@
 - `MONDIAL_RELAY_API_PASSWORD` (has default) — .env.local
 - `MONDIAL_RELAY_API_URL` (has default) — .env.local
 - `MONDIAL_RELAY_CUSTOMER_ID` (has default) — .env.local
+- `NETLIFY` **required** — app/api/e2e/orders/route.ts
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (has default) — .env.local
 - `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` (has default) — .env.local
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local
@@ -304,12 +335,15 @@
 - `NEXT_PUBLIC_SUPABASE_URL` (has default) — .env.local
 - `NODE_ENV` **required** — app/contact/actions.ts
 - `PGLITE_DATA_DIR` **required** — lib/db/client.ts
+- `RENDER` **required** — app/api/e2e/orders/route.ts
 - `RESEND_API_KEY` (has default) — .env.local
 - `SESSION_SECRET` (has default) — .env.local
 - `STRIPE_PUBLIC_KEY` (has default) — .env.local
 - `STRIPE_RESTRICTED_KEY` (has default) — .env.local
 - `STRIPE_SECRET_KEY` (has default) — .env.local
 - `STRIPE_WEBHOOK_SECRET` (has default) — .env.local
+- `SUPABASE_SECRET_KEY` (has default) — .env.local
+- `VERCEL` **required** — app/api/e2e/orders/route.ts
 
 ## Config Files
 
@@ -320,6 +354,7 @@
 
 ## Key Dependencies
 
+- @supabase/supabase-js: ^2.110.3
 - drizzle-orm: ^0.45.2
 - next: 16.2.9
 - react: 19.2.4
@@ -329,15 +364,28 @@
 
 ---
 
+# Middleware
+
+## rate-limit
+- rate-limit — `lib/rate-limit.ts`
+- contact-rate-limit.test — `tests/unit/contact-rate-limit.test.ts`
+- login-rate-limit.test — `tests/unit/login-rate-limit.test.ts`
+- rate-limit.test — `tests/unit/rate-limit.test.ts`
+
+## auth
+- e2e-hooks-guard.test — `tests/unit/e2e-hooks-guard.test.ts`
+
+---
+
 # Dependency Graph
 
 ## Most Imported Files (change these carefully)
 
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **11** files
 - `tests/e2e/helpers.ts` — imported by **8** files
+- `tests/helpers/db.ts` — imported by **8** files
 - `components/illustrations.tsx` — imported by **6** files
 - `lib/db/schema.ts` — imported by **6** files
-- `tests/helpers/db.ts` — imported by **6** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
@@ -347,20 +395,20 @@
 - `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
 - `lib/db/seed-data.ts` — imported by **2** files
 - `lib/mondial-relay/config.ts` — imported by **2** files
+- `lib/uuid.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/admin-nav.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
 - `app/(admin)/admin/(panel)/commandes/kanban-board.tsx` — imported by **1** files
-- `app/(admin)/admin/(panel)/commandes/orders-table.tsx` — imported by **1** files
 
 ## Import Map (who imports what)
 
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +6 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +3 more
+- `tests/helpers/db.ts` ← `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts`, `tests/unit/products.test.ts`, `tests/unit/schema-relay.test.ts` +3 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts`, `lib/prep-status.ts` +1 more
-- `tests/helpers/db.ts` ← `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/products.test.ts`, `tests/unit/schema-relay.test.ts`, `tests/unit/seed-missing.test.ts` +1 more
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
@@ -371,8 +419,8 @@
 
 # Test Coverage
 
-> **43%** of routes and models are covered by tests
-> 34 test files found
+> **38%** of routes and models are covered by tests
+> 48 test files found
 
 ## Covered Routes
 

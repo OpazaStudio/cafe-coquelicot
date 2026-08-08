@@ -40,6 +40,7 @@ export default async function ConfirmationPage({
           typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id,
+          session.metadata?.orderId,
         );
         if (paid) {
           try {

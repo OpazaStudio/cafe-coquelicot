@@ -13,6 +13,8 @@ const solana: ShopProduct = {
   price: "dès 29€",
   priceCents: 2900,
   variant: 2,
+  imagePath: null,
+  imageBgColor: null,
   badge: null,
   category: "seche",
   sizes: [
@@ -20,8 +22,8 @@ const solana: ShopProduct = {
     { id: "s-g", label: "Grand", priceCents: 4200 },
   ],
   colors: [
-    { id: "c-n", label: "Naturel", illustrationVariant: 2 },
-    { id: "c-b", label: "Blanc", illustrationVariant: 4 },
+    { id: "c-n", label: "Naturel", illustrationVariant: 2, imagePath: null, imageBgColor: null },
+    { id: "c-b", label: "Blanc", illustrationVariant: 4, imagePath: null, imageBgColor: null },
   ],
 };
 

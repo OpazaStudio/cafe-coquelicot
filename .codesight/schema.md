@@ -10,6 +10,8 @@
 - category: productCategory (required)
 - badge: text
 - illustrationVariant: integer (default, required)
+- imagePath: text
+- imageBgColor: text
 - active: boolean (default, required)
 
 ### product_sizes
@@ -26,6 +28,8 @@
 - productId: uuid (fk, required)
 - label: text (required)
 - illustrationVariant: integer (default, required)
+- imagePath: text
+- imageBgColor: text
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
 - _relations_: productId -> products.id

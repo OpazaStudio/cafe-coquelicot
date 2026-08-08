@@ -17,6 +17,8 @@ pk: `id` (uuid)
 - `category`: productCategory _(required)_
 - `badge`: text
 - `illustrationVariant`: integer _(default, required)_
+- `imagePath`: text
+- `imageBgColor`: text
 - `active`: boolean _(default, required)_
 
 ### product_sizes
@@ -39,6 +41,8 @@ pk: `id` (uuid) · fk: productId
 - `productId`: uuid _(fk, required)_
 - `label`: text _(required)_
 - `illustrationVariant`: integer _(default, required)_
+- `imagePath`: text
+- `imageBgColor`: text
 - `sortOrder`: integer _(default, required)_
 - `active`: boolean _(default, required)_
 - _relations_: productId -> products.id
@@ -95,8 +99,8 @@ pk: `id` (uuid) · fk: orderId, productId, sizeId, colorId
 
 Read and edit these files when adding columns, creating migrations, or changing relations:
 
+- `tests/helpers/db.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **6** files
-- `tests/helpers/db.ts` — imported by **6** files
 - `lib/db/client.ts` — imported by **4** files
 - `lib/db/seed-data.ts` — imported by **2** files
 
