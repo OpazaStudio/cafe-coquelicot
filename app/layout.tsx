@@ -8,6 +8,7 @@ import { CartProvider } from "@/lib/cart/cart-context";
 import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { CookieBanner } from "@/components/consent/cookie-banner";
+import { BgTweakGate } from "@/components/bg-tweak/gate";
 
 // Tangerine (fichiers fournis dans /fonts) — didone à fort contraste, plus large
 // à corps égal que la display qu'elle remplace : « coquelicot » mesurait 795px
@@ -60,6 +61,7 @@ export default function RootLayout({
         <Effects />
         <CartProvider>{children}</CartProvider>
         <CookieBanner />
+        <BgTweakGate />
       </body>
       {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </html>

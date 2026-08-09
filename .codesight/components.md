@@ -31,6 +31,8 @@
 - **RootLayout** — `app/layout.tsx`
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
+- **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
+- **BgTweakPanel** [client] — `components/bg-tweak/panel.tsx`
 - **BoutiqueShop** [client] — props: catalogue — `components/boutique.tsx`
 - **CartLink** [client] — `components/cart-link.tsx`
 - **CartView** [client] — `components/cart-view.tsx`

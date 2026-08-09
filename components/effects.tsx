@@ -37,6 +37,13 @@ function useReveal() {
 const DARK_BGS = new Set(["burgundy", "coffee-bean", "coffee-bean-2"]);
 const HEADER_HEIGHT = 70; // px — approximate height of .site-header
 
+// The observer only fires when a section enters or leaves the strip. If a
+// section's data-bg changes while it sits there — which the colour tweak panel
+// does — nothing re-fires, and the header keeps the wrong ink. Whoever mutates
+// data-bg says so on this event. Idle cost for a normal visitor: one listener
+// that never fires.
+const BG_CHANGED = "coquelicot:bg-changed";
+
 function useHeaderTheme() {
   const pathname = usePathname();
   useEffect(() => {
@@ -68,7 +75,11 @@ function useHeaderTheme() {
     );
 
     document.querySelectorAll("section[data-section]").forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    window.addEventListener(BG_CHANGED, update);
+    return () => {
+      io.disconnect();
+      window.removeEventListener(BG_CHANGED, update);
+    };
   }, [pathname]);
 }
 

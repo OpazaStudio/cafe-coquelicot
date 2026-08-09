@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 5 models | 69 components | 30 lib files | 29 env vars | 5 middleware | 38% test coverage
-> **Token savings:** this file is ~5,700 tokens. Without it, AI exploration would cost ~47,900 tokens. **Saves ~42,200 tokens per conversation.**
-> **Last scanned:** 2026-08-09 07:02 — re-run after significant changes
+> 3 routes | 5 models | 71 components | 31 lib files | 29 env vars | 5 middleware | 38% test coverage
+> **Token savings:** this file is ~5,800 tokens. Without it, AI exploration would cost ~48,800 tokens. **Saves ~43,000 tokens per conversation.**
+> **Last scanned:** 2026-08-09 07:57 — re-run after significant changes
 
 ---
 
@@ -129,6 +129,8 @@
 - **RootLayout** — `app/layout.tsx`
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
+- **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
+- **BgTweakPanel** [client] — `components/bg-tweak/panel.tsx`
 - **BoutiqueShop** [client] — props: catalogue — `components/boutique.tsx`
 - **CartLink** [client] — `components/cart-link.tsx`
 - **CartView** [client] — `components/cart-view.tsx`
@@ -199,6 +201,14 @@
   - type SessionPayload
   - const SESSION_COOKIE
   - const SESSION_DURATION_MS
+- `lib/bg-tweak/state.ts`
+  - function isHex: (value) => value is string
+  - function isBgName: (value) => value is BgName
+  - function isSectionKey: (value) => value is string
+  - function decodeState: (source) => TweakState
+  - function encodeState: (state) => URLSearchParams
+  - function contrastRatio: (a, b) => number
+  - _...7 more_
 - `lib/cart/cart.ts`
   - function cartItemKey: (slug, sizeId?, colorId?) => string
   - function addItem: (cart, item, qty) => Cart
@@ -420,7 +430,7 @@
 # Test Coverage
 
 > **38%** of routes and models are covered by tests
-> 49 test files found
+> 50 test files found
 
 ## Covered Routes
 

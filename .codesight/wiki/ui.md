@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**69 components** (react)
+**71 components** (react)
 
 ## Client Components
 
@@ -17,6 +17,8 @@
 - **RevenueChartImpl** — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **LoginForm** — `app/(admin)/admin/login/login-form.tsx`
+- **BgTweakGate** — `components/bg-tweak/gate.tsx`
+- **BgTweakPanel** — `components/bg-tweak/panel.tsx`
 - **BoutiqueShop** — props: catalogue — `components/boutique.tsx`
 - **CartLink** — `components/cart-link.tsx`
 - **CartView** — `components/cart-view.tsx`

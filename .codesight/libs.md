@@ -27,6 +27,14 @@
   - type SessionPayload
   - const SESSION_COOKIE
   - const SESSION_DURATION_MS
+- `lib/bg-tweak/state.ts`
+  - function isHex: (value) => value is string
+  - function isBgName: (value) => value is BgName
+  - function isSectionKey: (value) => value is string
+  - function decodeState: (source) => TweakState
+  - function encodeState: (state) => URLSearchParams
+  - function contrastRatio: (a, b) => number
+  - _...7 more_
 - `lib/cart/cart.ts`
   - function cartItemKey: (slug, sizeId?, colorId?) => string
   - function addItem: (cart, item, qty) => Cart

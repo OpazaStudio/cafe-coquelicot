@@ -1,0 +1,215 @@
+/* Atelier couleurs — habillage du panneau.
+   Couleurs en dur, volontairement : le panneau doit rester lisible quelle que
+   soit la palette qu'on lui fait essayer. z-index au-dessus de --z-grain (2000). */
+
+.bgt {
+  position: fixed;
+  bottom: 16px;
+  z-index: 3000;
+  width: 264px;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  font: 12px/1.4 ui-sans-serif, system-ui, sans-serif;
+  color: #f2efec;
+  background: #16110f;
+  border: 1px solid #3a302b;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.42);
+}
+.bgt[data-side="right"] { right: 16px; }
+.bgt[data-side="left"] { left: 16px; }
+/* Replié, il ne garde que la largeur de son titre : le reste de la page
+   redevient cliquable. */
+.bgt:not([data-open]) {
+  width: auto;
+}
+
+.bgt__head {
+  display: flex;
+  align-items: stretch;
+}
+.bgt[data-open] .bgt__head {
+  border-bottom: 1px solid #3a302b;
+}
+.bgt__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+  padding: 10px 4px 10px 12px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.bgt__move {
+  padding: 0 11px 0 6px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+}
+.bgt__move:hover {
+  opacity: 1;
+}
+.bgt__title {
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.bgt__body {
+  overflow-y: auto;
+  padding: 2px 12px 12px;
+}
+.bgt__legend {
+  margin: 13px 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/* ── Palette ─────────────────────────────────────────────────── */
+.bgt__color {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+.bgt__color input[type="color"] {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: none;
+  border: 1px solid #4a3f39;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.bgt__hex {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+/* ── Fonds par section ───────────────────────────────────────── */
+.bgt__section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  padding: 7px 0;
+  border-top: 1px solid #241c19;
+}
+.bgt__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Repère discret sur les sections qu'on a déplacées hors de leur fond d'origine. */
+.bgt__name[data-moved]::after {
+  content: " •";
+  color: #e2b25f;
+}
+.bgt__ratio {
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  background: #22302a;
+  color: #a4dfbe;
+}
+.bgt__ratio[data-weak] {
+  background: #3a1f22;
+  color: #ffb0a6;
+}
+
+.bgt__swatches {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+.bgt__swatch {
+  position: relative;
+  flex: 1;
+  height: 22px;
+  border: 1px solid #4a3f39;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* Anneau ambre détaché par un liseré sombre : il faut que la marque du fond
+   retenu se voie aussi bien sur linen que sur coffee-bean-2. */
+.bgt__swatch[data-on] {
+  border-color: transparent;
+  box-shadow: 0 0 0 1px #16110f, 0 0 0 3px #e2b25f;
+}
+.bgt__swatch:has(:focus-visible) {
+  outline: 2px solid #f2efec;
+  outline-offset: 4px;
+}
+.bgt__swatch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.bgt__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Pied ────────────────────────────────────────────────────── */
+.bgt__foot {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+.bgt__foot button {
+  flex: 1;
+  padding: 7px 6px;
+  color: inherit;
+  font: inherit;
+  background: #241c19;
+  border: 1px solid #4a3f39;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.bgt__foot button:hover:not(:disabled) {
+  background: #2f2521;
+}
+.bgt__foot button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.bgt :focus-visible {
+  outline: 2px solid #e2b25f;
+  outline-offset: 2px;
+}
+
+/* Sur téléphone le panneau mangerait tout l'écran : on le plafonne pour garder
+   le site visible derrière — c'est lui qu'on regarde. */
+@media (max-width: 520px) {
+  .bgt[data-open] {
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 62vh;
+  }
+  .bgt {
+    bottom: 8px;
+  }
+  .bgt[data-side="right"] { right: 8px; }
+  .bgt[data-side="left"] { left: 8px; }
+}

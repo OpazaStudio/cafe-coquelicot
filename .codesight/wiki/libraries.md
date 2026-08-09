@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**30 library files** across 22 modules
+**31 library files** across 23 modules
 
 ## Mondial-relay (5 files)
 
@@ -31,6 +31,10 @@
 
 - `lib/email/contact.ts` — parseContactForm, escapeHtml, buildShopEmail, buildAckEmail, ContactInput, ContactParse, …
 - `lib/email/resend.ts` — getMailer, ContactMailer
+
+## Bg-tweak (1 files)
+
+- `lib/bg-tweak/state.ts` — isHex, isBgName, isSectionKey, decodeState, encodeState, contrastRatio, …
 
 ## Cart (1 files)
 
