@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Votre panier de fleurs fraîches & séchées.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function PanierPage() {
   const vases = await getActiveVases();
   return (
