@@ -48,6 +48,7 @@
   - function findAdminByEmail: (db, email) => Promise<AdminUserRow | undefined>
   - function findAdminById: (db, id) => Promise<AdminUserRow | undefined>
   - function setAdminPassword: (db, email, password) => Promise<"created" | "updated">
+  - function seedAdminUser: (db) => Promise<boolean>
   - const MIN_PASSWORD_LENGTH
 - `lib/db/client.ts`
   - function seedIfEmpty: (db) => Promise<boolean>

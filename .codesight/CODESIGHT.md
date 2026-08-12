@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 3 routes | 6 models | 71 components | 32 lib files | 29 env vars | 5 middleware | 44% test coverage
-> **Token savings:** this file is ~5,900 tokens. Without it, AI exploration would cost ~49,500 tokens. **Saves ~43,500 tokens per conversation.**
-> **Last scanned:** 2026-08-12 15:12 — re-run after significant changes
+> **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~49,500 tokens. **Saves ~43,500 tokens per conversation.**
+> **Last scanned:** 2026-08-12 15:24 — re-run after significant changes
 
 ---
 
@@ -228,6 +228,7 @@
   - function findAdminByEmail: (db, email) => Promise<AdminUserRow | undefined>
   - function findAdminById: (db, id) => Promise<AdminUserRow | undefined>
   - function setAdminPassword: (db, email, password) => Promise<"created" | "updated">
+  - function seedAdminUser: (db) => Promise<boolean>
   - const MIN_PASSWORD_LENGTH
 - `lib/db/client.ts`
   - function seedIfEmpty: (db) => Promise<boolean>

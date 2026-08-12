@@ -14,7 +14,7 @@
 
 ## Db (3 files)
 
-- `lib/db/admin-users.ts` — normalizeEmail, findAdminByEmail, findAdminById, setAdminPassword, MIN_PASSWORD_LENGTH
+- `lib/db/admin-users.ts` — normalizeEmail, findAdminByEmail, findAdminById, setAdminPassword, seedAdminUser, MIN_PASSWORD_LENGTH
 - `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
 

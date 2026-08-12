@@ -63,8 +63,8 @@ export default defineConfig({
       ...(process.env.ADMIN_EMAIL
         ? { ADMIN_EMAIL: process.env.ADMIN_EMAIL }
         : {}),
-      ...(process.env.ADMIN_PASSWORD_HASH
-        ? { ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH }
+      ...(process.env.ADMIN_PASSWORD
+        ? { ADMIN_PASSWORD: process.env.ADMIN_PASSWORD }
         : {}),
     },
   },

@@ -8,6 +8,7 @@ import {
   MIN_PASSWORD_LENGTH,
   findAdminByEmail,
   findAdminById,
+  seedAdminUser,
   setAdminPassword,
 } from "@/lib/db/admin-users";
 
@@ -86,5 +87,35 @@ describe("findAdminById", () => {
   it("renvoie undefined sur un identifiant qui n'est pas un uuid", async () => {
     const db = await createTestDb({ seed: false });
     expect(await findAdminById(db, "pas-un-uuid")).toBeUndefined();
+  });
+});
+
+describe("seedAdminUser", () => {
+  it("crée le compte de test depuis ADMIN_EMAIL et ADMIN_PASSWORD", async () => {
+    const db = await createTestDb({ seed: false });
+    expect(await seedAdminUser(db)).toBe(true);
+
+    const user = await findAdminByEmail(db, process.env.ADMIN_EMAIL!);
+    expect(user).toBeDefined();
+    expect(await bcrypt.compare(process.env.ADMIN_PASSWORD!, user!.passwordHash)).toBe(
+      true,
+    );
+  });
+
+  it("est idempotent : un second appel ne crée pas de doublon", async () => {
+    const db = await createTestDb({ seed: false });
+    await seedAdminUser(db);
+    expect(await seedAdminUser(db)).toBe(false);
+  });
+
+  it("ne fait rien si les variables sont absentes", async () => {
+    const db = await createTestDb({ seed: false });
+    const email = process.env.ADMIN_EMAIL;
+    delete process.env.ADMIN_EMAIL;
+    try {
+      expect(await seedAdminUser(db)).toBe(false);
+    } finally {
+      process.env.ADMIN_EMAIL = email;
+    }
   });
 });

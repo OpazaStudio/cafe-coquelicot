@@ -68,3 +68,21 @@ export async function setAdminPassword(
   await db.insert(adminUsers).values({ email: normalized, passwordHash });
   return "created";
 }
+
+// Compte de développement et de test. N'est appelé QUE depuis le chemin PGlite
+// de createDb (donc en l'absence de DATABASE_URL) : ce code ne peut pas
+// s'exécuter en production, où la variable est obligatoire.
+// Le contrôle de longueur de setAdminPassword est volontairement contourné :
+// les identifiants de test n'ont pas à respecter la politique de production.
+export async function seedAdminUser(db: Db): Promise<boolean> {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) return false;
+
+  const normalized = normalizeEmail(email);
+  if (await findAdminByEmail(db, normalized)) return false;
+
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  await db.insert(adminUsers).values({ email: normalized, passwordHash });
+  return true;
+}

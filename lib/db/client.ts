@@ -37,6 +37,10 @@ async function createDb(): Promise<Db> {
   const db = drizzlePglite(pglite, { schema });
   await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
   await seedIfEmpty(db as unknown as Db);
+  const { seedAdminUser } = await import("./admin-users");
+  if (await seedAdminUser(db as unknown as Db)) {
+    console.warn(`[db] compte admin de développement créé : ${process.env.ADMIN_EMAIL}`);
+  }
   console.warn(
     `[db] DATABASE_URL absente — base locale PGlite (${dataDir}). Ne pas utiliser en production.`,
   );
