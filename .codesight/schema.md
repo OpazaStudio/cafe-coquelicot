@@ -75,3 +75,9 @@
 - sizeLabelSnapshot: text
 - colorLabelSnapshot: text
 - _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
+
+### admin_users
+- id: uuid (pk)
+- email: text (unique, required)
+- passwordHash: text (required)
+- passwordChangedAt: timestamp (default, required)

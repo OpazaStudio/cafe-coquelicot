@@ -157,6 +157,20 @@ export const orderItems = pgTable("order_items", {
   colorLabelSnapshot: text("color_label_snapshot"),
 });
 
+// Comptes du back-office. `password_changed_at` sert à invalider les sessions
+// émises avant un changement de mot de passe (cf. lib/auth/dal.ts).
+export const adminUsers = pgTable("admin_users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  passwordChangedAt: timestamp("password_changed_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
 export type ProductSizeRow = typeof productSizes.$inferSelect;
@@ -167,6 +181,8 @@ export type OrderRow = typeof orders.$inferSelect;
 export type NewOrderRow = typeof orders.$inferInsert;
 export type OrderItemRow = typeof orderItems.$inferSelect;
 export type NewOrderItemRow = typeof orderItems.$inferInsert;
+export type AdminUserRow = typeof adminUsers.$inferSelect;
+export type NewAdminUserRow = typeof adminUsers.$inferInsert;
 
 export type ProductCategory = (typeof productCategory.enumValues)[number];
 export type OrderStatus = (typeof orderStatus.enumValues)[number];

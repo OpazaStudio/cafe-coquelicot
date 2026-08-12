@@ -9,6 +9,10 @@ The Admin subsystem handles **1 routes** and touches: auth, payment.
 - `POST` `/api/admin/product-image` → out: { error } [auth, payment, upload]
   `app/api/admin/product-image/route.ts`
 
+## Related Models
+
+- **admin_users** (4 fields) → [database.md](./database.md)
+
 ## Source Files
 
 Read these before implementing or modifying this subsystem:

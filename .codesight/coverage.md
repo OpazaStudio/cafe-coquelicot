@@ -1,7 +1,7 @@
 # Test Coverage
 
-> **38%** of routes and models are covered by tests
-> 50 test files found
+> **44%** of routes and models are covered by tests
+> 51 test files found
 
 ## Covered Routes
 
@@ -11,3 +11,4 @@
 
 - products
 - orders
+- admin_users
