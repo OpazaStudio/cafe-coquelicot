@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**31 library files** across 23 modules
+**32 library files** across 23 modules
 
 ## Mondial-relay (5 files)
 
@@ -11,6 +11,12 @@
 - `lib/mondial-relay/config.ts` — getMondialRelayConfig, DEFAULT_PARCEL_WEIGHT_GR
 - `lib/mondial-relay/xml.ts` — buildShipmentXml, parseShipmentResponse
 - `lib/mondial-relay/ensure-shipment.ts` — ensureRelayShipment
+
+## Db (3 files)
+
+- `lib/db/admin-users.ts` — normalizeEmail, findAdminByEmail, findAdminById, setAdminPassword, MIN_PASSWORD_LENGTH
+- `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
+- `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
 
 ## Analytics (2 files)
 
@@ -21,11 +27,6 @@
 
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, SESSION_COOKIE, SESSION_DURATION_MS
-
-## Db (2 files)
-
-- `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
-- `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
 
 ## Email (2 files)
 

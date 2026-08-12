@@ -43,6 +43,12 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/db/admin-users.ts`
+  - function normalizeEmail: (email) => string
+  - function findAdminByEmail: (db, email) => Promise<AdminUserRow | undefined>
+  - function findAdminById: (db, id) => Promise<AdminUserRow | undefined>
+  - function setAdminPassword: (db, email, password) => Promise<"created" | "updated">
+  - const MIN_PASSWORD_LENGTH
 - `lib/db/client.ts`
   - function seedIfEmpty: (db) => Promise<boolean>
   - function seedMissingProducts: (db) => Promise<string[]>

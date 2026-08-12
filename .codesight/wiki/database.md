@@ -109,8 +109,8 @@ pk: `id` (uuid)
 Read and edit these files when adding columns, creating migrations, or changing relations:
 
 - `tests/helpers/db.ts` — imported by **9** files
-- `lib/db/schema.ts` — imported by **6** files
-- `lib/db/client.ts` — imported by **4** files
+- `lib/db/schema.ts` — imported by **7** files
+- `lib/db/client.ts` — imported by **5** files
 - `lib/db/seed-data.ts` — imported by **2** files
 
 ---
