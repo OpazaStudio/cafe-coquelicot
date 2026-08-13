@@ -8,7 +8,7 @@
 // cantonné à une route authentifiée, et les Server Actions gardent le défaut
 // de 1 Mo.
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/dal";
+import { getCurrentUser } from "@/lib/auth/dal";
 import { validateImageFile } from "@/lib/product-image";
 import { uploadImage } from "@/lib/storage";
 
@@ -17,9 +17,9 @@ function bad(error: string, status = 400) {
 }
 
 export async function POST(request: Request) {
-  // getSession (et non verifySession) : une route d'API doit répondre 401,
-  // pas rediriger vers /admin/login.
-  const session = await getSession();
+  // getCurrentUser (et non verifySession) : une route d'API doit répondre 401,
+  // pas rediriger. Le contrôle en base est le même.
+  const session = await getCurrentUser();
   if (!session) return bad("Authentification requise.", 401);
 
   let file: FormDataEntryValue | null;

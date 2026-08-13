@@ -14,7 +14,7 @@ import {
   type Session,
 } from "./session";
 import { getDb } from "@/lib/db/client";
-import { findAdminByEmail } from "@/lib/db/admin-users";
+import { findAdminByEmail, findAdminById } from "@/lib/db/admin-users";
 import type { AdminUserRow } from "@/lib/db/schema";
 
 export const getSession = cache(async (): Promise<Session | null> => {
@@ -22,12 +22,36 @@ export const getSession = cache(async (): Promise<Session | null> => {
   return decryptSession(store.get(SESSION_COOKIE)?.value);
 });
 
-export async function verifySession(): Promise<Session> {
+// Le compte est relu à chaque vérification : un compte supprimé perd l'accès
+// immédiatement, et un changement de mot de passe invalide les jetons émis
+// avant. Le cache() est posé ICI et pas seulement sur getSession, sinon chaque
+// appel de verifySession rouvrirait une requête — produits/actions.ts en fait
+// quatre.
+const loadSessionUser = cache(
+  async (sub: string, iat: number): Promise<AdminUserRow | null> => {
+    const user = await findAdminById(await getDb(), sub);
+    if (!user) return null;
+    // `iat` est en secondes, `passwordChangedAt` en millisecondes : on compare
+    // à la seconde. Une session émise dans la même seconde qu'un changement
+    // survit, ce qui est sans conséquence — l'action de changement réémet le
+    // jeton.
+    const changedAt = Math.floor(user.passwordChangedAt.getTime() / 1000);
+    return changedAt > iat ? null : user;
+  },
+);
+
+export const getCurrentUser = cache(async (): Promise<AdminUserRow | null> => {
   const session = await getSession();
-  if (!session) {
+  if (!session) return null;
+  return loadSessionUser(session.sub, session.iat);
+});
+
+export async function verifySession(): Promise<AdminUserRow> {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/admin/login");
   }
-  return session;
+  return user;
 }
 
 // Hash bcrypt constant, comparé quand aucun compte ne correspond : sans lui,

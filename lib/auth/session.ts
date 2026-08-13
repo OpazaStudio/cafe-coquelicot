@@ -24,10 +24,11 @@ function key(): Uint8Array {
 export async function encryptSession(
   payload: SessionPayload,
   expiresAt: Date,
+  issuedAt: Date = new Date(),
 ): Promise<string> {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
+    .setIssuedAt(issuedAt)
     .setExpirationTime(expiresAt)
     .sign(key());
 }

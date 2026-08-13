@@ -16,13 +16,14 @@
   - const GA_MEASUREMENT_ID
   - _...1 more_
 - `lib/auth/dal.ts`
-  - function verifySession: () => Promise<Session>
+  - function verifySession: () => Promise<AdminUserRow>
   - function checkCredentials: (email, password) => Promise<AdminUserRow | null>
   - function createSession: (userId) => Promise<void>
   - function destroySession: () => Promise<void>
   - const getSession
+  - const getCurrentUser
 - `lib/auth/session.ts`
-  - function encryptSession: (payload, expiresAt) => Promise<string>
+  - function encryptSession: (payload, expiresAt, issuedAt) => void
   - function decryptSession: (token) => Promise<Session | null>
   - type SessionPayload
   - type Session

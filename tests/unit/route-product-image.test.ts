@@ -4,8 +4,8 @@
 // (checkout, contact) — cf. serverActions.bodySizeLimit, global à toute l'app.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const getSession = vi.fn();
-vi.mock("@/lib/auth/dal", () => ({ getSession: () => getSession() }));
+const getCurrentUser = vi.fn();
+vi.mock("@/lib/auth/dal", () => ({ getCurrentUser: () => getCurrentUser() }));
 
 import { POST } from "@/app/api/admin/product-image/route";
 
@@ -27,13 +27,13 @@ function withFile(content: BlobPart, type: string, name = "a.png"): FormData {
 }
 
 beforeEach(() => {
-  getSession.mockReset();
-  getSession.mockResolvedValue({ email: "lea@test.local" });
+  getCurrentUser.mockReset();
+  getCurrentUser.mockResolvedValue({ email: "lea@test.local" });
 });
 
 describe("POST /api/admin/product-image", () => {
   it("répond 401 sans session admin (jamais de redirection)", async () => {
-    getSession.mockResolvedValue(null);
+    getCurrentUser.mockResolvedValue(null);
     const res = await post(withFile(PNG_HEAD, "image/png"));
     expect(res.status).toBe(401);
   });

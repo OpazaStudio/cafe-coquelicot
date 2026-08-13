@@ -4,7 +4,7 @@
 
 > 3 routes | 6 models | 71 components | 32 lib files | 29 env vars | 6 middleware | 44% test coverage
 > **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~49,700 tokens. **Saves ~43,700 tokens per conversation.**
-> **Last scanned:** 2026-08-13 06:44 — re-run after significant changes
+> **Last scanned:** 2026-08-13 06:58 — re-run after significant changes
 
 ---
 
@@ -196,13 +196,14 @@
   - const GA_MEASUREMENT_ID
   - _...1 more_
 - `lib/auth/dal.ts`
-  - function verifySession: () => Promise<Session>
+  - function verifySession: () => Promise<AdminUserRow>
   - function checkCredentials: (email, password) => Promise<AdminUserRow | null>
   - function createSession: (userId) => Promise<void>
   - function destroySession: () => Promise<void>
   - const getSession
+  - const getCurrentUser
 - `lib/auth/session.ts`
-  - function encryptSession: (payload, expiresAt) => Promise<string>
+  - function encryptSession: (payload, expiresAt, issuedAt) => void
   - function decryptSession: (token) => Promise<Session | null>
   - type SessionPayload
   - type Session

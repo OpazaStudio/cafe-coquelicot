@@ -25,8 +25,8 @@
 
 ## Auth (2 files)
 
+- `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession, getCurrentUser
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, Session, SESSION_COOKIE, SESSION_DURATION_MS
-- `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession
 
 ## Email (2 files)
 
