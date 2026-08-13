@@ -5,8 +5,11 @@
 // shell, ni expansion de variables, ni échappement à connaître.
 import readline from "node:readline";
 import { loadEnvConfig } from "@next/env";
+import * as z from "zod";
 
 loadEnvConfig(process.cwd());
+
+const EmailSchema = z.email({ error: "Adresse email invalide." });
 
 // Une seule interface pour toutes les questions : en ouvrir puis fermer
 // plusieurs ferme l'entrée standard dès la première.
@@ -15,7 +18,12 @@ const rl = readline.createInterface({
   output: process.stdout,
   terminal: true,
 });
-let masque = false;
+// Masqué DÈS l'ouverture (et non après le premier prompt) : l'interface se
+// met à écouter stdin immédiatement, avant même que `main()` ait fini de
+// valider l'email et de charger `lib/db/*` (imports dynamiques, donc
+// asynchrones). Une saisie qui arriverait pendant cette fenêtre serait
+// échoée en clair si `masque` démarrait à `false`.
+let masque = true;
 const ecrire = (
   rl as unknown as { _writeToOutput: (s: string) => void }
 )._writeToOutput.bind(rl);
@@ -36,12 +44,29 @@ async function demander(prompt: string, cache = false): Promise<string> {
   return (value ?? "").trim();
 }
 
+// Décrit la base sur laquelle le script va écrire, sans jamais exposer les
+// identifiants contenus dans DATABASE_URL (l'hôte suffit à la situer).
+function decrireCible(url: string | undefined): string {
+  if (!url) return "base locale PGlite (.data/pglite)";
+  try {
+    return `base distante (hôte : ${new URL(url).host}) — c'est la production si c'est le poste habituel`;
+  } catch {
+    return "base distante (DATABASE_URL illisible)";
+  }
+}
+
 async function main() {
-  const email = process.argv[2];
-  if (!email || !email.includes("@")) {
+  const parsedEmail = EmailSchema.safeParse(process.argv[2]);
+  if (!parsedEmail.success) {
     console.error("Usage : npm run admin:set -- adresse@exemple.fr");
     process.exit(1);
   }
+  const email = parsedEmail.data;
+
+  // Affiché avant toute saisie : si DATABASE_URL n'a pas été préfixée par
+  // erreur, l'utilisateur voit qu'il s'apprête à écrire en production avant
+  // même de taper un mot de passe.
+  console.warn(`⚠ Cible : ${decrireCible(process.env.DATABASE_URL)}.`);
 
   const { getDb } = await import("../lib/db/client");
   const { setAdminPassword, MIN_PASSWORD_LENGTH } = await import(
@@ -61,9 +86,6 @@ async function main() {
       `✗ Trop court : ${MIN_PASSWORD_LENGTH} caractères minimum. Rien n'a été modifié.`,
     );
     process.exit(1);
-  }
-  if (!process.env.DATABASE_URL) {
-    console.warn("DATABASE_URL absente — écriture dans la base locale PGlite.");
   }
 
   const action = await setAdminPassword(await getDb(), email, mdp);
