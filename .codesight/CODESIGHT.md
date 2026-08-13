@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 6 models | 71 components | 32 lib files | 29 env vars | 6 middleware | 44% test coverage
-> **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~49,700 tokens. **Saves ~43,700 tokens per conversation.**
-> **Last scanned:** 2026-08-13 07:24 — re-run after significant changes
+> 3 routes | 6 models | 73 components | 32 lib files | 29 env vars | 6 middleware | 44% test coverage
+> **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~50,400 tokens. **Saves ~44,300 tokens per conversation.**
+> **Last scanned:** 2026-08-13 07:40 — re-run after significant changes
 
 ---
 
@@ -115,6 +115,8 @@
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
 - **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
+- **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
+- **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
@@ -407,7 +409,7 @@
 
 ## Most Imported Files (change these carefully)
 
-- `app/(admin)/admin/(panel)/ui.tsx` — imported by **11** files
+- `app/(admin)/admin/(panel)/ui.tsx` — imported by **13** files
 - `tests/helpers/db.ts` — imported by **9** files
 - `tests/e2e/helpers.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
@@ -430,7 +432,7 @@
 
 ## Import Map (who imports what)
 
-- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +6 more
+- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +8 more
 - `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts`, `tests/unit/products.test.ts` +4 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more

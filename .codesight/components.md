@@ -11,6 +11,8 @@
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
 - **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
+- **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
+- **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`

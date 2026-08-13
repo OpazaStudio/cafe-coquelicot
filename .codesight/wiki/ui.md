@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**71 components** (react)
+**73 components** (react)
 
 ## Client Components
 
@@ -12,6 +12,7 @@
 - **StatusActions** — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
+- **PasswordForm** — `app/(admin)/admin/(panel)/compte/password-form.tsx`
 - **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **ProductForm** — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChartImpl** — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
@@ -41,6 +42,7 @@
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
 - **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
+- **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev-pglite",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["DATABASE_URL=", "PGLITE_DATA_DIR=:memory:", "npm", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

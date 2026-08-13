@@ -6,7 +6,7 @@
 
 ## Scale
 
-3 API routes · 6 database models · 71 UI components · 32 library files · 6 middleware layers · 29 environment variables
+3 API routes · 6 database models · 73 UI components · 32 library files · 6 middleware layers · 29 environment variables
 
 ## Subsystems
 
@@ -16,7 +16,7 @@
 
 **Database:** drizzle, 6 models — see [database.md](./database.md)
 
-**UI:** 71 components (react) — see [ui.md](./ui.md)
+**UI:** 73 components (react) — see [ui.md](./ui.md)
 
 **Libraries:** 32 files — see [libraries.md](./libraries.md)
 
@@ -24,7 +24,7 @@
 
 Changes to these files have the widest blast radius across the codebase:
 
-- `app/(admin)/admin/(panel)/ui.tsx` — imported by **11** files
+- `app/(admin)/admin/(panel)/ui.tsx` — imported by **13** files
 - `tests/helpers/db.ts` — imported by **9** files
 - `tests/e2e/helpers.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
