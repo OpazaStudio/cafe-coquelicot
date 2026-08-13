@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 6 models | 71 components | 32 lib files | 29 env vars | 5 middleware | 44% test coverage
-> **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~49,500 tokens. **Saves ~43,500 tokens per conversation.**
-> **Last scanned:** 2026-08-12 15:24 — re-run after significant changes
+> 3 routes | 6 models | 71 components | 32 lib files | 29 env vars | 6 middleware | 44% test coverage
+> **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~49,700 tokens. **Saves ~43,700 tokens per conversation.**
+> **Last scanned:** 2026-08-13 06:44 — re-run after significant changes
 
 ---
 
@@ -196,15 +196,16 @@
   - const GA_MEASUREMENT_ID
   - _...1 more_
 - `lib/auth/dal.ts`
-  - function verifySession: () => Promise<SessionPayload>
-  - function checkCredentials: (email, password) => Promise<boolean>
-  - function createSession: (email) => Promise<void>
+  - function verifySession: () => Promise<Session>
+  - function checkCredentials: (email, password) => Promise<AdminUserRow | null>
+  - function createSession: (userId) => Promise<void>
   - function destroySession: () => Promise<void>
   - const getSession
 - `lib/auth/session.ts`
   - function encryptSession: (payload, expiresAt) => Promise<string>
-  - function decryptSession: (token) => Promise<SessionPayload | null>
+  - function decryptSession: (token) => Promise<Session | null>
   - type SessionPayload
+  - type Session
   - const SESSION_COOKIE
   - const SESSION_DURATION_MS
 - `lib/bg-tweak/state.ts`
@@ -396,6 +397,7 @@
 - rate-limit.test — `tests/unit/rate-limit.test.ts`
 
 ## auth
+- auth-dal.test — `tests/unit/auth-dal.test.ts`
 - e2e-hooks-guard.test — `tests/unit/e2e-hooks-guard.test.ts`
 
 ---
@@ -443,7 +445,7 @@
 # Test Coverage
 
 > **44%** of routes and models are covered by tests
-> 51 test files found
+> 52 test files found
 
 ## Covered Routes
 

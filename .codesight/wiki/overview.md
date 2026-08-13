@@ -6,7 +6,7 @@
 
 ## Scale
 
-3 API routes · 6 database models · 71 UI components · 32 library files · 5 middleware layers · 29 environment variables
+3 API routes · 6 database models · 71 UI components · 32 library files · 6 middleware layers · 29 environment variables
 
 ## Subsystems
 
@@ -42,4 +42,4 @@ Changes to these files have the widest blast radius across the codebase:
 - `VERCEL` — `app/api/e2e/orders/route.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-08-12_
+_Back to [index.md](./index.md) · Generated 2026-08-13_

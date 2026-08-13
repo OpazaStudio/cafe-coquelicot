@@ -7,4 +7,5 @@
 - rate-limit.test — `tests/unit/rate-limit.test.ts`
 
 ## auth
+- auth-dal.test — `tests/unit/auth-dal.test.ts`
 - e2e-hooks-guard.test — `tests/unit/e2e-hooks-guard.test.ts`

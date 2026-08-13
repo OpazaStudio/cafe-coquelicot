@@ -5,7 +5,13 @@ import { SignJWT, jwtVerify } from "jose";
 export const SESSION_COOKIE = "coquelicot_session";
 export const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
 
-export type SessionPayload = { email: string };
+// Ce qui est signé dans le jeton.
+export type SessionPayload = { sub: string };
+
+// Ce que le déchiffrement renvoie : `iat` (date d'émission, posée par
+// setIssuedAt) sert à invalider les sessions antérieures à un changement de
+// mot de passe.
+export type Session = { sub: string; iat: number };
 
 function key(): Uint8Array {
   const secret = process.env.SESSION_SECRET;
@@ -28,13 +34,15 @@ export async function encryptSession(
 
 export async function decryptSession(
   token: string | undefined,
-): Promise<SessionPayload | null> {
+): Promise<Session | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify<SessionPayload>(token, key(), {
       algorithms: ["HS256"],
     });
-    return typeof payload.email === "string" ? { email: payload.email } : null;
+    return typeof payload.sub === "string" && typeof payload.iat === "number"
+      ? { sub: payload.sub, iat: payload.iat }
+      : null;
   } catch {
     return null;
   }

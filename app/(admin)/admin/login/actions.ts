@@ -41,8 +41,8 @@ export async function login(
     return { error: parsed.error.issues[0]?.message ?? "Saisie invalide." };
   }
 
-  const ok = await checkCredentials(parsed.data.email, parsed.data.password);
-  if (!ok) {
+  const user = await checkCredentials(parsed.data.email, parsed.data.password);
+  if (!user) {
     return { error: "Identifiants incorrects." };
   }
 
@@ -50,7 +50,7 @@ export async function login(
   // verrouille en se reconnectant plusieurs fois dans la fenêtre. La
   // protection reste entière — un attaquant n'obtient jamais de succès.
   loginLimiter.reset(ip);
-  await createSession(parsed.data.email);
+  await createSession(user.id);
   redirect("/admin");
 }
 

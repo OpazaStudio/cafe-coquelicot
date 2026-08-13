@@ -11,15 +11,18 @@ import {
   SESSION_DURATION_MS,
   decryptSession,
   encryptSession,
-  type SessionPayload,
+  type Session,
 } from "./session";
+import { getDb } from "@/lib/db/client";
+import { findAdminByEmail } from "@/lib/db/admin-users";
+import type { AdminUserRow } from "@/lib/db/schema";
 
-export const getSession = cache(async (): Promise<SessionPayload | null> => {
+export const getSession = cache(async (): Promise<Session | null> => {
   const store = await cookies();
   return decryptSession(store.get(SESSION_COOKIE)?.value);
 });
 
-export async function verifySession(): Promise<SessionPayload> {
+export async function verifySession(): Promise<Session> {
   const session = await getSession();
   if (!session) {
     redirect("/admin/login");
@@ -27,22 +30,23 @@ export async function verifySession(): Promise<SessionPayload> {
   return session;
 }
 
+// Hash bcrypt constant, comparé quand aucun compte ne correspond : sans lui,
+// l'absence de compte court-circuiterait bcrypt et le temps de réponse
+// révélerait quelles adresses existent.
+const DUMMY_HASH = "$2b$10$iUG5yEGZqxJOzXvR.K41mOlWen6q8t8q3u0g8C.9KDEwklc8jEVLa";
+
 export async function checkCredentials(
   email: string,
   password: string,
-): Promise<boolean> {
-  const expectedEmail = process.env.ADMIN_EMAIL;
-  const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (!expectedEmail || !hash) return false;
-  // bcrypt.compare systématique (pas de court-circuit sur l'email → timing constant).
-  const passwordOk = await bcrypt.compare(password, hash);
-  const emailOk = email.trim().toLowerCase() === expectedEmail.toLowerCase();
-  return passwordOk && emailOk;
+): Promise<AdminUserRow | null> {
+  const user = await findAdminByEmail(await getDb(), email);
+  const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+  return passwordOk && user ? user : null;
 }
 
-export async function createSession(email: string): Promise<void> {
+export async function createSession(userId: string): Promise<void> {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
-  const token = await encryptSession({ email }, expiresAt);
+  const token = await encryptSession({ sub: userId }, expiresAt);
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
