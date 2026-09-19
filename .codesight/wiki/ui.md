@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**94 components** (react)
+**95 components** (react)
 
 ## Client Components
 
@@ -10,7 +10,7 @@
 - **AdminSidebar** — `app/(admin)/admin/(panel)/admin-sidebar.tsx`
 - **LabelButton** — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
 - **StatusActions** — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
-- **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
+- **TrackingForm** — props: orderId, trackingNumber, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **PasswordForm** — `app/(admin)/admin/(panel)/compte/password-form.tsx`
 - **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
@@ -24,7 +24,7 @@
 - **BoutiqueShop** — props: catalogue — `components/boutique.tsx`
 - **CartLink** — `components/cart-link.tsx`
 - **CartView** — `components/cart-view.tsx`
-- **CheckoutForm** — `components/checkout-form.tsx`
+- **CheckoutForm** — props: fees — `components/checkout-form.tsx`
 - **ClearCart** — `components/clear-cart.tsx`
 - **CookieBanner** — `components/consent/cookie-banner.tsx`
 - **ManageCookiesButton** — `components/consent/manage-cookies-button.tsx`
@@ -94,6 +94,7 @@
 - **LegalValue** — props: value, label — `components/legal/legal-value.tsx`
 - **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
+- **Logo** — props: className — `components/logo.tsx`
 - **SiteHeader** — `components/sections.tsx`
 - **Hero** — props: bg — `components/sections.tsx`
 - **Shop** — props: bg, products — `components/sections.tsx`

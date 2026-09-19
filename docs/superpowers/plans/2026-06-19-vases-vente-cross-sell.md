@@ -61,7 +61,6 @@ export const productCategory = pgEnum("product_category", [
   "frais",
   "seche",
   "compo",
-  "branches",
   "mini",
   "vase",
 ]);
@@ -73,10 +72,8 @@ export const productCategory = pgEnum("product_category", [
 ```ts
 export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   frais: "Bouquets frais",
-  seche: "Fleurs séchées",
-  compo: "Compositions",
-  branches: "Branches & feuillages",
-  mini: "Petits formats",
+  seche: "Bouquets séchés",
+  compo: "Compositions séchées",
   vase: "Vases",
 };
 ```
@@ -584,10 +581,8 @@ Expected: FAIL (bouton « Vases » absent).
 const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "tout", label: "Tout" },
   { key: "frais", label: "Bouquets frais" },
-  { key: "seche", label: "Fleurs séchées" },
-  { key: "compo", label: "Compositions" },
-  { key: "branches", label: "Branches & feuillages" },
-  { key: "mini", label: "Petits formats" },
+  { key: "seche", label: "Bouquets séchés" },
+  { key: "compo", label: "Compositions séchées" },
   { key: "vase", label: "Vases" },
 ];
 ```

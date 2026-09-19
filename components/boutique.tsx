@@ -15,10 +15,8 @@ import { ProductFigure } from "./illustrations";
 const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "tout", label: "Tout" },
   { key: "frais", label: "Bouquets frais" },
-  { key: "seche", label: "Fleurs séchées" },
-  { key: "compo", label: "Compositions" },
-  { key: "branches", label: "Branches & feuillages" },
-  { key: "mini", label: "Petits formats" },
+  { key: "seche", label: "Bouquets séchés" },
+  { key: "compo", label: "Compositions séchées" },
   { key: "vase", label: "Vases" },
 ];
 
@@ -58,8 +56,7 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
 
       {products.length === 0 ? (
         <p className="boutique-empty">
-          Aucune composition dans cette catégorie pour le moment — revenez vite,
-          le catalogue se renouvelle chaque semaine.
+          Aucune composition dans cette catégorie pour le moment. Ne partez pas trop loin, on vous prépare plein de belles surprises !<br/>Restez informé sur notre Instagram.
         </p>
       ) : (
         <div className="shop__grid boutique-grid">

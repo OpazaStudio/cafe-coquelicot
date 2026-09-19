@@ -4,6 +4,12 @@ import {
   NAME_PLACEHOLDER,
   type EmailTemplates,
 } from "./email/templates";
+import {
+  DEFAULT_SHIPPING_FEES,
+  formatFeeInput,
+  parseFeeInput,
+  type ShippingFees,
+} from "./order-status";
 
 export type SettingGroup =
   | "identity"
@@ -23,7 +29,7 @@ export type SettingField = {
   multiline?: boolean;
   rows?: number;
   max?: number;
-  kind?: "text" | "email" | "tel" | "url";
+  kind?: "text" | "email" | "tel" | "url" | "price";
 };
 
 export const SETTING_GROUPS: Record<SettingGroup, string> = {
@@ -68,6 +74,9 @@ export const SETTING_KEYS = [
   "mediator_address",
   "preparation_delay",
   "shipping_delay",
+  "shipping_delay_colissimo",
+  "shipping_fee_mondial_relay",
+  "shipping_fee_colissimo",
   "email_ack_subject",
   "email_ack_body",
   "email_ack_signature",
@@ -113,10 +122,32 @@ export const SETTING_FIELDS: SettingField[] = [
     hint: "Ex. 24 à 48 h ouvrées.",
   },
   {
+    key: "shipping_fee_mondial_relay",
+    label: "Frais Mondial Relay (€)",
+    group: "shipping",
+    kind: "price",
+    max: 10,
+    hint: "Ex. 4,90 — appliqué aux nouvelles commandes.",
+  },
+  {
     key: "shipping_delay",
     label: "Délai d'acheminement Mondial Relay",
     group: "shipping",
     hint: "Ex. 2 à 4 jours ouvrés après dépôt.",
+  },
+  {
+    key: "shipping_fee_colissimo",
+    label: "Frais Colissimo (€)",
+    group: "shipping",
+    kind: "price",
+    max: 10,
+    hint: "Ex. 7,90 — appliqué aux nouvelles commandes.",
+  },
+  {
+    key: "shipping_delay_colissimo",
+    label: "Délai d'acheminement Colissimo",
+    group: "shipping",
+    hint: "Ex. 2 à 3 jours ouvrés après dépôt.",
   },
   {
     key: "email_ack_subject",
@@ -178,6 +209,9 @@ export const DEFAULT_SETTINGS: Settings = {
   mediator_address: "",
   preparation_delay: "",
   shipping_delay: "",
+  shipping_delay_colissimo: "",
+  shipping_fee_mondial_relay: formatFeeInput(DEFAULT_SHIPPING_FEES.mondialRelay),
+  shipping_fee_colissimo: formatFeeInput(DEFAULT_SHIPPING_FEES.colissimo),
   email_ack_subject: DEFAULT_EMAIL_TEMPLATES.ackSubject,
   email_ack_body: DEFAULT_EMAIL_TEMPLATES.ackBody,
   email_ack_signature: DEFAULT_EMAIL_TEMPLATES.ackSignature,
@@ -206,6 +240,11 @@ function fieldSchema(field: SettingField) {
   if (field.kind === "email") {
     schema = schema.refine((v) => v === "" || z.email().safeParse(v).success, {
       error: `${field.label} : adresse e-mail invalide.`,
+    }) as unknown as typeof schema;
+  }
+  if (field.kind === "price") {
+    schema = schema.refine((v) => v === "" || parseFeeInput(v) !== null, {
+      error: `${field.label} : montant invalide (ex. 4,90).`,
     }) as unknown as typeof schema;
   }
   return z.preprocess((v) => (v == null ? "" : v), schema);
@@ -249,6 +288,15 @@ export function emailTemplatesFromSettings(values: Settings): EmailTemplates {
     ackSignature: values.email_ack_signature,
     shopSubject: values.email_shop_subject,
     shopHeading: values.email_shop_heading,
+  };
+}
+
+export function shippingFeesFromSettings(values: Settings): ShippingFees {
+  return {
+    mondialRelay:
+      parseFeeInput(values.shipping_fee_mondial_relay) ?? DEFAULT_SHIPPING_FEES.mondialRelay,
+    colissimo:
+      parseFeeInput(values.shipping_fee_colissimo) ?? DEFAULT_SHIPPING_FEES.colissimo,
   };
 }
 

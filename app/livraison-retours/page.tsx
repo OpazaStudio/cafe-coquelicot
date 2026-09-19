@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Livraison & retours",
-  description: "Délais de préparation, livraison en point relais Mondial Relay, retrait à l'atelier et conditions de retour.",
+  description: "Délais de préparation, livraison en point relais Mondial Relay ou à domicile par Colissimo, retrait à l'atelier et conditions de retour.",
   alternates: { canonical: "/livraison-retours" },
 };
 

@@ -113,7 +113,7 @@ export default async function CommandeDetailPage({
                 {order.fulfillment === "mondial_relay"
                   ? "Point relais Mondial Relay"
                   : order.fulfillment === "poste"
-                    ? "Envoi par la poste"
+                    ? "Livraison à domicile — Colissimo"
                     : "Retrait atelier"}
               </p>
               {(order.fulfillment === "mondial_relay" || order.fulfillment === "poste") && (
@@ -148,10 +148,25 @@ export default async function CommandeDetailPage({
                     </a>
                   </p>
                 )}
-                <div className="mt-3">
-                  <p className="mb-2 font-medium">N° de suivi</p>
-                  <TrackingForm orderId={order.id} trackingNumber={order.trackingNumber} />
-                </div>
+              </div>
+            )}
+            {order.fulfillment === "poste" && (
+              <div className="mt-4 border-t border-line pt-4">
+                <p className="mb-2 font-medium">Étiquette Colissimo</p>
+                <p className="text-muted">
+                  À générer depuis votre espace La Poste Pro (ou au bureau de poste), puis
+                  saisir le n° de suivi ci-dessous.
+                </p>
+              </div>
+            )}
+            {(order.fulfillment === "mondial_relay" || order.fulfillment === "poste") && (
+              <div className="mt-3">
+                <p className="mb-2 font-medium">N° de suivi</p>
+                <TrackingForm
+                  orderId={order.id}
+                  trackingNumber={order.trackingNumber}
+                  fulfillment={order.fulfillment}
+                />
               </div>
             )}
             {order.cardMessage && (

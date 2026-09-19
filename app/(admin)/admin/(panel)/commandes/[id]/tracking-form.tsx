@@ -1,15 +1,18 @@
 "use client";
 
 import { useActionState } from "react";
+import type { Fulfillment } from "@/lib/order-status";
 import { btnPrimary, input } from "../../ui";
 import { saveTrackingNumber, type StatusActionState } from "../actions";
 
 export function TrackingForm({
   orderId,
   trackingNumber,
+  fulfillment,
 }: {
   orderId: string;
   trackingNumber: string | null;
+  fulfillment: Fulfillment;
 }) {
   const [state, action, pending] = useActionState<StatusActionState, FormData>(
     async (_prev, formData) =>
@@ -22,7 +25,7 @@ export function TrackingForm({
       <input
         name="trackingNumber"
         defaultValue={trackingNumber ?? ""}
-        placeholder="N° de suivi Mondial Relay"
+        placeholder={fulfillment === "poste" ? "N° de suivi Colissimo" : "N° de suivi Mondial Relay"}
         maxLength={40}
         className={`${input} sm:flex-1`}
       />

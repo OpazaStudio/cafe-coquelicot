@@ -131,7 +131,7 @@ export default async function ConfirmationPage({
                     Un email de confirmation Stripe a été envoyé à{" "}
                     {data.order.customerEmail}.{" "}
                     {data.order.fulfillment === "poste"
-                      ? "Votre commande partira par la poste très vite."
+                      ? "Votre commande partira par Colissimo à votre domicile très vite."
                       : data.order.fulfillment === "mondial_relay"
                         ? "Votre commande partira en point relais Mondial Relay très vite."
                         : "Votre commande vous attendra à l'atelier, 12 rue du Gabut."}

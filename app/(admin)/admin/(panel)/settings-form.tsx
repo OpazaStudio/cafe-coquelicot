@@ -54,7 +54,8 @@ export function SettingsForm({
                   />
                 ) : (
                   <input
-                    type={field.kind ?? "text"}
+                    type={field.kind === "price" || !field.kind ? "text" : field.kind}
+                    inputMode={field.kind === "price" ? "decimal" : undefined}
                     name={field.key}
                     defaultValue={initial[field.key]}
                     maxLength={fieldMaxLength(field)}

@@ -5,8 +5,51 @@ import type { Fulfillment, OrderStatus } from "./db/schema";
 
 export type { Fulfillment };
 
-// Forfait Mondial Relay (point relais) — à caler sur le contrat. Provisoire.
 export const MONDIAL_RELAY_FEE_CENTS = 490;
+export const COLISSIMO_FEE_CENTS = 790;
+
+export type ShippingFees = { mondialRelay: number; colissimo: number };
+
+export const DEFAULT_SHIPPING_FEES: ShippingFees = {
+  mondialRelay: MONDIAL_RELAY_FEE_CENTS,
+  colissimo: COLISSIMO_FEE_CENTS,
+};
+
+const PRICE_INPUT = /^\d{1,4}([.,]\d{1,2})?$/;
+
+export function parseFeeInput(raw: string): number | null {
+  const value = raw.trim();
+  if (!PRICE_INPUT.test(value)) return null;
+  const [units, decimals = ""] = value.split(/[.,]/);
+  return Number(units) * 100 + Number(decimals.padEnd(2, "0"));
+}
+
+export function formatFeeInput(cents: number): string {
+  return (cents / 100).toFixed(2).replace(".", ",");
+}
+
+export function shippingFeeFor(fulfillment: Fulfillment, fees: ShippingFees): number {
+  switch (fulfillment) {
+    case "mondial_relay":
+      return fees.mondialRelay;
+    case "poste":
+      return fees.colissimo;
+    case "retrait":
+      return 0;
+  }
+}
+
+export const FULFILLMENT_LABELS: Record<Fulfillment, string> = {
+  retrait: "Retrait",
+  poste: "Colissimo",
+  mondial_relay: "Mondial Relay",
+};
+
+export const SHIPPING_LINE_LABELS: Record<Fulfillment, string> = {
+  retrait: "Retrait à l'atelier",
+  poste: "Livraison Colissimo — à domicile",
+  mondial_relay: "Livraison Mondial Relay — point relais",
+};
 
 // Supplément carte manuscrite : facturé dès qu'un message est joint à la commande.
 export const CARD_FEE_CENTS = 200;

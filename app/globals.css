@@ -212,10 +212,14 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 
 .site-header__logo {
-  font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 1.1;
-  letter-spacing: 0;
+  display: block;
+  flex-shrink: 0;
+}
+.site-header__logo svg {
+  display: block;
+  height: 48px;
+  width: auto;
+  fill: currentColor;
 }
 .site-header__nav {
   display: flex;
@@ -281,7 +285,13 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   gap: 32px;
 }
 .hero__display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
   font-size: clamp(72px, 11vw, 200px);
+  text-align: center;
 }
 .hero__display .script {
   font-size: 0.55em;
@@ -908,6 +918,11 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   text-align: center;
 }
 .contact__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
   font-size: clamp(64px, 9vw, 160px);
 }
 .contact__title .script {
@@ -993,11 +1008,15 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   border-bottom: 1px solid rgba(243, 235, 226, 0.2);
 }
 .site-footer__brand {
-  font-family: var(--font-display);
   font-size: clamp(80px, 10vw, 180px);
   line-height: 1;
-  text-transform: lowercase;
-  color: var(--burgundy);
+  color: var(--linen);
+}
+.site-footer__brand svg {
+  display: block;
+  width: min(70%, 520px);
+  height: auto;
+  fill: currentColor;
 }
 .site-footer__brand .script {
   font-family: var(--font-script);
@@ -1191,7 +1210,6 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   font-family: var(--font-display);
   font-size: clamp(48px, 7vw, 120px);
   line-height: 1.06;
-  text-transform: lowercase;
   margin: 8px 0 0;
 }
 .boutique-bespoke__quote .script {
@@ -1556,6 +1574,7 @@ button.product-card__add {
   gap: 16px;
 }
 .checkout-choice {
+  position: relative;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 18px 20px;
@@ -1573,6 +1592,10 @@ button.product-card__add {
   position: absolute;
   opacity: 0;
   pointer-events: none;
+}
+.checkout-choice:has(input:focus-visible) {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 .checkout-choice__title {
   font-weight: 600;

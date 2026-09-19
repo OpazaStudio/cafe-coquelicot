@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "La boutique",
   alternates: { canonical: "/boutique" },
   description:
-    "Bouquets frais & séchés, compositions, branches et petits formats. La boutique en ligne de l'atelier Coquelicot, cueilli le matin même à La Rochelle.",
+    "Bouquets frais & séchés et compositions. La boutique en ligne de l'atelier Coquelicot, cueilli le matin même à La Rochelle.",
 };
 
 // Le catalogue vit en base : rendu à la demande, jamais figé au build.
@@ -33,14 +33,11 @@ export default async function BoutiquePage() {
             <div className="boutique-hero__inner">
               <h1 className="display boutique-hero__title reveal">
                 la boutique
-                <span className="script">fraîche du jour</span>
               </h1>
               <div className="boutique-hero__intro reveal">
-                <p className="eyebrow">Collection · Printemps 2026</p>
+                <p className="eyebrow">Collection du moment</p>
                 <p className="body body--lg">
-                  Quatorze compositions du moment, renouvelées chaque semaine au
-                  gré de la saison et de ce que le marché nous propose. Commandez
-                  avant 14h pour une livraison à vélo le jour même dans La Rochelle.
+                  Une collection permanente, ponctuée de créations éphémères au gré des saisons et des arrivages.<br/>Fleurs fraîches en livraison sur Salon-de-Provence et ses environs.<br/>Fleurs séchées livrées partout en France.
                 </p>
               </div>
             </div>
@@ -86,11 +83,11 @@ export default async function BoutiquePage() {
             <div className="boutique-bespoke__inner reveal">
               <p className="eyebrow">Une envie particulière ?</p>
               <h2 className="boutique-bespoke__quote">
-                on compose aussi <span className="script">sur mesure.</span>
+                On compose aussi <span className="script">sur mesure.</span>
               </h2>
               <p className="body body--lg boutique-bespoke__sub">
                 Mariage, événement, cadeau d&apos;entreprise ou simple coup de
-                cœur — dites-nous ce que vous imaginez, on s&apos;occupe du reste.
+                cœur, dites-nous ce que vous imaginez, on s&apos;occupe du reste.
               </p>
               <div className="boutique-bespoke__cta">
                 <Link href="/#prestations" className="btn btn--filled">

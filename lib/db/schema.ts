@@ -13,7 +13,6 @@ export const productCategory = pgEnum("product_category", [
   "frais",
   "seche",
   "compo",
-  "branches",
   "mini",
   "vase",
 ]);

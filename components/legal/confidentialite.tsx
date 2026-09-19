@@ -22,7 +22,7 @@ export function ConfidentialiteContent({ settings }: { settings: Settings }) {
       <dl className="legal__facts">
         <dt>Commande</dt>
         <dd>
-          Nom, e-mail, téléphone, point relais choisi, date de livraison souhaitée,
+          Nom, e-mail, téléphone, point relais choisi ou adresse de livraison, date de livraison souhaitée,
           message de carte, détail de la commande. Finalité : exécution du contrat
           (préparation, expédition, suivi, service après-vente) et obligations
           comptables. Conservation : dix ans pour les pièces comptables.
@@ -56,6 +56,7 @@ export function ConfidentialiteContent({ settings }: { settings: Settings }) {
       <ul>
         <li>Stripe Payments Europe Ltd (Irlande) : paiement sécurisé.</li>
         <li>Mondial Relay (France) : livraison, notification de disponibilité du colis.</li>
+        <li>La Poste / Colissimo (France) : livraison à domicile et suivi du colis.</li>
         <li>Resend Inc. (États-Unis, clauses contractuelles types) : envoi des e-mails du formulaire de contact.</li>
         <li>Supabase Inc. (données hébergées dans l&apos;Union européenne) : base de données et stockage des images.</li>
         <li>Vercel Inc. (États-Unis, clauses contractuelles types) : hébergement du site.</li>

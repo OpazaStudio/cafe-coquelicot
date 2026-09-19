@@ -1,16 +1,17 @@
 import { formatEuros } from "@/lib/money";
-import { MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
-import type { Settings } from "@/lib/settings";
+import { shippingFeesFromSettings, type Settings } from "@/lib/settings";
 import { LegalValue } from "./legal-value";
 import { LegalNav, ShopAddress, ShopEmail } from "./legal-page";
 
 export function LivraisonRetoursContent({ settings }: { settings: Settings }) {
+  const fees = shippingFeesFromSettings(settings);
   return (
     <>
       <LegalNav current="/livraison-retours" />
       <p className="legal__intro">
         Nos bouquets partent de l&apos;atelier de La Rochelle et sont livrés en point
-        relais Mondial Relay, partout en France métropolitaine.
+        relais Mondial Relay ou à domicile par Colissimo, partout en France
+        métropolitaine.
       </p>
 
       <h2>Préparation</h2>
@@ -25,10 +26,20 @@ export function LivraisonRetoursContent({ settings }: { settings: Settings }) {
       <p>
         Vous choisissez votre point relais lors de la commande. Le colis est ensuite
         acheminé sous{" "}
-        <LegalValue value={settings.shipping_delay} label="délai d'acheminement" />{" "}
+        <LegalValue value={settings.shipping_delay} label="délai d'acheminement Mondial Relay" />{" "}
         après dépôt. Vous êtes prévenu·e par SMS ou e-mail par Mondial Relay dès que
         le colis est disponible ; il vous attend ensuite plusieurs jours au relais.
-        Frais de livraison : {formatEuros(MONDIAL_RELAY_FEE_CENTS)} par commande.
+        Frais de livraison : {formatEuros(fees.mondialRelay)} par commande.
+      </p>
+
+      <h2>Livraison à domicile par Colissimo</h2>
+      <p>
+        Vous indiquez votre adresse lors de la commande. Le colis est remis à
+        Colissimo et livré à votre domicile sous{" "}
+        <LegalValue value={settings.shipping_delay_colissimo} label="délai d'acheminement Colissimo" />{" "}
+        après dépôt. En cas d&apos;absence, un avis de passage vous permet de le
+        retirer au bureau de poste. Frais de livraison :{" "}
+        {formatEuros(fees.colissimo)} par commande.
       </p>
       <p>
         Le numéro de suivi vous est communiqué dès l&apos;expédition. Les délais

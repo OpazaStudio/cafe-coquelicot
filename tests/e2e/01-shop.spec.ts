@@ -23,7 +23,7 @@ test.describe("vitrine — catalogue depuis la base", () => {
 
   test("le filtre par catégorie fonctionne", async ({ page }) => {
     await page.goto("/boutique");
-    await page.getByRole("button", { name: "Fleurs séchées" }).click();
+    await page.getByRole("button", { name: "Bouquets séchés" }).click();
     const cards = page.locator(".boutique-grid .product-card");
     await expect(cards).toHaveCount(3);
     await expect(page.getByText("3 compositions")).toBeVisible();

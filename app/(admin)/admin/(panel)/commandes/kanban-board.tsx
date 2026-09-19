@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import type { OrderItemRow } from "@/lib/db/schema";
 import { formatEuros } from "@/lib/money";
+import { FULFILLMENT_LABELS } from "@/lib/order-status";
 import type { BoardOrder } from "@/lib/orders";
 import { PREP_LABELS, PREP_ORDER, type PrepStatus } from "@/lib/prep-status";
 import { changePrepStatus, setItemPrepared } from "./actions";
@@ -180,7 +181,7 @@ function KanbanCard({
       </div>
       <p className="mt-1 font-medium">{order.customerName}</p>
       <p className="text-xs text-muted">
-        {order.fulfillment === "retrait" ? "Retrait" : "Mondial Relay"}
+        {FULFILLMENT_LABELS[order.fulfillment]}
         {order.deliveryDate && <> · souhaité le {order.deliveryDate}</>}
       </p>
       <ul className="mt-2 flex flex-col gap-1.5 border-y border-line-soft py-2">

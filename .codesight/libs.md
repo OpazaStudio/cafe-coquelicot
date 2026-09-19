@@ -96,16 +96,16 @@
   - function formatFromPrice: (cents) => string
   - function parsePriceToCents: (price) => number
 - `lib/order-status.ts`
+  - function parseFeeInput: (raw) => number | null
+  - function formatFeeInput: (cents) => string
+  - function shippingFeeFor: (fulfillment, fees) => number
   - function isShippingCountry: (code) => code is ShippingCountryCode
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
   - function canTransition: (from, to, fulfillment) => boolean
-  - type ShippingCountryCode
-  - const MONDIAL_RELAY_FEE_CENTS
-  - const CARD_FEE_CENTS
-  - _...3 more_
+  - _...11 more_
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
-  - function createPendingOrder: (db, customer, items) => Promise<
+  - function createPendingOrder: (db, customer, items, fees) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
@@ -159,8 +159,8 @@
   - function keysForGroups: (groups) => SettingKey[]
   - function readSettingsForm: (formData, keys) => SettingsFormResult
   - function emailTemplatesFromSettings: (values) => EmailTemplates
-  - function isSettingKey: (key) => key is SettingKey
-  - _...12 more_
+  - function shippingFeesFromSettings: (values) => ShippingFees
+  - _...13 more_
 - `lib/settings.ts`
   - function querySettings: (db) => Promise<Settings>
   - function saveSettings: (db, values) => Promise<void>

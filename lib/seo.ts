@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 import type { Settings } from "@/lib/settings";
 
 export const SITE_NAME = "Coquelicot";
-export const SITE_TITLE = "Coquelicot — Fleuriste · La Rochelle";
+export const SITE_TITLE = "Café Coquelicot - Fleuriste";
 export const SITE_DESCRIPTION =
-  "Atelier-boutique de fleurs fraîches & séchées à La Rochelle. Bouquets de saison, mariages, événementiel, abonnements et ateliers floraux.";
+  "Atelier de fleurs fraîches & séchées. Bouquets de saison, mariages, événementiel, abonnements et ateliers floraux.";
 
 export const LEGAL_PATHS = [
   "/mentions-legales",

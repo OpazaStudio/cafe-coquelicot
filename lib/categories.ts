@@ -2,10 +2,8 @@ import type { ProductCategory } from "./db/schema";
 
 export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   frais: "Bouquets frais",
-  seche: "Fleurs séchées",
-  compo: "Compositions",
-  branches: "Branches & feuillages",
-  mini: "Petits formats",
+  seche: "Bouquets séchés",
+  compo: "Compositions séchées",
   vase: "Vases",
 };
 

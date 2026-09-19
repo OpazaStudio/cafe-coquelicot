@@ -20,5 +20,7 @@ export async function updateSettings(
   for (const path of LEGAL_PATHS) revalidatePath(path);
   revalidatePath("/");
   revalidatePath("/admin/parametres");
+  revalidatePath("/checkout");
+  revalidatePath("/panier");
   return { ok: true };
 }

@@ -84,8 +84,8 @@ export function CartView() {
           <span data-testid="cart-subtotal">{formatEuros(subtotalCents)}</span>
         </div>
         <p className="cart-summary__note">
-          Retrait gratuit à l&apos;atelier, ou livraison à vélo dans La Rochelle
-          (9€) — à choisir à l&apos;étape suivante.
+          Livraison en point relais Mondial Relay ou à domicile par Colissimo —
+          frais affichés à l&apos;étape suivante.
         </p>
         <Link href="/checkout" className="btn btn--filled cart-summary__cta">
           Commander <ArrowRight />

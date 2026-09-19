@@ -8,6 +8,7 @@ import {
   querySettings,
   readSettingsForm,
   saveSettings,
+  shippingFeesFromSettings,
   type SettingKey,
 } from "@/lib/settings";
 
@@ -66,6 +67,21 @@ describe("readSettingsForm", () => {
     const r = readSettingsForm(form({ mediator_website: "https://www.mediateur.fr" }));
     expect(r.ok).toBe(true);
   });
+
+  it("accepte un frais de livraison à la française ou vide", () => {
+    expect(readSettingsForm(form({ shipping_fee_colissimo: "7,90" })).ok).toBe(true);
+    expect(readSettingsForm(form({ shipping_fee_colissimo: "7.9" })).ok).toBe(true);
+    expect(readSettingsForm(form({ shipping_fee_colissimo: "" })).ok).toBe(true);
+  });
+
+  it("refuse un frais de livraison qui n'est pas un montant", () => {
+    for (const bad of ["abc", "7,999", "-1", "1 000"]) {
+      const r = readSettingsForm(form({ shipping_fee_mondial_relay: bad }));
+      expect(r.ok, bad).toBe(false);
+      if (r.ok) return;
+      expect(r.error).toMatch(/Frais Mondial Relay/);
+    }
+  });
 });
 
 describe("saveSettings / querySettings (PGlite)", () => {
@@ -97,5 +113,25 @@ describe("saveSettings / querySettings (PGlite)", () => {
     await saveSettings(db, { ["bidon" as SettingKey]: "x" });
     const s = await querySettings(db);
     expect((s as Record<string, string>).bidon).toBeUndefined();
+  });
+});
+
+describe("shippingFeesFromSettings", () => {
+  it("renvoie les défauts quand les champs sont vides", () => {
+    expect(shippingFeesFromSettings({ ...DEFAULT_SETTINGS, shipping_fee_mondial_relay: "", shipping_fee_colissimo: "" }))
+      .toEqual({ mondialRelay: 490, colissimo: 790 });
+  });
+
+  it("les défauts eux-mêmes valent 4,90 et 7,90", () => {
+    expect(DEFAULT_SETTINGS.shipping_fee_mondial_relay).toBe("4,90");
+    expect(DEFAULT_SETTINGS.shipping_fee_colissimo).toBe("7,90");
+    expect(shippingFeesFromSettings(DEFAULT_SETTINGS)).toEqual({ mondialRelay: 490, colissimo: 790 });
+  });
+
+  it("convertit les montants saisis et replie clé par clé sur le défaut", () => {
+    expect(shippingFeesFromSettings({ ...DEFAULT_SETTINGS, shipping_fee_colissimo: "9,50" }))
+      .toEqual({ mondialRelay: 490, colissimo: 950 });
+    expect(shippingFeesFromSettings({ ...DEFAULT_SETTINGS, shipping_fee_mondial_relay: "n/a", shipping_fee_colissimo: "0" }))
+      .toEqual({ mondialRelay: 490, colissimo: 0 });
   });
 });

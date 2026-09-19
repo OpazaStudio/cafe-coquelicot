@@ -20,9 +20,6 @@ Décisions produit validées avec le commanditaire :
 
 ## Contexte technique (état actuel)
 
-- Le **seul** mécanisme de typage des produits est l'enum Postgres
-  `product_category` (`frais`, `seche`, `compo`, `branches`, `mini`).
-  Aucune valeur `vase`, aucune notion explicite de « bouquet ».
 - Le **panier** est du React Context + `localStorage` (`lib/cart/`), affiché sur la
   page `/panier` via `<CartView>`. `CartItem` ne stocke **pas** la catégorie.
 - Les **line items Stripe** sont reconstruits côté serveur depuis la commande

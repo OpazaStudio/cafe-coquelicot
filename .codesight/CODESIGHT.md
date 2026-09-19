@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 7 models | 94 components | 36 lib files | 29 env vars | 6 middleware | 50% test coverage
-> **Token savings:** this file is ~6,800 tokens. Without it, AI exploration would cost ~58,600 tokens. **Saves ~51,800 tokens per conversation.**
-> **Last scanned:** 2026-09-19 14:35 — re-run after significant changes
+> 3 routes | 7 models | 95 components | 36 lib files | 29 env vars | 6 middleware | 50% test coverage
+> **Token savings:** this file is ~6,900 tokens. Without it, AI exploration would cost ~59,000 tokens. **Saves ~52,100 tokens per conversation.**
+> **Last scanned:** 2026-09-19 16:21 — re-run after significant changes
 
 ---
 
@@ -113,7 +113,7 @@
 - **LabelButton** [client] — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
 - **StatusActions** [client] — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
-- **TrackingForm** [client] — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
+- **TrackingForm** [client] — props: orderId, trackingNumber, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** [client] — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **CommandesLoading** — `app/(admin)/admin/(panel)/commandes/loading.tsx`
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
@@ -154,7 +154,7 @@
 - **BoutiqueShop** [client] — props: catalogue — `components/boutique.tsx`
 - **CartLink** [client] — `components/cart-link.tsx`
 - **CartView** [client] — `components/cart-view.tsx`
-- **CheckoutForm** [client] — `components/checkout-form.tsx`
+- **CheckoutForm** [client] — props: fees — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
 - **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
 - **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
@@ -188,6 +188,7 @@
 - **LegalValue** — props: value, label — `components/legal/legal-value.tsx`
 - **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
+- **Logo** — props: className — `components/logo.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
@@ -303,16 +304,16 @@
   - function formatFromPrice: (cents) => string
   - function parsePriceToCents: (price) => number
 - `lib/order-status.ts`
+  - function parseFeeInput: (raw) => number | null
+  - function formatFeeInput: (cents) => string
+  - function shippingFeeFor: (fulfillment, fees) => number
   - function isShippingCountry: (code) => code is ShippingCountryCode
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
   - function canTransition: (from, to, fulfillment) => boolean
-  - type ShippingCountryCode
-  - const MONDIAL_RELAY_FEE_CENTS
-  - const CARD_FEE_CENTS
-  - _...3 more_
+  - _...11 more_
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
-  - function createPendingOrder: (db, customer, items) => Promise<
+  - function createPendingOrder: (db, customer, items, fees) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
@@ -366,8 +367,8 @@
   - function keysForGroups: (groups) => SettingKey[]
   - function readSettingsForm: (formData, keys) => SettingsFormResult
   - function emailTemplatesFromSettings: (values) => EmailTemplates
-  - function isSettingKey: (key) => key is SettingKey
-  - _...12 more_
+  - function shippingFeesFromSettings: (values) => ShippingFees
+  - _...13 more_
 - `lib/settings.ts`
   - function querySettings: (db) => Promise<Settings>
   - function saveSettings: (db, values) => Promise<void>
@@ -463,7 +464,7 @@
 ## Most Imported Files (change these carefully)
 
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **14** files
-- `tests/e2e/helpers.ts` — imported by **10** files
+- `tests/e2e/helpers.ts` — imported by **11** files
 - `tests/helpers/db.ts` — imported by **10** files
 - `lib/db/schema.ts` — imported by **7** files
 - `components/illustrations.tsx` — imported by **6** files
@@ -486,7 +487,7 @@
 ## Import Map (who imports what)
 
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +9 more
-- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +5 more
+- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +6 more
 - `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts`, `tests/unit/products.test.ts` +5 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
@@ -501,7 +502,7 @@
 # Test Coverage
 
 > **50%** of routes and models are covered by tests
-> 60 test files found
+> 62 test files found
 
 ## Covered Routes
 

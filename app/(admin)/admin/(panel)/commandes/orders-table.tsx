@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { OrderRow } from "@/lib/db/schema";
 import { formatEuros } from "@/lib/money";
+import { FULFILLMENT_LABELS } from "@/lib/order-status";
 import { card, rowAction } from "../ui";
 import { StatusBadge } from "./status-badge";
 
@@ -54,7 +55,7 @@ export function OrdersTable({ orders }: { orders: OrderRow[] }) {
                 <div className="text-xs text-muted">{o.customerEmail}</div>
               </td>
               <td className="px-4 py-3 text-muted">
-                {o.fulfillment === "retrait" ? "Retrait" : "Mondial Relay"}
+                {FULFILLMENT_LABELS[o.fulfillment]}
               </td>
               <td className="px-4 py-3 font-medium">
                 {formatEuros(o.totalCents)}

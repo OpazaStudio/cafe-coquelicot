@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { addToCart, adminLogin } from "./helpers";
+import { expect, test } from "@playwright/test";
+import { addToCart, adminLogin, fillStripeCheckout } from "./helpers";
 
 // Parcours d'achat complet contre Stripe Checkout en MODE TEST (réseau requis) :
 // panier → formulaire → relais Mondial Relay → page Stripe hébergée → carte 4242 →
@@ -7,52 +7,6 @@ import { addToCart, adminLogin } from "./helpers";
 test.describe.configure({ mode: "serial" });
 
 let orderNumber = "";
-
-/** Cherche le champ carte dans la page OU dans une iframe Stripe. */
-async function findCardFrame(page: Page) {
-  const deadline = Date.now() + 45_000;
-  while (Date.now() < deadline) {
-    for (const frame of page.frames()) {
-      const input = frame.locator('input[name="cardNumber"]');
-      if (await input.isVisible().catch(() => false)) return frame;
-    }
-    await page.waitForTimeout(400);
-  }
-  throw new Error("Champ cardNumber introuvable (page Stripe).");
-}
-
-async function fillStripeCheckout(page: Page) {
-  // La page Stripe est hébergée sur checkout.stripe.com. Le bouton « Payer
-  // par carte » a une zone de clic étendue en pseudo-élément : Playwright le
-  // juge invisible alors qu'il intercepte les clics → dispatchEvent direct.
-  await page.waitForLoadState("domcontentloaded");
-  const directCard = page.locator('input[name="cardNumber"]');
-  if (!(await directCard.isVisible().catch(() => false))) {
-    const accordion = page.locator(
-      '[data-testid="card-accordion-item-button"]',
-    );
-    await accordion.waitFor({ state: "attached", timeout: 45_000 });
-    await accordion.dispatchEvent("click");
-  }
-
-  const frame = await findCardFrame(page);
-  await frame.locator('input[name="cardNumber"]').fill("4242 4242 4242 4242");
-  await frame.locator('input[name="cardExpiry"]').fill("12 / 34");
-  await frame.locator('input[name="cardCvc"]').fill("123");
-  const name = frame.locator('input[name="billingName"]');
-  if (await name.isVisible().catch(() => false)) {
-    await name.fill("Camille Martin");
-  }
-  const postal = frame.locator('input[name="billingPostalCode"]');
-  if (await postal.isVisible().catch(() => false)) {
-    await postal.fill("17000");
-  }
-  await page
-    .locator('[data-testid="hosted-payment-submit-button"]')
-    .or(page.getByRole("button", { name: "Payer", exact: true }))
-    .first()
-    .click();
-}
 
 test("paiement Stripe test → confirmation → commande payée", async ({
   page,

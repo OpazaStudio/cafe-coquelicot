@@ -17,6 +17,9 @@ const filled: Settings = {
   mediator_address: "14 rue Saint-Jean, 75017 Paris",
   preparation_delay: "24 à 48 h ouvrées",
   shipping_delay: "2 à 4 jours ouvrés",
+  shipping_delay_colissimo: "2 à 3 jours ouvrés",
+  shipping_fee_mondial_relay: "4,90",
+  shipping_fee_colissimo: "9,50",
 };
 
 describe("Mentions légales", () => {
@@ -49,20 +52,35 @@ describe("CGV", () => {
     render(<CgvContent settings={DEFAULT_SETTINGS} />);
     expect(screen.queryByRole("link", { name: /http/ })).toBeNull();
   });
+
+  it("liste les deux frais de livraison depuis les paramètres", () => {
+    render(<CgvContent settings={filled} />);
+    expect(screen.getByText(/point relais Mondial Relay 4,90€/)).toBeTruthy();
+    expect(screen.getByText(/domicile par Colissimo 9,50€/)).toBeTruthy();
+  });
 });
 
 describe("Livraison & retours", () => {
-  it("décrit Mondial Relay et reprend les délais", () => {
+  it("décrit Mondial Relay et Colissimo avec leurs délais et frais", () => {
     render(<LivraisonRetoursContent settings={filled} />);
     expect(screen.getAllByText(/Mondial Relay/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Colissimo/).length).toBeGreaterThan(0);
     expect(screen.getByText(/2 à 4 jours ouvrés/)).toBeTruthy();
+    expect(screen.getByText(/2 à 3 jours ouvrés/)).toBeTruthy();
+    expect(screen.getByText(/4,90€/)).toBeTruthy();
+    expect(screen.getByText(/9,50€/)).toBeTruthy();
+  });
+
+  it("signale le délai Colissimo à compléter quand il est vide", () => {
+    render(<LivraisonRetoursContent settings={DEFAULT_SETTINGS} />);
+    expect(screen.getByText(/à compléter : délai d'acheminement Colissimo/)).toBeTruthy();
   });
 });
 
 describe("Confidentialité", () => {
   it("cite les sous-traitants réels et les droits RGPD", () => {
     render(<ConfidentialiteContent settings={filled} />);
-    for (const name of ["Stripe", "Mondial Relay", "Resend", "Google Analytics", "Supabase", "Vercel"]) {
+    for (const name of ["Stripe", "Mondial Relay", "La Poste", "Resend", "Google Analytics", "Supabase", "Vercel"]) {
       expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0);
     }
     expect(screen.getByText(/CNIL/)).toBeTruthy();

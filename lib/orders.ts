@@ -19,9 +19,12 @@ import {
 import {
   canTransition,
   CARD_FEE_CENTS,
+  DEFAULT_SHIPPING_FEES,
   MONDIAL_RELAY_FEE_CENTS,
+  shippingFeeFor,
   type Fulfillment,
   type ShippingCountryCode,
+  type ShippingFees,
 } from "./order-status";
 import {
   BOARD_ORDER_STATUSES,
@@ -64,7 +67,7 @@ export type CheckoutCustomerInput = {
   relayStreet?: string;
   relayPostalCode?: string;
   relayCity?: string;
-  // Champs legacy (poste) — conservés pour les commandes d'avant.
+  // Adresse client (mode poste = Colissimo à domicile).
   shippingAddress?: string;
   shippingPostalCode?: string;
   shippingCity?: string;
@@ -88,6 +91,7 @@ export async function createPendingOrder(
   db: Db,
   customer: CheckoutCustomerInput,
   items: CheckoutItemInput[],
+  fees: ShippingFees = DEFAULT_SHIPPING_FEES,
 ): Promise<{ order: OrderRow; items: OrderItemRow[] }> {
   if (items.length === 0) {
     throw new CheckoutError("Le panier est vide.");
@@ -186,10 +190,7 @@ export async function createPendingOrder(
   const subtotalCents = resolved.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
   const isRelay = customer.fulfillment === "mondial_relay";
   const isPoste = customer.fulfillment === "poste";
-  // Seul `mondial_relay` est créé par le checkout aujourd'hui ; `poste` est un
-  // mode historique. Tout envoi (non-retrait) porte le forfait Mondial Relay.
-  const deliveryFeeCents =
-    customer.fulfillment === "retrait" ? 0 : MONDIAL_RELAY_FEE_CENTS;
+  const deliveryFeeCents = shippingFeeFor(customer.fulfillment, fees);
   // Carte manuscrite : supplément dès qu'un message non vide est joint.
   const cardMessage = customer.cardMessage?.trim() || null;
   const cardFeeCents = cardMessage ? CARD_FEE_CENTS : 0;

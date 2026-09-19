@@ -52,7 +52,7 @@
 
 ## Order-status.ts (1 files)
 
-- `lib/order-status.ts` — isShippingCountry, statusTransitions, canTransition, ShippingCountryCode, MONDIAL_RELAY_FEE_CENTS, CARD_FEE_CENTS, …
+- `lib/order-status.ts` — parseFeeInput, formatFeeInput, shippingFeeFor, isShippingCountry, statusTransitions, canTransition, …
 
 ## Orders.ts (1 files)
 
@@ -92,7 +92,7 @@
 
 ## Settings-fields.ts (1 files)
 
-- `lib/settings-fields.ts` — fieldMaxLength, fieldsForGroups, keysForGroups, readSettingsForm, emailTemplatesFromSettings, isSettingKey, …
+- `lib/settings-fields.ts` — fieldMaxLength, fieldsForGroups, keysForGroups, readSettingsForm, emailTemplatesFromSettings, shippingFeesFromSettings, …
 
 ## Settings.ts (1 files)
 

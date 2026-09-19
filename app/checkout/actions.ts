@@ -8,8 +8,12 @@ import {
   createPendingOrder,
   CheckoutError,
 } from "@/lib/orders";
+import { SHIPPING_LINE_LABELS } from "@/lib/order-status";
 import { composeItemName } from "@/lib/item-label";
+import { getSettings, shippingFeesFromSettings } from "@/lib/settings";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
+import { CheckoutSchema, rawCheckoutValues, toCustomerInput } from "./schema";
+
 const ItemsSchema = z
   .array(
     z.object({
@@ -21,20 +25,6 @@ const ItemsSchema = z
   )
   .min(1, { error: "Le panier est vide." })
   .max(50);
-
-const CheckoutSchema = z.object({
-  name: z.string().trim().min(1, { error: "Votre nom est requis." }).max(120),
-  email: z.email({ error: "Adresse email invalide." }),
-  phone: z.string().trim().min(6, { error: "Téléphone requis (notification du point relais)." }).max(25),
-  relayPointId: z.string().trim().min(1, { error: "Choisissez un point relais." }).max(20),
-  relayPointName: z.string().trim().min(1).max(120),
-  relayStreet: z.string().trim().min(1).max(200),
-  relayPostalCode: z.string().trim().regex(/^\d{5}$/, { error: "Code postal du relais invalide." }),
-  relayCity: z.string().trim().min(1).max(100),
-  relayCountry: z.literal("FR", { error: "Mondial Relay : France uniquement." }),
-  deliveryDate: z.union([z.literal(""), z.iso.date({ error: "Date invalide." })]).optional(),
-  cardMessage: z.string().trim().max(300, { error: "300 caractères max." }).optional(),
-});
 
 export type CheckoutState = { error: string } | undefined;
 
@@ -49,19 +39,7 @@ export async function startCheckout(
     return { error: "Panier invalide — rechargez la page et réessayez." };
   }
 
-  const parsed = CheckoutSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    phone: formData.get("phone") ?? "",
-    relayPointId: formData.get("relayPointId") ?? "",
-    relayPointName: formData.get("relayPointName") ?? "",
-    relayStreet: formData.get("relayStreet") ?? "",
-    relayPostalCode: formData.get("relayPostalCode") ?? "",
-    relayCity: formData.get("relayCity") ?? "",
-    relayCountry: formData.get("relayCountry") ?? "",
-    deliveryDate: formData.get("deliveryDate") ?? "",
-    cardMessage: formData.get("cardMessage") ?? "",
-  });
+  const parsed = CheckoutSchema.safeParse(rawCheckoutValues(formData));
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Saisie invalide." };
   }
@@ -69,22 +47,12 @@ export async function startCheckout(
   let checkoutUrl: string;
   try {
     const db = await getDb();
+    const fees = shippingFeesFromSettings(await getSettings());
     const { order, items: orderLines } = await createPendingOrder(
       db,
-      {
-        name: parsed.data.name,
-        email: parsed.data.email,
-        phone: parsed.data.phone,
-        fulfillment: "mondial_relay",
-        relayPointId: parsed.data.relayPointId,
-        relayPointName: parsed.data.relayPointName,
-        relayStreet: parsed.data.relayStreet,
-        relayPostalCode: parsed.data.relayPostalCode,
-        relayCity: parsed.data.relayCity,
-        deliveryDate: parsed.data.deliveryDate || undefined,
-        cardMessage: parsed.data.cardMessage,
-      },
+      toCustomerInput(parsed.data),
       items,
+      fees,
     );
 
     const session = await getStripe().checkout.sessions.create({
@@ -118,7 +86,7 @@ export async function startCheckout(
                 price_data: {
                   currency: "eur",
                   unit_amount: order.deliveryFeeCents,
-                  product_data: { name: "Livraison Mondial Relay — point relais" },
+                  product_data: { name: SHIPPING_LINE_LABELS[order.fulfillment] },
                 },
               },
             ]

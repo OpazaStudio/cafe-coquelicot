@@ -42,3 +42,49 @@ export async function addVariantToCart(
     .getByRole("button", { name: `Ajouter ${name} au panier` })
     .click();
 }
+
+/** Cherche le champ carte dans la page OU dans une iframe Stripe. */
+async function findCardFrame(page: Page) {
+  const deadline = Date.now() + 45_000;
+  while (Date.now() < deadline) {
+    for (const frame of page.frames()) {
+      const input = frame.locator('input[name="cardNumber"]');
+      if (await input.isVisible().catch(() => false)) return frame;
+    }
+    await page.waitForTimeout(400);
+  }
+  throw new Error("Champ cardNumber introuvable (page Stripe).");
+}
+
+export async function fillStripeCheckout(page: Page) {
+  // La page Stripe est hébergée sur checkout.stripe.com. Le bouton « Payer
+  // par carte » a une zone de clic étendue en pseudo-élément : Playwright le
+  // juge invisible alors qu'il intercepte les clics → dispatchEvent direct.
+  await page.waitForLoadState("domcontentloaded");
+  const directCard = page.locator('input[name="cardNumber"]');
+  if (!(await directCard.isVisible().catch(() => false))) {
+    const accordion = page.locator(
+      '[data-testid="card-accordion-item-button"]',
+    );
+    await accordion.waitFor({ state: "attached", timeout: 45_000 });
+    await accordion.dispatchEvent("click");
+  }
+
+  const frame = await findCardFrame(page);
+  await frame.locator('input[name="cardNumber"]').fill("4242 4242 4242 4242");
+  await frame.locator('input[name="cardExpiry"]').fill("12 / 34");
+  await frame.locator('input[name="cardCvc"]').fill("123");
+  const name = frame.locator('input[name="billingName"]');
+  if (await name.isVisible().catch(() => false)) {
+    await name.fill("Camille Martin");
+  }
+  const postal = frame.locator('input[name="billingPostalCode"]');
+  if (await postal.isVisible().catch(() => false)) {
+    await postal.fill("17000");
+  }
+  await page
+    .locator('[data-testid="hosted-payment-submit-button"]')
+    .or(page.getByRole("button", { name: "Payer", exact: true }))
+    .first()
+    .click();
+}

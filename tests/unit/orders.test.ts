@@ -9,7 +9,7 @@ import {
   productSizes,
   products,
 } from "@/lib/db/schema";
-import { CARD_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
+import { CARD_FEE_CENTS, COLISSIMO_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
 import {
   cancelOrderBySession,
   attachStripeSession,
@@ -60,7 +60,7 @@ describe("createPendingOrder", () => {
     expect(items.find((i) => i.nameSnapshot === "rivage")?.priceCentsSnapshot).toBe(4800);
   });
 
-  it("ajoute les frais d'expédition en mode poste", async () => {
+  it("applique le forfait Colissimo par défaut en mode poste et garde l'adresse client", async () => {
     const { order } = await createPendingOrder(
       db,
       {
@@ -71,15 +71,56 @@ describe("createPendingOrder", () => {
         shippingCity: "La Rochelle",
         shippingCountry: "FR",
       },
-      [{ slug: "estran", qty: 1 }], // 2200
+      [{ slug: "estran", qty: 1 }],
     );
     expect(order.fulfillment).toBe("poste");
-    expect(order.deliveryFeeCents).toBe(MONDIAL_RELAY_FEE_CENTS);
-    expect(order.totalCents).toBe(2200 + MONDIAL_RELAY_FEE_CENTS);
+    expect(order.deliveryFeeCents).toBe(COLISSIMO_FEE_CENTS);
+    expect(order.totalCents).toBe(2200 + COLISSIMO_FEE_CENTS);
     expect(order.shippingAddress).toContain("quai Valin");
     expect(order.shippingPostalCode).toBe("17000");
     expect(order.shippingCity).toBe("La Rochelle");
     expect(order.shippingCountry).toBe("FR");
+    expect(order.relayPointId).toBeNull();
+    expect(order.relayPointName).toBeNull();
+  });
+
+  it("applique le forfait Mondial Relay par défaut en mode mondial_relay", async () => {
+    const { order } = await createPendingOrder(
+      db,
+      {
+        ...camille,
+        phone: "0612345678",
+        fulfillment: "mondial_relay",
+        relayPointId: "012345",
+        relayPointName: "Tabac de la Gare",
+        relayStreet: "1 rue des Lilas",
+        relayPostalCode: "17000",
+        relayCity: "La Rochelle",
+      },
+      [{ slug: "estran", qty: 1 }],
+    );
+    expect(order.deliveryFeeCents).toBe(MONDIAL_RELAY_FEE_CENTS);
+    expect(order.totalCents).toBe(2200 + MONDIAL_RELAY_FEE_CENTS);
+  });
+
+  it("utilise les forfaits transmis (paramètres admin) selon le mode", async () => {
+    const fees = { mondialRelay: 350, colissimo: 950 };
+    const poste = await createPendingOrder(
+      db,
+      { ...camille, fulfillment: "poste", shippingAddress: "3 quai Valin", shippingPostalCode: "17000", shippingCity: "La Rochelle", shippingCountry: "FR" },
+      [{ slug: "estran", qty: 1 }],
+      fees,
+    );
+    expect(poste.order.deliveryFeeCents).toBe(950);
+    const relay = await createPendingOrder(
+      db,
+      { ...camille, fulfillment: "mondial_relay", relayPointId: "012345", relayPointName: "Tabac", relayStreet: "1 rue des Lilas", relayPostalCode: "17000", relayCity: "La Rochelle" },
+      [{ slug: "estran", qty: 1 }],
+      fees,
+    );
+    expect(relay.order.deliveryFeeCents).toBe(350);
+    const retrait = await createPendingOrder(db, camille, [{ slug: "estran", qty: 1 }], fees);
+    expect(retrait.order.deliveryFeeCents).toBe(0);
   });
 
   it("n'enregistre pas d'adresse en mode retrait", async () => {

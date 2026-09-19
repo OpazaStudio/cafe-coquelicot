@@ -1,10 +1,11 @@
 import { formatEuros } from "@/lib/money";
-import { CARD_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
-import type { Settings } from "@/lib/settings";
+import { CARD_FEE_CENTS } from "@/lib/order-status";
+import { shippingFeesFromSettings, type Settings } from "@/lib/settings";
 import { LegalValue } from "./legal-value";
 import { LegalNav, Mediator, ShopAddress, ShopEmail, ShopName } from "./legal-page";
 
 export function CgvContent({ settings }: { settings: Settings }) {
+  const fees = shippingFeesFromSettings(settings);
   return (
     <>
       <LegalNav current="/cgv" />
@@ -26,7 +27,7 @@ export function CgvContent({ settings }: { settings: Settings }) {
       <h2>2. Produits</h2>
       <p>
         La boutique propose des fleurs fraîches, des fleurs séchées, des
-        compositions, des branches et des vases. Les fleurs sont des produits
+        compositions et des vases. Les fleurs sont des produits
         naturels et saisonniers : les photographies et illustrations ne sont pas
         contractuelles, et la composition peut varier selon les arrivages, dans le
         respect de l&apos;esprit, des couleurs et de la valeur du produit commandé.
@@ -37,7 +38,8 @@ export function CgvContent({ settings }: { settings: Settings }) {
         Les prix sont indiqués en euros, toutes taxes comprises. Ils n&apos;incluent
         pas les frais de livraison, affichés avant la validation de la commande.
         Frais actuels : livraison en point relais Mondial Relay{" "}
-        {formatEuros(MONDIAL_RELAY_FEE_CENTS)}, carte manuscrite optionnelle{" "}
+        {formatEuros(fees.mondialRelay)}, livraison à domicile par Colissimo{" "}
+        {formatEuros(fees.colissimo)}, carte manuscrite optionnelle{" "}
         {formatEuros(CARD_FEE_CENTS)}. La boutique se réserve le droit de modifier ses
         prix à tout moment ; le prix applicable est celui affiché au moment de la
         commande.
@@ -45,8 +47,9 @@ export function CgvContent({ settings }: { settings: Settings }) {
 
       <h2>4. Commande</h2>
       <p>
-        Le client sélectionne ses produits, renseigne ses coordonnées et son point
-        relais, puis est redirigé vers la page de paiement sécurisée. La commande est
+        Le client sélectionne ses produits, renseigne ses coordonnées et son mode de
+        livraison (point relais ou adresse), puis est redirigé vers la page de
+        paiement sécurisée. La commande est
         ferme et définitive après confirmation du paiement. Un récapitulatif est
         affiché à l&apos;écran et un reçu est envoyé par e-mail. La boutique peut
         refuser une commande en cas de litige antérieur, d&apos;indisponibilité ou
@@ -64,9 +67,11 @@ export function CgvContent({ settings }: { settings: Settings }) {
       <p>
         Les commandes sont préparées à l&apos;atelier sous{" "}
         <LegalValue value={settings.preparation_delay} label="délai de préparation" />,
-        puis remises à Mondial Relay pour livraison en point relais en France
-        métropolitaine, sous{" "}
-        <LegalValue value={settings.shipping_delay} label="délai d'acheminement" />.
+        puis remises au transporteur choisi par le client, en France métropolitaine :
+        Mondial Relay pour une livraison en point relais sous{" "}
+        <LegalValue value={settings.shipping_delay} label="délai d'acheminement Mondial Relay" />,
+        ou Colissimo pour une livraison à domicile sous{" "}
+        <LegalValue value={settings.shipping_delay_colissimo} label="délai d'acheminement Colissimo" />.
         Une date de livraison souhaitée peut être indiquée à la commande ; elle est
         prise en compte dans la mesure du possible. Voir le détail dans la page{" "}
         <a href="/livraison-retours">Livraison &amp; retours</a>.

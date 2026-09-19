@@ -1,5 +1,5 @@
 CREATE TYPE "public"."order_status" AS ENUM('pending', 'paid', 'preparing', 'delivered', 'cancelled');--> statement-breakpoint
-CREATE TYPE "public"."product_category" AS ENUM('frais', 'seche', 'compo', 'branches', 'mini');--> statement-breakpoint
+CREATE TYPE "public"."product_category" AS ENUM('frais', 'seche', 'compo', 'mini');--> statement-breakpoint
 CREATE TABLE "order_items" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"order_id" uuid NOT NULL,

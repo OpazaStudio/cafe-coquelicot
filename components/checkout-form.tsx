@@ -6,13 +6,16 @@ import { useCart } from "@/lib/cart/cart-context";
 import { trackBeginCheckout } from "@/lib/analytics/gtag";
 import { composeItemName } from "@/lib/item-label";
 import { formatEuros } from "@/lib/money";
-import { CARD_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
+import { CARD_FEE_CENTS, shippingFeeFor, type ShippingFees } from "@/lib/order-status";
 import { startCheckout, type CheckoutState } from "@/app/checkout/actions";
 import { ArrowRight } from "./illustrations";
 import { RelayPicker, type RelaySelection } from "./relay-picker";
 
-export function CheckoutForm() {
+type ShippingMode = "mondial_relay" | "poste";
+
+export function CheckoutForm({ fees }: { fees: ShippingFees }) {
   const { items, subtotalCents, ready } = useCart();
+  const [mode, setMode] = useState<ShippingMode>("mondial_relay");
   const [relay, setRelay] = useState<RelaySelection | null>(null);
   const [hasCard, setHasCard] = useState(false);
   const [state, action, pending] = useActionState<CheckoutState, FormData>(
@@ -25,8 +28,8 @@ export function CheckoutForm() {
   useEffect(() => {
     if (!ready || items.length === 0 || beginCheckoutFired.current) return;
     beginCheckoutFired.current = true;
-    trackBeginCheckout(items, subtotalCents + MONDIAL_RELAY_FEE_CENTS);
-  }, [ready, items, subtotalCents]);
+    trackBeginCheckout(items, subtotalCents + fees.mondialRelay);
+  }, [ready, items, subtotalCents, fees.mondialRelay]);
 
   if (!ready) {
     return <p className="cart-empty body">Chargement…</p>;
@@ -45,8 +48,9 @@ export function CheckoutForm() {
     );
   }
 
-  const feeCents = MONDIAL_RELAY_FEE_CENTS;
+  const feeCents = shippingFeeFor(mode, fees);
   const cardFeeCents = hasCard ? CARD_FEE_CENTS : 0;
+  const canSubmit = mode === "poste" || relay !== null;
   const itemsPayload = JSON.stringify(
     items.map((i) => ({
       slug: i.slug,
@@ -84,13 +88,43 @@ export function CheckoutForm() {
         </fieldset>
 
         <fieldset className="checkout-fieldset">
-          <legend className="eyebrow">Livraison en point relais</legend>
-          <p className="body">
-            Vos achats sont livrés en point relais <strong>Mondial Relay</strong> (France) —{" "}
-            {formatEuros(MONDIAL_RELAY_FEE_CENTS)}.
-          </p>
-          <RelayPicker value={relay} onSelect={setRelay} />
-          {relay && (
+          <legend className="eyebrow">Mode de livraison</legend>
+          <input type="hidden" name="fulfillment" value={mode} />
+          <div className="checkout-fulfillment">
+            <label className={`checkout-choice${mode === "mondial_relay" ? " is-active" : ""}`}>
+              <input
+                type="radio"
+                name="shippingMode"
+                value="mondial_relay"
+                checked={mode === "mondial_relay"}
+                onChange={() => setMode("mondial_relay")}
+                data-testid="shipping-mode-mondial_relay"
+              />
+              <span className="checkout-choice__title">Point relais Mondial Relay</span>
+              <span className="checkout-choice__desc">
+                Livré dans le relais de votre choix — {formatEuros(fees.mondialRelay)}
+              </span>
+            </label>
+            <label className={`checkout-choice${mode === "poste" ? " is-active" : ""}`}>
+              <input
+                type="radio"
+                name="shippingMode"
+                value="poste"
+                checked={mode === "poste"}
+                onChange={() => setMode("poste")}
+                data-testid="shipping-mode-poste"
+              />
+              <span className="checkout-choice__title">À domicile par Colissimo</span>
+              <span className="checkout-choice__desc">
+                Livré à votre adresse, France métropolitaine — {formatEuros(fees.colissimo)}
+              </span>
+            </label>
+          </div>
+
+          <div hidden={mode !== "mondial_relay"}>
+            <RelayPicker value={relay} onSelect={setRelay} />
+          </div>
+          {mode === "mondial_relay" && relay && (
             <>
               <input type="hidden" name="relayPointId" value={relay.id} />
               <input type="hidden" name="relayPointName" value={relay.name} />
@@ -100,6 +134,44 @@ export function CheckoutForm() {
               <input type="hidden" name="relayCountry" value="FR" />
             </>
           )}
+
+          {mode === "poste" && (
+            <>
+              <label className="form-field">
+                <span>Adresse (n° et rue) *</span>
+                <input
+                  name="address"
+                  required
+                  maxLength={200}
+                  autoComplete="street-address"
+                  placeholder="3 quai Valin, appartement 2"
+                />
+              </label>
+              <label className="form-field">
+                <span>Code postal *</span>
+                <input
+                  name="postalCode"
+                  required
+                  inputMode="numeric"
+                  pattern="\d{5}"
+                  maxLength={5}
+                  autoComplete="postal-code"
+                  placeholder="17000"
+                />
+              </label>
+              <label className="form-field">
+                <span>Ville *</span>
+                <input
+                  name="city"
+                  required
+                  maxLength={100}
+                  autoComplete="address-level2"
+                  placeholder="La Rochelle"
+                />
+              </label>
+            </>
+          )}
+
           <label className="form-field">
             <span>
               Message pour la carte{" "}
@@ -133,7 +205,7 @@ export function CheckoutForm() {
           <span>{formatEuros(subtotalCents)}</span>
         </div>
         <div className="cart-summary__row">
-          <span>Livraison (point relais)</span>
+          <span>{mode === "poste" ? "Livraison (Colissimo à domicile)" : "Livraison (point relais)"}</span>
           <span>{formatEuros(feeCents)}</span>
         </div>
         {cardFeeCents > 0 && (
@@ -157,10 +229,10 @@ export function CheckoutForm() {
 
         <button
           type="submit"
-          disabled={pending || !relay}
+          disabled={pending || !canSubmit}
           className="btn btn--filled cart-summary__cta"
         >
-          {pending ? "Redirection…" : relay ? "Payer avec Stripe" : "Choisissez un point relais"}{" "}
+          {pending ? "Redirection…" : canSubmit ? "Payer avec Stripe" : "Choisissez un point relais"}{" "}
           <ArrowRight />
         </button>
         <p className="cart-summary__note">

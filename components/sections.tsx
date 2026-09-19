@@ -12,6 +12,7 @@ import {
 import { ContactForm } from "./contact-form";
 import { ManageCookiesButton } from "./consent/manage-cookies-button";
 import { CartLink } from "./cart-link";
+import { Logo } from "./logo";
 
 export type SectionBg = "linen" | "burgundy" | "pale-oak" | "coffee-bean" | "coffee-bean-2";
 
@@ -21,7 +22,9 @@ type SectionProps = { bg: SectionBg };
 export function SiteHeader() {
   return (
     <header className="site-header">
-      <Link href="/" className="site-header__logo">coquelicot</Link>
+      <Link href="/" className="site-header__logo" aria-label="Café Coquelicot">
+        <Logo />
+      </Link>
       <nav className="site-header__nav">
         <Link href="/boutique">Boutique</Link>
         <Link href="/#gallery">Galerie</Link>
@@ -45,13 +48,12 @@ export function Hero({ bg }: SectionProps) {
           <HeroStorefront />
         </div>
         <div className="hero__text">
-          <p className="eyebrow reveal">Fleuriste · La Rochelle · depuis 2019</p>
-          <h1 className="display hero__display reveal">
-            coquelicot
+          <h1 className="hero__display reveal">
+            Café<br/>Coquelicot
             <span className="script">fleurs fraîches &amp; séchées</span>
           </h1>
           <p className="body body--lg hero__sub reveal">
-            Un atelier-boutique pensé pour celles &amp; ceux qui veulent offrir
+            Un atelier pensé pour celles &amp; ceux qui veulent offrir
             (ou s&apos;offrir) un bouquet qui raconte quelque chose. Brut, sincère,
             jamais convenu.
           </p>
@@ -84,11 +86,9 @@ export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] 
             <span className="script">savamment</span> composés
           </h2>
           <div className="shop__intro reveal">
-            <p className="eyebrow">Collection · Printemps 2026</p>
+            <p className="eyebrow">Collection du moment</p>
             <p className="body">
-              Huit compositions du moment, renouvelées chaque semaine au gré
-              de la saison et de ce que le marché nous propose. Tout est cueilli
-              ou réceptionné le matin même.
+              Une collection permanente, ponctuée de créations éphémères au gré des saisons et des arrivages.
             </p>
             <Link href="/boutique" className="link-arrow">
               Toute la boutique <ArrowRight />
@@ -138,14 +138,14 @@ function ProductCard({ slug, name, tag, desc, price, variant, badge, category, i
 // ─── Gallery ───────────────────────────────────────────────────
 type Tile =
   | { type: "illu"; variant: number; cls: string }
-  | { type: "label"; label: string; script: string; cls: string };
+  | { type: "label"; label: string; script?: string; cls: string };
 
 const TILES: Tile[] = [
   { type: "illu", variant: 0, cls: "tile--1" },
-  { type: "label", label: "tout est", script: "saison", cls: "tile--2" },
+  { type: "label", label: "tout est", cls: "tile--2" },
   { type: "illu", variant: 4, cls: "tile--4" },
   { type: "illu", variant: 3, cls: "tile--3" },
-  { type: "label", label: "beau", script: "✿", cls: "tile--7" },
+  { type: "label", label: "de saison", script: "✿", cls: "tile--7" },
   { type: "illu", variant: 5, cls: "tile--6" },
   { type: "illu", variant: 2, cls: "tile--5" },
   { type: "illu", variant: 1, cls: "tile--8" },
@@ -163,7 +163,7 @@ export function Gallery({ bg }: SectionProps) {
           </h2>
           <p className="body body--lg gallery__sub">
             Pas de fleurs hors-saison, pas de transport aérien, pas de
-            mousse Oasis. Juste ce que la terre veut bien nous donner —
+            mousse Oasis. Juste ce que la terre veut bien nous donner
             et qu&apos;on assemble avec soin.
           </p>
         </div>
@@ -175,7 +175,7 @@ export function Gallery({ bg }: SectionProps) {
               ) : (
                 <>
                   <div className="gallery__tile-label">{t.label}</div>
-                  <div className="gallery__tile-script">{t.script}</div>
+                  {t.script && <div className="gallery__tile-script">{t.script}</div>}
                 </>
               )}
             </div>
@@ -203,14 +203,14 @@ const PRESTATIONS: Prestation[] = [
   {
     Icon: IconWedding,
     name: "mariages",
-    desc: "Bouquet de la mariée, boutonnières, arche, décor de table — on conçoit ensemble la scénographie florale de votre jour.",
+    desc: "Bouquet de la mariée, boutonnières, arche, décor de table, on conçoit ensemble la scénographie florale de votre jour.",
     price: "sur devis",
   },
   {
     Icon: IconEvent,
     name: "événementiel",
     desc: "Galas, vernissages, lancements, anniversaires. Installations florales sur-mesure pour transformer un lieu.",
-    price: "dès 350€",
+    price: "sur devis",
   },
   // {
   //   Icon: IconSubscription,
@@ -221,8 +221,8 @@ const PRESTATIONS: Prestation[] = [
   {
     Icon: IconWorkshop,
     name: "ateliers",
-    desc: "Apprenez à composer chez nous — bouquet champêtre, couronne séchée, ikebana. En groupe ou en privé.",
-    price: "65€ / pers.",
+    desc: "Apprenez à composer chez nous : bouquet champêtre, couronne séchée. En groupe ou en privé.",
+    price: "sur devis",
   },
   {
     Icon: IconCorporate,
@@ -248,9 +248,13 @@ export function Prestations({ bg }: SectionProps) {
             <span className="script">sur mesure</span>
           </h2>
           <p className="body body--lg prestations__sub">
-            Au-delà du bouquet hebdomadaire, on intervient à toutes les
-            échelles — jusqu&apos;à la scénographie d&apos;un mariage entier.
-            Toujours avec la même exigence.
+            Au-delà du bouquet quotidien, nous imaginons des créations florales pour chaque moment de vie.
+          </p>
+          <p className="body body--lg prestations__sub">
+            Une attention délicate, une table à fleurir, un dîner à mettre en scène, une réception à habiller ou des mariés à accompagner.
+          </p>
+          <p className="body body--lg prestations__sub">
+            Des compositions sur-mesures, fraîches ou séchées, pensées dans les moindres détails avec la même exigence de justesse, de saisonnalité et d'élégance.
           </p>
         </div>
         <div className="prestations__grid reveal">
@@ -282,7 +286,7 @@ export function AtelierStrip({ bg }: SectionProps) {
             <br />
             vaut <span className="script">mille importées d&apos;hier.</span>
           </p>
-          <p className="atelier-strip__author">— Léa &amp; l&apos;équipe</p>
+          <p className="atelier-strip__author">— Céline</p>
         </div>
       </div>
     </section>
@@ -296,7 +300,7 @@ export function About({ bg }: SectionProps) {
       <div className="container">
         <div className="about__inner">
           <div className="about__media reveal">
-            <div className="about__sticker">depuis 2019</div>
+            <div className="about__sticker">depuis 2026</div>
             <AboutFlorist />
           </div>
           <div className="reveal">
@@ -305,20 +309,15 @@ export function About({ bg }: SectionProps) {
               <span className="script">c&apos;est qui ?</span>
             </h2>
             <p className="body body--lg about__lede">
-              Léa a quitté son agence parisienne en 2019 pour ouvrir un
-              petit atelier rue du Gabut, à deux pas du vieux port.
+              Après l'obtention d'un CAP fleuriste, Céline a choisi de quitter son métier de cheffe de projet en biotechnologie pour donner toute sa place à sa passion des fleurs.
+            </p>
+            <p className="body body--lg about__lede">
+              Son ambition : Créer du beau, simplement et avec justesse.
             </p>
             <p className="body about__body">
-              On travaille avec des producteurs locaux de Charente-Maritime,
-              on cueille nous-mêmes ce qui pousse en bord de marais, et on
-              compose ce qui nous fait plaisir. Pas de fioriture inutile,
-              pas de cellophane, pas de roses en plein hiver. Juste l&apos;envie
-              de transmettre l&apos;émotion d&apos;une saison.
+              Pas de fioritures, pas de cellophane, pas de roses équatoriennes en plein hiver. Ici la fleur est choisie pour sa beauté, sa saisonnalité et son origine. Des fleurs fraîches locales ou européennes, des fleurs séchées et naturellement teintes, travaillées avec soin.
             </p>
-            <a href="#" className="btn about__cta">
-              Lire la suite <ArrowRight />
-            </a>
-            <div className="about__stats">
+            {/* <div className="about__stats">
               <div>
                 <div className="about__stat-num">6</div>
                 <div className="about__stat-label">ans d&apos;atelier</div>
@@ -331,7 +330,7 @@ export function About({ bg }: SectionProps) {
                 <div className="about__stat-num">12</div>
                 <div className="about__stat-label">producteurs locaux</div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -345,12 +344,12 @@ export function Contact({ bg }: SectionProps) {
     <section id="contact" data-section data-bg={bg} className="contact">
       <div className="container">
         <div className="contact__inner reveal">
-          <h2 className="display contact__title">
-            passez
-            <span className="script">nous voir.</span>
+          <h2 className="contact__title">
+            Dites nous
+            <span className="script">un petit mot</span>
           </h2>
           <p className="body body--lg contact__sub">
-            Mariage, atelier, commande spéciale ou simple bonjour — écrivez-nous.
+            Mariage, atelier, commande spéciale ou simple bonjour, écrivez-nous.
             On répond aussi vite que possible, promis.
           </p>
           <ContactForm />
@@ -367,15 +366,16 @@ export function SiteFooter() {
       <div className="container">
         <div className="site-footer__top">
           <div className="site-footer__brand">
-            coquelicot
+            <Logo />
+            <span className="sr-only">Café Coquelicot</span>
             <span className="script">à très vite</span>
           </div>
           <div className="site-footer__col">
             <h4 className="site-footer__col-title">Boutique</h4>
             <ul>
               <li><Link href="/boutique">Bouquets frais</Link></li>
-              <li><Link href="/boutique">Fleurs séchées</Link></li>
-              <li><Link href="/boutique">Compositions</Link></li>
+              <li><Link href="/boutique">Bouquets séchés</Link></li>
+              <li><Link href="/boutique">Compositions séchées</Link></li>
               <li><Link href="/boutique">Cartes cadeaux</Link></li>
             </ul>
           </div>
@@ -399,7 +399,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="site-footer__bottom">
-          <div>© 2026 Coquelicot — La Rochelle</div>
+          <a href="https://opaza.fr" target="_blank" rel="noopener noreferrer">Développé par Opaza Studio</a>
           <div className="site-footer__legal">
             <Link href="/mentions-legales">Mentions légales</Link>
             <span aria-hidden>·</span>

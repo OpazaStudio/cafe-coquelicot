@@ -5,7 +5,7 @@
 - **LabelButton** [client] — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
 - **StatusActions** [client] — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
-- **TrackingForm** [client] — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
+- **TrackingForm** [client] — props: orderId, trackingNumber, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** [client] — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **CommandesLoading** — `app/(admin)/admin/(panel)/commandes/loading.tsx`
 - **OrdersTable** — props: orders — `app/(admin)/admin/(panel)/commandes/orders-table.tsx`
@@ -46,7 +46,7 @@
 - **BoutiqueShop** [client] — props: catalogue — `components/boutique.tsx`
 - **CartLink** [client] — `components/cart-link.tsx`
 - **CartView** [client] — `components/cart-view.tsx`
-- **CheckoutForm** [client] — `components/checkout-form.tsx`
+- **CheckoutForm** [client] — props: fees — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
 - **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
 - **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
@@ -80,6 +80,7 @@
 - **LegalValue** — props: value, label — `components/legal/legal-value.tsx`
 - **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
+- **Logo** — props: className — `components/logo.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`

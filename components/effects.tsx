@@ -35,7 +35,7 @@ function useReveal() {
 // the top of the viewport so the transition fires exactly when the section
 // reaches the header, not earlier.
 const DARK_BGS = new Set(["burgundy", "coffee-bean", "coffee-bean-2"]);
-const HEADER_HEIGHT = 70; // px — approximate height of .site-header
+const HEADER_HEIGHT = 84; // px — approximate height of .site-header
 
 // The observer only fires when a section enters or leaves the strip. If a
 // section's data-bg changes while it sits there — which the colour tweak panel
