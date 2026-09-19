@@ -45,6 +45,7 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/content/template.ts` — function fillTemplate: (text, vars, string>) => string
 - `lib/db/admin-users.ts`
   - function normalizeEmail: (email) => string
   - function findAdminByEmail: (db, email) => Promise<AdminUserRow | undefined>
@@ -126,7 +127,7 @@
   - type AllowedImageType
   - type ImageValidation
   - const BUCKET
-  - _...2 more_
+  - _...3 more_
 - `lib/products.ts`
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>

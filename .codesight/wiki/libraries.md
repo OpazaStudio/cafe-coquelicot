@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**36 library files** across 26 modules
+**37 library files** across 27 modules
 
 ## Mondial-relay (5 files)
 
@@ -41,6 +41,10 @@
 ## Cart (1 files)
 
 - `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
+
+## Content (1 files)
+
+- `lib/content/template.ts` — fillTemplate
 
 ## Item-label.ts (1 files)
 

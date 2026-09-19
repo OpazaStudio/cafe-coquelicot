@@ -85,3 +85,7 @@
 ### settings
 - key: text (pk)
 - value: text (default, required)
+
+### page_content
+- page: text (pk)
+- data: jsonb (default, required)

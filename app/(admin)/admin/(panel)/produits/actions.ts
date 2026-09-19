@@ -15,6 +15,7 @@ import {
   type NewProductSizeRow,
 } from "@/lib/db/schema";
 import { parsePriceToCents } from "@/lib/money";
+import { IMAGE_PATH_RE } from "@/lib/product-image";
 import { slugify } from "@/lib/slug";
 import { deleteImage } from "@/lib/storage";
 
@@ -28,7 +29,7 @@ const optionalImagePath = z.preprocess(
   z
     .string()
     .trim()
-    .regex(/^[0-9a-f-]{36}\.(png|jpe?g|webp)$/, { error: "Chemin d'image invalide." })
+    .regex(IMAGE_PATH_RE, { error: "Chemin d'image invalide." })
     .nullable(),
 );
 const optionalHexColor = z.preprocess(
@@ -55,7 +56,7 @@ const ProductSchema = z.object({
     .string()
     .trim()
     .min(1, { error: "La description est requise." })
-    .max(300, { error: "300 caractères maximum." }),
+    .max(1000, { error: "1000 caractères maximum." }),
   price: z
     .string()
     .trim()
