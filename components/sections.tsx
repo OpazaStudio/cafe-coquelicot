@@ -80,8 +80,8 @@ export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] 
     <section id="shop" data-section data-bg={bg} className="shop">
       <div className="container">
         <div className="shop__head">
-          <h2 className="display shop__title reveal">
-            nos bouquets,
+          <h2 className="shop__title reveal">
+            Nos bouquets,
             <br />
             <span className="script">savamment</span> composés
           </h2>
@@ -156,8 +156,8 @@ export function Gallery({ bg }: SectionProps) {
     <section id="gallery" data-section data-bg={bg} className="gallery">
       <div className="container">
         <div className="gallery__head reveal">
-          <h2 className="display gallery__title">
-            on aime
+          <h2 className="gallery__title">
+            On aime
             <br />
             <span className="script">le beau et le sincère.</span>
           </h2>
@@ -243,8 +243,8 @@ export function Prestations({ bg }: SectionProps) {
     <section id="prestations" data-section data-bg={bg} className="prestations">
       <div className="container">
         <div className="prestations__head reveal">
-          <h2 className="display prestations__title">
-            prestations
+          <h2 className="prestations__title">
+            Prestations
             <span className="script">sur mesure</span>
           </h2>
           <p className="body body--lg prestations__sub">
@@ -282,7 +282,7 @@ export function AtelierStrip({ bg }: SectionProps) {
       <div className="container">
         <div className="atelier-strip__inner reveal">
           <p className="atelier-strip__quote">
-            une fleur cueillie aujourd&apos;hui
+            Une fleur cueillie aujourd&apos;hui
             <br />
             vaut <span className="script">mille importées d&apos;hier.</span>
           </p>
@@ -304,8 +304,8 @@ export function About({ bg }: SectionProps) {
             <AboutFlorist />
           </div>
           <div className="reveal">
-            <h2 className="display about__title">
-              coquelicot
+            <h2 className="about__title">
+              Café Coquelicot
               <span className="script">c&apos;est qui ?</span>
             </h2>
             <p className="body body--lg about__lede">

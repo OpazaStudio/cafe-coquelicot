@@ -391,6 +391,11 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   margin-bottom: 80px;
 }
 .shop__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
   font-size: clamp(56px, 8vw, 140px);
 }
 .shop__title .script {
@@ -648,6 +653,11 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   max-width: 900px;
 }
 .gallery__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
   font-size: clamp(56px, 8vw, 140px);
 }
 .gallery__title .script {
@@ -727,6 +737,11 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   margin-bottom: 80px;
 }
 .prestations__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
   font-size: clamp(64px, 9vw, 160px);
 }
 .prestations__title .script {
@@ -843,6 +858,11 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   z-index: var(--z-raised);
 }
 .about__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
   font-size: clamp(56px, 7vw, 120px);
 }
 .about__title .script {
@@ -897,7 +917,6 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   font-family: var(--font-display);
   font-size: clamp(48px, 6.5vw, 120px);
   line-height: 1.06;
-  text-transform: lowercase;
   max-width: 1200px;
   text-wrap: balance;
 }

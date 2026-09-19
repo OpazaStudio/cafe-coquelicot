@@ -376,17 +376,28 @@ export function IconSubscription({ className }: IllustrationProps) {
 export function IconWorkshop({ className }: IllustrationProps) {
   return (
     <svg viewBox="0 0 80 80" className={className} aria-hidden="true">
-      <g {...stroke}>
-        {/* Two hands holding stems */}
-        <path d="M 14 60 Q 14 50 20 44 L 28 38 L 32 32 L 36 38 L 40 32 L 44 38 L 48 32 L 52 38 L 60 44 Q 66 50 66 60 Q 66 68 60 72 L 20 72 Q 14 68 14 60 Z" />
-        <path d="M 32 38 Q 30 28 32 18" />
-        <path d="M 40 32 Q 38 22 40 12" />
-        <path d="M 48 38 Q 50 28 48 18" />
-        <circle cx="32" cy="16" r="5" />
-        <circle cx="40" cy="10" r="6" />
-        <circle cx="48" cy="16" r="5" />
-        <path d="M 22 60 L 26 60" />
-        <path d="M 54 60 L 58 60" />
+      <g {...stroke} transform="translate(0.0736 -11.1589) scale(0.03121)">
+        <g transform="matrix(3.030286,-2.599112,2.147319,2.503543,-3054.549112,1038.875391)">
+          <ellipse cx="644.5" cy="1240" rx="52.5" ry="73" strokeWidth={16.15} />
+        </g>
+        <g transform="matrix(0.943905,-0.810013,1.090477,1.270728,-1696.966986,36.328412)">
+          <path d="M546.022,2371.542C539.725,2074.489 674.592,1824.043 950,1620" strokeWidth={40.08} />
+        </g>
+        <g transform="matrix(-0.774096,-0.289686,0.508584,-1.359031,866.658322,4373.632491)">
+          <path d="M546.022,2371.542C542.555,2207.952 610.241,2042.94 717.762,1893.607C757.68,1838.167 803.087,1784.887 852.383,1734.643" strokeWidth={50.08} />
+        </g>
+        <g transform="matrix(-1.762392,-0.659532,1.049251,-2.803793,861.016749,7133.797229)">
+          <path d="M944.667,1647.933C976.659,1620.182 1009.702,1593.709 1043.453,1568.704" strokeWidth={23.65} />
+        </g>
+        <g transform="matrix(-3.030286,-2.599112,-2.147319,2.503543,5313.11175,1039.197171)">
+          <ellipse cx="644.5" cy="1240" rx="52.5" ry="73" strokeWidth={16.15} />
+        </g>
+        <g transform="matrix(-1.054134,-0.904606,-1.063307,1.239066,3951.258033,163.366956)">
+          <path d="M546.022,2371.542C539.725,2074.489 674.592,1824.043 950,1620" strokeWidth={39.01} />
+        </g>
+        <g transform="matrix(1.186588,0.500044,-0.437719,1.038693,1190.570134,12.575339)">
+          <ellipse cx="637.5" cy="443" rx="273.5" ry="153" strokeWidth={48.89} />
+        </g>
       </g>
     </svg>
   );
