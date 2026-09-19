@@ -4,7 +4,8 @@ import { SiteHeader, SiteFooter } from "@/components/sections";
 import { CheckoutForm } from "@/components/checkout-form";
 
 export const metadata: Metadata = {
-  title: "Commander — Coquelicot · Fleuriste La Rochelle",
+  title: "Commander",
+  robots: { index: false, follow: false },
   description: "Finalisez votre commande de fleurs fraîches & séchées.",
 };
 

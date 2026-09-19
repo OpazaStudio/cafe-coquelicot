@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**73 components** (react)
+**93 components** (react)
 
 ## Client Components
 
@@ -13,6 +13,7 @@
 - **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **PasswordForm** — `app/(admin)/admin/(panel)/compte/password-form.tsx`
+- **SettingsForm** — props: initial — `app/(admin)/admin/(panel)/parametres/settings-form.tsx`
 - **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **ProductForm** — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChartImpl** — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
@@ -45,6 +46,7 @@
 - **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
+- **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
@@ -53,9 +55,14 @@
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
 - **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`
 - **BoutiquePage** — `app/boutique/page.tsx`
+- **Page** — `app/cgv/page.tsx`
 - **CheckoutPage** — `app/checkout/page.tsx`
 - **ConfirmationPage** — props: searchParams — `app/commande/confirmee/page.tsx`
+- **Page** — `app/confidentialite/page.tsx`
 - **RootLayout** — `app/layout.tsx`
+- **Page** — `app/livraison-retours/page.tsx`
+- **Page** — `app/mentions-legales/page.tsx`
+- **OpengraphImage** — `app/opengraph-image.tsx`
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
 - **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
@@ -73,6 +80,19 @@
 - **ArrowRight** — props: size — `components/illustrations.tsx`
 - **ArrowDiag** — props: size — `components/illustrations.tsx`
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
+- **JsonLd** — props: data — `components/json-ld.tsx`
+- **CgvContent** — props: settings — `components/legal/cgv.tsx`
+- **ConfidentialiteContent** — props: settings — `components/legal/confidentialite.tsx`
+- **LegalPage** — props: crumb, title, script — `components/legal/legal-page.tsx`
+- **LegalNav** — props: current — `components/legal/legal-page.tsx`
+- **ShopName** — props: settings — `components/legal/legal-page.tsx`
+- **ShopAddress** — props: settings — `components/legal/legal-page.tsx`
+- **ShopEmail** — props: settings — `components/legal/legal-page.tsx`
+- **ShopPhone** — props: settings — `components/legal/legal-page.tsx`
+- **Mediator** — props: settings — `components/legal/legal-page.tsx`
+- **LegalValue** — props: value, label — `components/legal/legal-value.tsx`
+- **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
+- **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **SiteHeader** — `components/sections.tsx`
 - **Hero** — props: bg — `components/sections.tsx`
 - **Shop** — props: bg, products — `components/sections.tsx`

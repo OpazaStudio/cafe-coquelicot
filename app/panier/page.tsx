@@ -6,7 +6,8 @@ import { VaseSuggestions } from "@/components/vase-suggestions";
 import { getActiveVases } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Panier — Coquelicot · Fleuriste La Rochelle",
+  title: "Panier",
+  robots: { index: false, follow: true },
   description: "Votre panier de fleurs fraîches & séchées.",
 };
 

@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Schema shapes and field types extracted via AST. Read the actual schema source files before writing migrations or query logic.
 
-**drizzle** — 6 models
+**drizzle** — 7 models
 
 ### products
 
@@ -104,11 +104,18 @@ pk: `id` (uuid)
 - `passwordHash`: text _(required)_
 - `passwordChangedAt`: timestamp _(default, required)_
 
+### settings
+
+pk: `key` (text)
+
+- `key`: text _(pk)_
+- `value`: text _(default, required)_
+
 ## Schema Source Files
 
 Read and edit these files when adding columns, creating migrations, or changing relations:
 
-- `tests/helpers/db.ts` — imported by **9** files
+- `tests/helpers/db.ts` — imported by **10** files
 - `lib/db/schema.ts` — imported by **7** files
 - `lib/db/client.ts` — imported by **6** files
 - `lib/db/seed-data.ts` — imported by **2** files

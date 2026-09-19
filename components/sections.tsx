@@ -401,7 +401,13 @@ export function SiteFooter() {
         <div className="site-footer__bottom">
           <div>© 2026 Coquelicot — La Rochelle</div>
           <div className="site-footer__legal">
-            Mentions légales · CGV · Livraison &amp; retours
+            <Link href="/mentions-legales">Mentions légales</Link>
+            <span aria-hidden>·</span>
+            <Link href="/cgv">CGV</Link>
+            <span aria-hidden>·</span>
+            <Link href="/livraison-retours">Livraison &amp; retours</Link>
+            <span aria-hidden>·</span>
+            <Link href="/confidentialite">Confidentialité</Link>
             <ManageCookiesButton />
           </div>
         </div>

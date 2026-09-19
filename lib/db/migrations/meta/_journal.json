@@ -71,6 +71,13 @@
       "when": 1786546185140,
       "tag": "0009_mysterious_manta",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789811423430,
+      "tag": "0010_settings",
+      "breakpoints": true
     }
   ]
 }

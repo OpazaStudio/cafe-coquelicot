@@ -81,3 +81,7 @@
 - email: text (unique, required)
 - passwordHash: text (required)
 - passwordChangedAt: timestamp (default, required)
+
+### settings
+- key: text (pk)
+- value: text (default, required)

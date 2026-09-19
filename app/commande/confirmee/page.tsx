@@ -14,7 +14,7 @@ import {
 import { getStripe } from "@/lib/stripe";
 
 export const metadata: Metadata = {
-  title: "Commande confirmée — Coquelicot · Fleuriste La Rochelle",
+  title: "Commande confirmée",
   robots: { index: false, follow: false },
 };
 

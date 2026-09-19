@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 6 models | 73 components | 32 lib files | 29 env vars | 6 middleware | 44% test coverage
-> **Token savings:** this file is ~6,000 tokens. Without it, AI exploration would cost ~50,400 tokens. **Saves ~44,300 tokens per conversation.**
-> **Last scanned:** 2026-08-13 07:40 — re-run after significant changes
+> 3 routes | 7 models | 93 components | 35 lib files | 29 env vars | 6 middleware | 50% test coverage
+> **Token savings:** this file is ~6,700 tokens. Without it, AI exploration would cost ~58,000 tokens. **Saves ~51,400 tokens per conversation.**
+> **Last scanned:** 2026-09-19 10:16 — re-run after significant changes
 
 ---
 
@@ -100,6 +100,10 @@
 - passwordHash: text (required)
 - passwordChangedAt: timestamp (default, required)
 
+### settings
+- key: text (pk)
+- value: text (default, required)
+
 ---
 
 # Components
@@ -119,6 +123,8 @@
 - **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
+- **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
+- **SettingsForm** [client] — props: initial — `app/(admin)/admin/(panel)/parametres/settings-form.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
@@ -132,9 +138,14 @@
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
 - **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`
 - **BoutiquePage** — `app/boutique/page.tsx`
+- **Page** — `app/cgv/page.tsx`
 - **CheckoutPage** — `app/checkout/page.tsx`
 - **ConfirmationPage** — props: searchParams — `app/commande/confirmee/page.tsx`
+- **Page** — `app/confidentialite/page.tsx`
 - **RootLayout** — `app/layout.tsx`
+- **Page** — `app/livraison-retours/page.tsx`
+- **Page** — `app/mentions-legales/page.tsx`
+- **OpengraphImage** — `app/opengraph-image.tsx`
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
 - **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
@@ -163,6 +174,19 @@
 - **ArrowRight** — props: size — `components/illustrations.tsx`
 - **ArrowDiag** — props: size — `components/illustrations.tsx`
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
+- **JsonLd** — props: data — `components/json-ld.tsx`
+- **CgvContent** — props: settings — `components/legal/cgv.tsx`
+- **ConfidentialiteContent** — props: settings — `components/legal/confidentialite.tsx`
+- **LegalPage** — props: crumb, title, script — `components/legal/legal-page.tsx`
+- **LegalNav** — props: current — `components/legal/legal-page.tsx`
+- **ShopName** — props: settings — `components/legal/legal-page.tsx`
+- **ShopAddress** — props: settings — `components/legal/legal-page.tsx`
+- **ShopEmail** — props: settings — `components/legal/legal-page.tsx`
+- **ShopPhone** — props: settings — `components/legal/legal-page.tsx`
+- **Mediator** — props: settings — `components/legal/legal-page.tsx`
+- **LegalValue** — props: value, label — `components/legal/legal-value.tsx`
+- **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
+- **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
@@ -308,7 +332,7 @@
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
-  - _...8 more_
+  - _...10 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -319,6 +343,26 @@
   - _...1 more_
 - `lib/request-ip.ts` — function getRequestIp: () => Promise<string>
 - `lib/security-headers.ts` — function securityHeaders: (isProduction) => HttpHeader[], type HttpHeader
+- `lib/seo.ts`
+  - function buildRobots: (siteUrl) => MetadataRoute.Robots
+  - function buildSitemap: (siteUrl, products) => MetadataRoute.Sitemap
+  - function jsonLdString: (data) => string
+  - function productJsonLd: (input) => JsonLd
+  - function localBusinessJsonLd: (siteUrl, s) => JsonLd
+  - type SitemapProduct
+  - _...5 more_
+- `lib/settings-fields.ts`
+  - function readSettingsForm: (formData) => SettingsFormResult
+  - function isSettingKey: (key) => key is SettingKey
+  - function parseSettings: (rows) => Settings
+  - type SettingGroup
+  - type SettingField
+  - type SettingKey
+  - _...6 more_
+- `lib/settings.ts`
+  - function querySettings: (db) => Promise<Settings>
+  - function saveSettings: (db, values) => Promise<void>
+  - const getSettings
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>
@@ -409,15 +453,17 @@
 
 ## Most Imported Files (change these carefully)
 
-- `app/(admin)/admin/(panel)/ui.tsx` — imported by **13** files
-- `tests/helpers/db.ts` — imported by **9** files
-- `tests/e2e/helpers.ts` — imported by **8** files
+- `app/(admin)/admin/(panel)/ui.tsx` — imported by **14** files
+- `tests/helpers/db.ts` — imported by **10** files
+- `tests/e2e/helpers.ts` — imported by **9** files
 - `lib/db/schema.ts` — imported by **7** files
 - `components/illustrations.tsx` — imported by **6** files
 - `lib/db/client.ts` — imported by **6** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
+- `components/legal/legal-value.tsx` — imported by **4** files
+- `components/legal/legal-page.tsx` — imported by **4** files
 - `lib/uuid.ts` — imported by **3** files
 - `lib/mondial-relay/types.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
@@ -425,30 +471,28 @@
 - `lib/db/seed-data.ts` — imported by **2** files
 - `lib/db/admin-users.ts` — imported by **2** files
 - `lib/mondial-relay/config.ts` — imported by **2** files
+- `lib/settings-fields.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/admin-nav.tsx` — imported by **1** files
-- `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx` — imported by **1** files
-- `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx` — imported by **1** files
-- `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx` — imported by **1** files
 
 ## Import Map (who imports what)
 
-- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +8 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts`, `tests/unit/products.test.ts` +4 more
-- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +3 more
+- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +9 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts`, `tests/unit/products.test.ts` +5 more
+- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +4 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/client.ts` ← `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/admin-set-password.ts` +1 more
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
-- `lib/uuid.ts` ← `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`
+- `components/legal/legal-value.tsx` ← `components/legal/cgv.tsx`, `components/legal/legal-page.tsx`, `components/legal/livraison-retours.tsx`, `components/legal/mentions-legales.tsx`
 
 ---
 
 # Test Coverage
 
-> **44%** of routes and models are covered by tests
-> 52 test files found
+> **50%** of routes and models are covered by tests
+> 58 test files found
 
 ## Covered Routes
 
@@ -459,6 +503,7 @@
 - products
 - orders
 - admin_users
+- settings
 
 ---
 

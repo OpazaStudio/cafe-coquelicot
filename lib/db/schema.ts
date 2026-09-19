@@ -171,6 +171,14 @@ export const adminUsers = pgTable("admin_users", {
     .defaultNow(),
 });
 
+export const settings = pgTable("settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
 export type ProductSizeRow = typeof productSizes.$inferSelect;
@@ -183,6 +191,7 @@ export type OrderItemRow = typeof orderItems.$inferSelect;
 export type NewOrderItemRow = typeof orderItems.$inferInsert;
 export type AdminUserRow = typeof adminUsers.$inferSelect;
 export type NewAdminUserRow = typeof adminUsers.$inferInsert;
+export type SettingRow = typeof settings.$inferSelect;
 
 export type ProductCategory = (typeof productCategory.enumValues)[number];
 export type OrderStatus = (typeof orderStatus.enumValues)[number];

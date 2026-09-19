@@ -239,3 +239,16 @@ export async function listProductsForAdmin(db: Db): Promise<
     return { row, sizeCount: s.length, colorCount: c.length, fromCents };
   });
 }
+
+export async function queryActiveProductsForSitemap(
+  db: Db,
+): Promise<Array<{ slug: string; updatedAt: Date }>> {
+  return db
+    .select({ slug: products.slug, updatedAt: products.updatedAt })
+    .from(products)
+    .where(eq(products.active, true));
+}
+
+export async function getActiveProductsForSitemap() {
+  return queryActiveProductsForSitemap(await getDb());
+}

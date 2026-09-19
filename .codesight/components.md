@@ -15,6 +15,8 @@
 - **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
+- **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
+- **SettingsForm** [client] — props: initial — `app/(admin)/admin/(panel)/parametres/settings-form.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
@@ -28,9 +30,14 @@
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`
 - **ProduitPage** — props: params — `app/boutique/[slug]/page.tsx`
 - **BoutiquePage** — `app/boutique/page.tsx`
+- **Page** — `app/cgv/page.tsx`
 - **CheckoutPage** — `app/checkout/page.tsx`
 - **ConfirmationPage** — props: searchParams — `app/commande/confirmee/page.tsx`
+- **Page** — `app/confidentialite/page.tsx`
 - **RootLayout** — `app/layout.tsx`
+- **Page** — `app/livraison-retours/page.tsx`
+- **Page** — `app/mentions-legales/page.tsx`
+- **OpengraphImage** — `app/opengraph-image.tsx`
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
 - **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
@@ -59,6 +66,19 @@
 - **ArrowRight** — props: size — `components/illustrations.tsx`
 - **ArrowDiag** — props: size — `components/illustrations.tsx`
 - **AboutFlorist** — props: className — `components/illustrations.tsx`
+- **JsonLd** — props: data — `components/json-ld.tsx`
+- **CgvContent** — props: settings — `components/legal/cgv.tsx`
+- **ConfidentialiteContent** — props: settings — `components/legal/confidentialite.tsx`
+- **LegalPage** — props: crumb, title, script — `components/legal/legal-page.tsx`
+- **LegalNav** — props: current — `components/legal/legal-page.tsx`
+- **ShopName** — props: settings — `components/legal/legal-page.tsx`
+- **ShopAddress** — props: settings — `components/legal/legal-page.tsx`
+- **ShopEmail** — props: settings — `components/legal/legal-page.tsx`
+- **ShopPhone** — props: settings — `components/legal/legal-page.tsx`
+- **Mediator** — props: settings — `components/legal/legal-page.tsx`
+- **LegalValue** — props: value, label — `components/legal/legal-value.tsx`
+- **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
+- **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`

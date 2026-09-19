@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**32 library files** across 23 modules
+**35 library files** across 26 modules
 
 ## Mondial-relay (5 files)
 
@@ -84,6 +84,18 @@
 ## Security-headers.ts (1 files)
 
 - `lib/security-headers.ts` — securityHeaders, HttpHeader
+
+## Seo.ts (1 files)
+
+- `lib/seo.ts` — buildRobots, buildSitemap, jsonLdString, productJsonLd, localBusinessJsonLd, SitemapProduct, …
+
+## Settings-fields.ts (1 files)
+
+- `lib/settings-fields.ts` — readSettingsForm, isSettingKey, parseSettings, SettingGroup, SettingField, SettingKey, …
+
+## Settings.ts (1 files)
+
+- `lib/settings.ts` — querySettings, saveSettings, getSettings
 
 ## Slug.ts (1 files)
 

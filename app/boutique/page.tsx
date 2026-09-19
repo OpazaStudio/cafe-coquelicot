@@ -6,7 +6,8 @@ import { getActiveProducts } from "@/lib/products";
 import { ArrowRight, IconDelivery, IconSubscription, IconWorkshop } from "@/components/illustrations";
 
 export const metadata: Metadata = {
-  title: "La boutique — Coquelicot · Fleuriste La Rochelle",
+  title: "La boutique",
+  alternates: { canonical: "/boutique" },
   description:
     "Bouquets frais & séchés, compositions, branches et petits formats. La boutique en ligne de l'atelier Coquelicot, cueilli le matin même à La Rochelle.",
 };

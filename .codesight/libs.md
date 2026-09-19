@@ -126,7 +126,7 @@
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
-  - _...8 more_
+  - _...10 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -137,6 +137,26 @@
   - _...1 more_
 - `lib/request-ip.ts` — function getRequestIp: () => Promise<string>
 - `lib/security-headers.ts` — function securityHeaders: (isProduction) => HttpHeader[], type HttpHeader
+- `lib/seo.ts`
+  - function buildRobots: (siteUrl) => MetadataRoute.Robots
+  - function buildSitemap: (siteUrl, products) => MetadataRoute.Sitemap
+  - function jsonLdString: (data) => string
+  - function productJsonLd: (input) => JsonLd
+  - function localBusinessJsonLd: (siteUrl, s) => JsonLd
+  - type SitemapProduct
+  - _...5 more_
+- `lib/settings-fields.ts`
+  - function readSettingsForm: (formData) => SettingsFormResult
+  - function isSettingKey: (key) => key is SettingKey
+  - function parseSettings: (rows) => Settings
+  - type SettingGroup
+  - type SettingField
+  - type SettingKey
+  - _...6 more_
+- `lib/settings.ts`
+  - function querySettings: (db) => Promise<Settings>
+  - function saveSettings: (db, values) => Promise<void>
+  - const getSettings
 - `lib/slug.ts` — function slugify: (input) => string
 - `lib/stats.ts`
   - function getKpis: (db) => Promise<Kpis>

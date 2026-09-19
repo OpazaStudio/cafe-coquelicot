@@ -9,6 +9,8 @@ import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { CookieBanner } from "@/components/consent/cookie-banner";
 import { BgTweakGate } from "@/components/bg-tweak/gate";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/seo";
+import { getSiteUrl } from "@/lib/stripe";
 
 // Tangerine (fichiers fournis dans /fonts) — didone à fort contraste, plus large
 // à corps égal que la display qu'elle remplace : « coquelicot » mesurait 795px
@@ -37,9 +39,26 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Coquelicot — Fleuriste · La Rochelle",
-  description:
-    "Atelier-boutique de fleurs fraîches & séchées à La Rochelle. Bouquets de saison, mariages, événementiel, abonnements et ateliers floraux.",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: SITE_TITLE,
+    template: "%s — Coquelicot · Fleuriste La Rochelle",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({

@@ -45,7 +45,8 @@ export function CookieBanner() {
         <p className="cookie-banner__text">
           On utilise un cookie de <strong>mesure d&apos;audience</strong> (Google
           Analytics) pour comprendre ce qui plaît sur le site — rien de
-          publicitaire. Vous pouvez refuser sans rien perdre.
+          publicitaire. Vous pouvez refuser sans rien perdre.{" "}
+          <a href="/confidentialite">En savoir plus</a>
         </p>
         <div className="cookie-banner__actions">
           <button
