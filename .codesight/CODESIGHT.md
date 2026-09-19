@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 8 models | 95 components | 37 lib files | 29 env vars | 6 middleware | 55% test coverage
-> **Token savings:** this file is ~6,900 tokens. Without it, AI exploration would cost ~59,600 tokens. **Saves ~52,700 tokens per conversation.**
-> **Last scanned:** 2026-09-19 17:15 — re-run after significant changes
+> 3 routes | 7 models | 95 components | 36 lib files | 29 env vars | 6 middleware | 50% test coverage
+> **Token savings:** this file is ~6,900 tokens. Without it, AI exploration would cost ~59,000 tokens. **Saves ~52,100 tokens per conversation.**
+> **Last scanned:** 2026-09-19 17:17 — re-run after significant changes
 
 ---
 
@@ -103,10 +103,6 @@
 ### settings
 - key: text (pk)
 - value: text (default, required)
-
-### page_content
-- page: text (pk)
-- data: jsonb (default, required)
 
 ---
 
@@ -257,7 +253,6 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
-- `lib/content/template.ts` — function fillTemplate: (text, vars, string>) => string
 - `lib/db/admin-users.ts`
   - function normalizeEmail: (email) => string
   - function findAdminByEmail: (db, email) => Promise<AdminUserRow | undefined>
@@ -339,7 +334,7 @@
   - type AllowedImageType
   - type ImageValidation
   - const BUCKET
-  - _...3 more_
+  - _...2 more_
 - `lib/products.ts`
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
@@ -470,7 +465,7 @@
 
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **14** files
 - `tests/e2e/helpers.ts` — imported by **11** files
-- `tests/helpers/db.ts` — imported by **11** files
+- `tests/helpers/db.ts` — imported by **10** files
 - `lib/db/schema.ts` — imported by **7** files
 - `components/illustrations.tsx` — imported by **6** files
 - `lib/db/client.ts` — imported by **6** files
@@ -493,7 +488,7 @@
 
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +9 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +6 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts` +6 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts`, `tests/unit/products.test.ts` +5 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/client.ts` ← `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/admin-set-password.ts` +1 more
@@ -506,8 +501,8 @@
 
 # Test Coverage
 
-> **55%** of routes and models are covered by tests
-> 64 test files found
+> **50%** of routes and models are covered by tests
+> 62 test files found
 
 ## Covered Routes
 
@@ -519,7 +514,6 @@
 - orders
 - admin_users
 - settings
-- page_content
 
 ---
 

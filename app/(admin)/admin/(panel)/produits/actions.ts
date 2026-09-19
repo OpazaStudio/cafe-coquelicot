@@ -15,7 +15,6 @@ import {
   type NewProductSizeRow,
 } from "@/lib/db/schema";
 import { parsePriceToCents } from "@/lib/money";
-import { IMAGE_PATH_RE } from "@/lib/product-image";
 import { slugify } from "@/lib/slug";
 import { deleteImage } from "@/lib/storage";
 
@@ -29,7 +28,6 @@ const optionalImagePath = z.preprocess(
   z
     .string()
     .trim()
-    .regex(IMAGE_PATH_RE, { error: "Chemin d'image invalide." })
     .nullable(),
 );
 const optionalHexColor = z.preprocess(
