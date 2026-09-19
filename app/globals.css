@@ -771,6 +771,7 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   overflow: hidden;
+  container-type: inline-size;
 }
 .prestation-card:hover {
   background: var(--fg);
@@ -787,9 +788,10 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 }
 .prestation-card__name {
   font-family: var(--font-display);
-  font-size: 44px;
+  font-size: clamp(24px, 16cqi, 44px);
   line-height: 1.02;
   text-transform: lowercase;
+  overflow-wrap: break-word;
   margin: 0;
 }
 .prestation-card__desc {
