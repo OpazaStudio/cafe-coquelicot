@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**35 library files** across 26 modules
+**36 library files** across 26 modules
 
 ## Mondial-relay (5 files)
 
@@ -18,6 +18,12 @@
 - `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
 
+## Email (3 files)
+
+- `lib/email/contact.ts` — parseContactForm, buildShopEmail, buildAckEmail, ContactInput, ContactParse, EmailContent, …
+- `lib/email/templates.ts` — escapeHtml, headerSafe, fillText, fillHtml, paragraphsHtml, EmailTemplates, …
+- `lib/email/resend.ts` — getMailer, ContactMailer
+
 ## Analytics (2 files)
 
 - `lib/analytics/gtag.ts` — toGaItem, trackAddToCart, trackBeginCheckout, trackPurchase, GaItem, GA_MEASUREMENT_ID, …
@@ -27,11 +33,6 @@
 
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession, getCurrentUser
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, Session, SESSION_COOKIE, SESSION_DURATION_MS
-
-## Email (2 files)
-
-- `lib/email/contact.ts` — parseContactForm, escapeHtml, buildShopEmail, buildAckEmail, ContactInput, ContactParse, …
-- `lib/email/resend.ts` — getMailer, ContactMailer
 
 ## Bg-tweak (1 files)
 
@@ -91,7 +92,7 @@
 
 ## Settings-fields.ts (1 files)
 
-- `lib/settings-fields.ts` — readSettingsForm, isSettingKey, parseSettings, SettingGroup, SettingField, SettingKey, …
+- `lib/settings-fields.ts` — fieldMaxLength, fieldsForGroups, keysForGroups, readSettingsForm, emailTemplatesFromSettings, isSettingKey, …
 
 ## Settings.ts (1 files)
 

@@ -2,35 +2,43 @@
 
 import { useActionState } from "react";
 import {
-  SETTING_FIELDS,
+  fieldMaxLength,
+  fieldsForGroups,
   SETTING_GROUPS,
   type SettingGroup,
   type Settings,
 } from "@/lib/settings-fields";
-import { Panel, btnPrimary, input } from "../ui";
-import { updateSettings, type SettingsState } from "./actions";
+import { Panel, btnPrimary, input } from "./ui";
 
-const GROUP_ORDER: SettingGroup[] = [
-  "identity",
-  "address",
-  "contact",
-  "host",
-  "mediator",
-  "shipping",
-];
+export type SettingsState = { error: string } | { ok: true } | undefined;
 
-export function SettingsForm({ initial }: { initial: Settings }) {
+export type SettingsAction = (
+  prev: SettingsState,
+  formData: FormData,
+) => Promise<SettingsState>;
+
+export function SettingsForm({
+  initial,
+  groups,
+  action: submit,
+  savedLabel = "Paramètres enregistrés.",
+}: {
+  initial: Settings;
+  groups: SettingGroup[];
+  action: SettingsAction;
+  savedLabel?: string;
+}) {
   const [state, action, pending] = useActionState<SettingsState, FormData>(
-    updateSettings,
+    submit,
     undefined,
   );
 
   return (
     <form action={action} className="flex flex-col gap-6">
-      {GROUP_ORDER.map((group) => (
+      {groups.map((group) => (
         <Panel key={group} title={SETTING_GROUPS[group]}>
           <div className="grid gap-4 md:grid-cols-2">
-            {SETTING_FIELDS.filter((f) => f.group === group).map((field) => (
+            {fieldsForGroups([group]).map((field) => (
               <label
                 key={field.key}
                 className={`flex flex-col gap-1.5${field.multiline ? " md:col-span-2" : ""}`}
@@ -40,8 +48,8 @@ export function SettingsForm({ initial }: { initial: Settings }) {
                   <textarea
                     name={field.key}
                     defaultValue={initial[field.key]}
-                    rows={3}
-                    maxLength={2000}
+                    rows={field.rows ?? 3}
+                    maxLength={fieldMaxLength(field)}
                     className={input}
                   />
                 ) : (
@@ -49,7 +57,7 @@ export function SettingsForm({ initial }: { initial: Settings }) {
                     type={field.kind ?? "text"}
                     name={field.key}
                     defaultValue={initial[field.key]}
-                    maxLength={500}
+                    maxLength={fieldMaxLength(field)}
                     className={input}
                   />
                 )}
@@ -71,7 +79,7 @@ export function SettingsForm({ initial }: { initial: Settings }) {
         )}
         {state && "ok" in state && (
           <p role="status" className="text-sm font-medium text-ink">
-            Paramètres enregistrés.
+            {savedLabel}
           </p>
         )}
       </div>

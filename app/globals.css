@@ -770,7 +770,11 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
 .prestation-card__desc {
   font-size: 15px;
   line-height: 1.5;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: color-mix(in srgb, var(--fg) 75%, transparent);
+  transition: color 0.4s;
+}
+.prestation-card:hover .prestation-card__desc {
+  color: color-mix(in srgb, var(--bg) 75%, transparent);
 }
 .prestation-card__price {
   font-family: var(--font-script);

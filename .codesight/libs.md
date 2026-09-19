@@ -64,13 +64,21 @@
   - const HOME_PICKS
 - `lib/email/contact.ts`
   - function parseContactForm: (formData) => ContactParse
-  - function escapeHtml: (value) => string
-  - function buildShopEmail: (input) => EmailContent
-  - function buildAckEmail: (name) => EmailContent
+  - function buildShopEmail: (input, templates) => EmailContent
+  - function buildAckEmail: (name, templates) => EmailContent
   - type ContactInput
   - type ContactParse
-  - _...3 more_
+  - type EmailContent
+  - _...2 more_
 - `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
+- `lib/email/templates.ts`
+  - function escapeHtml: (value) => string
+  - function headerSafe: (value) => string
+  - function fillText: (template, name) => string
+  - function fillHtml: (template, name) => string
+  - function paragraphsHtml: (template, name, style) => string
+  - type EmailTemplates
+  - _...2 more_
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
@@ -146,13 +154,13 @@
   - type SitemapProduct
   - _...5 more_
 - `lib/settings-fields.ts`
-  - function readSettingsForm: (formData) => SettingsFormResult
+  - function fieldMaxLength: (field) => number
+  - function fieldsForGroups: (groups) => SettingField[]
+  - function keysForGroups: (groups) => SettingKey[]
+  - function readSettingsForm: (formData, keys) => SettingsFormResult
+  - function emailTemplatesFromSettings: (values) => EmailTemplates
   - function isSettingKey: (key) => key is SettingKey
-  - function parseSettings: (rows) => Settings
-  - type SettingGroup
-  - type SettingField
-  - type SettingKey
-  - _...6 more_
+  - _...12 more_
 - `lib/settings.ts`
   - function querySettings: (db) => Promise<Settings>
   - function saveSettings: (db, values) => Promise<void>

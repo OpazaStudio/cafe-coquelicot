@@ -4,6 +4,17 @@
 // Server Action `app/contact/actions.ts`.
 
 import * as z from "zod";
+import {
+  DEFAULT_EMAIL_TEMPLATES,
+  escapeHtml,
+  fillHtml,
+  fillText,
+  headerSafe,
+  paragraphsHtml,
+  type EmailTemplates,
+} from "./templates";
+
+export * from "./templates";
 
 export const ContactSchema = z.object({
   name: z.string().trim().min(1, { error: "Votre nom est requis." }).max(120),
@@ -58,30 +69,24 @@ export function parseContactForm(formData: FormData): ContactParse {
   return { ok: true, data: parsed.data };
 }
 
-/** Échappe le contenu utilisateur avant injection dans un e-mail HTML. */
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 export type EmailContent = { subject: string; text: string; html: string };
 
 const HTML_WRAP = (inner: string) =>
   `<div style="font-family:Arial,Helvetica,sans-serif;color:#2b2b2b;line-height:1.55;font-size:15px;">${inner}</div>`;
 
 /** E-mail de notification envoyé à la boutique. */
-export function buildShopEmail(input: ContactInput): EmailContent {
+export function buildShopEmail(
+  input: ContactInput,
+  templates: EmailTemplates = DEFAULT_EMAIL_TEMPLATES,
+): EmailContent {
   const { name, email, phone, message } = input;
   // Le sujet est un en-tête e-mail : on neutralise tout CR/LF (défense en
   // profondeur contre l'injection d'en-tête), `.trim()` ne le faisant pas.
-  const subject = `Nouveau message du site — ${name.replace(/[\r\n]+/g, " ")}`;
+  const subject = headerSafe(fillText(templates.shopSubject, name));
+  const heading = fillText(templates.shopHeading, name);
 
   const text = [
-    "Nouveau message depuis le formulaire de contact (coquelicot-lr.fr)",
+    heading,
     "",
     `Nom       : ${name}`,
     `Email     : ${email}`,
@@ -93,7 +98,7 @@ export function buildShopEmail(input: ContactInput): EmailContent {
 
   const messageHtml = escapeHtml(message).replace(/\n/g, "<br>");
   const html = HTML_WRAP(
-    `<h2 style="margin:0 0 16px;font-size:20px;">Nouveau message du site</h2>` +
+    `<h2 style="margin:0 0 16px;font-size:20px;">${fillHtml(templates.shopHeading, name)}</h2>` +
       `<table style="border-collapse:collapse;margin-bottom:8px;">` +
       `<tr><td style="padding:4px 20px 4px 0;color:#8a8a8a;">Nom</td><td>${escapeHtml(name)}</td></tr>` +
       `<tr><td style="padding:4px 20px 4px 0;color:#8a8a8a;">Email</td><td><a href="mailto:${escapeHtml(email)}" style="color:#870c20;">${escapeHtml(email)}</a></td></tr>` +
@@ -107,22 +112,21 @@ export function buildShopEmail(input: ContactInput): EmailContent {
 }
 
 /** Accusé de réception envoyé au visiteur. */
-export function buildAckEmail(name: string): EmailContent {
-  const subject = "On a bien reçu votre message ✿";
+export function buildAckEmail(
+  name: string,
+  templates: EmailTemplates = DEFAULT_EMAIL_TEMPLATES,
+): EmailContent {
+  const subject = headerSafe(fillText(templates.ackSubject, name));
 
   const text = [
-    `Bonjour ${name},`,
+    fillText(templates.ackBody, name),
     "",
-    "Merci pour votre message — on l'a bien reçu et on vous répond au plus vite.",
-    "",
-    "À très vite,",
-    "L'équipe Coquelicot",
+    fillText(templates.ackSignature, name),
   ].join("\n");
 
   const html = HTML_WRAP(
-    `<p style="margin:0 0 14px;">Bonjour ${escapeHtml(name)},</p>` +
-      `<p style="margin:0 0 14px;">Merci pour votre message — on l'a bien reçu et on vous répond au plus vite.</p>` +
-      `<p style="margin:0;">À très vite,<br>L'équipe Coquelicot 🌺</p>`,
+    paragraphsHtml(templates.ackBody, name) +
+      paragraphsHtml(templates.ackSignature, name, "margin:0;"),
   );
 
   return { subject, text, html };

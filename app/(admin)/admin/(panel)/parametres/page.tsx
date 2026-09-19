@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/auth/dal";
-import { getSettings } from "@/lib/settings";
-import { SettingsForm } from "./settings-form";
+import { getSettings, LEGAL_SETTING_GROUPS } from "@/lib/settings";
+import { SettingsForm } from "../settings-form";
+import { updateSettings } from "./actions";
 
 export default async function ParametresPage() {
   await verifySession();
@@ -16,9 +17,10 @@ export default async function ParametresPage() {
         <Link href="/cgv" className="underline">CGV</Link>,{" "}
         <Link href="/livraison-retours" className="underline">livraison &amp; retours</Link> et{" "}
         <Link href="/confidentialite" className="underline">confidentialité</Link>. Un champ vide
-        apparaît sur le site comme « à compléter ».
+        apparaît sur le site comme « à compléter ». Le texte des e-mails se règle sur la page{" "}
+        <Link href="/admin/emails" className="underline">E-mails</Link>.
       </p>
-      <SettingsForm initial={current} />
+      <SettingsForm initial={current} groups={LEGAL_SETTING_GROUPS} action={updateSettings} />
     </>
   );
 }

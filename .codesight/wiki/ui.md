@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**93 components** (react)
+**94 components** (react)
 
 ## Client Components
 
@@ -13,11 +13,11 @@
 - **TrackingForm** — props: orderId, trackingNumber — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **PasswordForm** — `app/(admin)/admin/(panel)/compte/password-form.tsx`
-- **SettingsForm** — props: initial — `app/(admin)/admin/(panel)/parametres/settings-form.tsx`
 - **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **ProductForm** — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChartImpl** — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
+- **SettingsForm** — props: initial, groups, submit, savedLabel — `app/(admin)/admin/(panel)/settings-form.tsx`
 - **LoginForm** — `app/(admin)/admin/login/login-form.tsx`
 - **BgTweakGate** — `components/bg-tweak/gate.tsx`
 - **BgTweakPanel** — `components/bg-tweak/panel.tsx`
@@ -44,6 +44,7 @@
 - **CommandesPage** — props: searchParams — `app/(admin)/admin/(panel)/commandes/page.tsx`
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
 - **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
+- **EmailsPage** — `app/(admin)/admin/(panel)/emails/page.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`

@@ -13,10 +13,10 @@
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
 - **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
 - **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
+- **EmailsPage** — `app/(admin)/admin/(panel)/emails/page.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
-- **SettingsForm** [client] — props: initial — `app/(admin)/admin/(panel)/parametres/settings-form.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
@@ -24,6 +24,7 @@
 - **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
+- **SettingsForm** [client] — props: initial, groups, submit, savedLabel — `app/(admin)/admin/(panel)/settings-form.tsx`
 - **Panel** — props: title, className — `app/(admin)/admin/(panel)/ui.tsx`
 - **Pill** — props: tone — `app/(admin)/admin/(panel)/ui.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`

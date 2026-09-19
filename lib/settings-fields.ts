@@ -1,4 +1,9 @@
 import * as z from "zod";
+import {
+  DEFAULT_EMAIL_TEMPLATES,
+  NAME_PLACEHOLDER,
+  type EmailTemplates,
+} from "./email/templates";
 
 export type SettingGroup =
   | "identity"
@@ -6,7 +11,9 @@ export type SettingGroup =
   | "contact"
   | "host"
   | "mediator"
-  | "shipping";
+  | "shipping"
+  | "email_ack"
+  | "email_shop";
 
 export type SettingField = {
   key: SettingKey;
@@ -14,6 +21,8 @@ export type SettingField = {
   group: SettingGroup;
   hint?: string;
   multiline?: boolean;
+  rows?: number;
+  max?: number;
   kind?: "text" | "email" | "tel" | "url";
 };
 
@@ -24,7 +33,20 @@ export const SETTING_GROUPS: Record<SettingGroup, string> = {
   host: "Hébergeur du site",
   mediator: "Médiateur de la consommation",
   shipping: "Livraison",
+  email_ack: "E-mail envoyé au visiteur (accusé de réception)",
+  email_shop: "E-mail de notification reçu par la boutique",
 };
+
+export const LEGAL_SETTING_GROUPS: SettingGroup[] = [
+  "identity",
+  "address",
+  "contact",
+  "host",
+  "mediator",
+  "shipping",
+];
+
+export const EMAIL_SETTING_GROUPS: SettingGroup[] = ["email_ack", "email_shop"];
 
 export const SETTING_KEYS = [
   "legal_name",
@@ -46,6 +68,11 @@ export const SETTING_KEYS = [
   "mediator_address",
   "preparation_delay",
   "shipping_delay",
+  "email_ack_subject",
+  "email_ack_body",
+  "email_ack_signature",
+  "email_shop_subject",
+  "email_shop_heading",
 ] as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[number];
@@ -91,6 +118,44 @@ export const SETTING_FIELDS: SettingField[] = [
     group: "shipping",
     hint: "Ex. 2 à 4 jours ouvrés après dépôt.",
   },
+  {
+    key: "email_ack_subject",
+    label: "Objet",
+    group: "email_ack",
+    max: 200,
+    hint: `${NAME_PLACEHOLDER} est remplacé par le nom du visiteur.`,
+  },
+  {
+    key: "email_ack_body",
+    label: "Message",
+    group: "email_ack",
+    multiline: true,
+    rows: 8,
+    max: 4000,
+    hint: `${NAME_PLACEHOLDER} est remplacé par le nom du visiteur. Une ligne vide sépare deux paragraphes.`,
+  },
+  {
+    key: "email_ack_signature",
+    label: "Signature",
+    group: "email_ack",
+    multiline: true,
+    rows: 3,
+    max: 500,
+  },
+  {
+    key: "email_shop_subject",
+    label: "Objet",
+    group: "email_shop",
+    max: 200,
+    hint: `${NAME_PLACEHOLDER} est remplacé par le nom du visiteur.`,
+  },
+  {
+    key: "email_shop_heading",
+    label: "Titre affiché en haut du message",
+    group: "email_shop",
+    max: 200,
+    hint: "Les coordonnées et le message du visiteur sont ajoutés automatiquement en dessous.",
+  },
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -113,13 +178,22 @@ export const DEFAULT_SETTINGS: Settings = {
   mediator_address: "",
   preparation_delay: "",
   shipping_delay: "",
+  email_ack_subject: DEFAULT_EMAIL_TEMPLATES.ackSubject,
+  email_ack_body: DEFAULT_EMAIL_TEMPLATES.ackBody,
+  email_ack_signature: DEFAULT_EMAIL_TEMPLATES.ackSignature,
+  email_shop_subject: DEFAULT_EMAIL_TEMPLATES.shopSubject,
+  email_shop_heading: DEFAULT_EMAIL_TEMPLATES.shopHeading,
 };
 
 const MAX_SHORT = 500;
 const MAX_LONG = 2000;
 
+export function fieldMaxLength(field: SettingField): number {
+  return field.max ?? (field.multiline ? MAX_LONG : MAX_SHORT);
+}
+
 function fieldSchema(field: SettingField) {
-  const max = field.multiline ? MAX_LONG : MAX_SHORT;
+  const max = fieldMaxLength(field);
   let schema = z
     .string()
     .trim()
@@ -137,26 +211,45 @@ function fieldSchema(field: SettingField) {
   return z.preprocess((v) => (v == null ? "" : v), schema);
 }
 
-const FormSchema = z.object(
-  Object.fromEntries(SETTING_FIELDS.map((f) => [f.key, fieldSchema(f)])) as Record<
-    SettingKey,
-    ReturnType<typeof fieldSchema>
-  >,
-);
+const FIELD_SCHEMAS = Object.fromEntries(
+  SETTING_FIELDS.map((f) => [f.key, fieldSchema(f)]),
+) as Record<SettingKey, ReturnType<typeof fieldSchema>>;
 
 export type SettingsFormResult =
-  | { ok: true; data: Settings }
+  | { ok: true; data: Partial<Settings> }
   | { ok: false; error: string };
 
-export function readSettingsForm(formData: FormData): SettingsFormResult {
-  const raw = Object.fromEntries(
-    SETTING_KEYS.map((key) => [key, formData.get(key)]),
+export function fieldsForGroups(groups: readonly SettingGroup[]): SettingField[] {
+  return SETTING_FIELDS.filter((f) => groups.includes(f.group));
+}
+
+export function keysForGroups(groups: readonly SettingGroup[]): SettingKey[] {
+  return fieldsForGroups(groups).map((f) => f.key);
+}
+
+export function readSettingsForm(
+  formData: FormData,
+  keys: readonly SettingKey[] = SETTING_KEYS,
+): SettingsFormResult {
+  const schema = z.object(
+    Object.fromEntries(keys.map((key) => [key, FIELD_SCHEMAS[key]])),
   );
-  const parsed = FormSchema.safeParse(raw);
+  const raw = Object.fromEntries(keys.map((key) => [key, formData.get(key)]));
+  const parsed = schema.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Saisie invalide." };
   }
-  return { ok: true, data: parsed.data as Settings };
+  return { ok: true, data: parsed.data as Partial<Settings> };
+}
+
+export function emailTemplatesFromSettings(values: Settings): EmailTemplates {
+  return {
+    ackSubject: values.email_ack_subject,
+    ackBody: values.email_ack_body,
+    ackSignature: values.email_ack_signature,
+    shopSubject: values.email_shop_subject,
+    shopHeading: values.email_shop_heading,
+  };
 }
 
 export function isSettingKey(key: string): key is SettingKey {

@@ -4,8 +4,11 @@ import { getMailer } from "@/lib/email/resend";
 import {
   buildAckEmail,
   buildShopEmail,
+  DEFAULT_EMAIL_TEMPLATES,
   parseContactForm,
+  type EmailTemplates,
 } from "@/lib/email/contact";
+import { emailTemplatesFromSettings, getSettings } from "@/lib/settings";
 import { contactLimiter } from "@/lib/rate-limit";
 import { getRequestIp } from "@/lib/request-ip";
 
@@ -13,6 +16,15 @@ export type ContactState =
   | { status: "success" }
   | { status: "error"; message: string }
   | undefined;
+
+async function loadTemplates(): Promise<EmailTemplates> {
+  try {
+    return emailTemplatesFromSettings(await getSettings());
+  } catch (err) {
+    console.error("[contact] lecture des textes d'e-mail impossible", err);
+    return DEFAULT_EMAIL_TEMPLATES;
+  }
+}
 
 export async function sendContactMessage(
   _prev: ContactState,
@@ -55,11 +67,12 @@ export async function sendContactMessage(
   }
 
   const { resend, to, from } = mailer;
+  const templates = await loadTemplates();
 
   // 1) Notification boutique — critique. reply-to = visiteur (réponse directe).
   //    On capture aussi les exceptions réseau (le SDK ne renvoie pas toujours
   //    { error } ; un throw doit produire notre message, pas une 500 brute).
-  const shop = buildShopEmail(input);
+  const shop = buildShopEmail(input, templates);
   try {
     const notify = await resend.emails.send({
       from,
@@ -87,7 +100,7 @@ export async function sendContactMessage(
   // 2) Accusé de réception visiteur — best-effort : un échec ici ne doit pas
   //    bloquer l'utilisateur, le message principal est déjà parti.
   try {
-    const ack = buildAckEmail(input.name);
+    const ack = buildAckEmail(input.name, templates);
     const ackRes = await resend.emails.send({
       from,
       to: [input.email],

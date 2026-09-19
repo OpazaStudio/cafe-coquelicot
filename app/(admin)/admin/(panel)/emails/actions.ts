@@ -3,22 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/auth/dal";
 import { getDb } from "@/lib/db/client";
-import { LEGAL_PATHS } from "@/lib/seo";
-import { keysForGroups, LEGAL_SETTING_GROUPS, readSettingsForm, saveSettings } from "@/lib/settings";
+import { EMAIL_SETTING_GROUPS, keysForGroups, readSettingsForm, saveSettings } from "@/lib/settings";
 import type { SettingsState } from "../settings-form";
 
-export async function updateSettings(
+export async function updateEmailSettings(
   _prev: SettingsState,
   formData: FormData,
 ): Promise<SettingsState> {
   await verifySession();
 
-  const parsed = readSettingsForm(formData, keysForGroups(LEGAL_SETTING_GROUPS));
+  const parsed = readSettingsForm(formData, keysForGroups(EMAIL_SETTING_GROUPS));
   if (!parsed.ok) return { error: parsed.error };
 
   await saveSettings(await getDb(), parsed.data);
-  for (const path of LEGAL_PATHS) revalidatePath(path);
-  revalidatePath("/");
-  revalidatePath("/admin/parametres");
+  revalidatePath("/admin/emails");
   return { ok: true };
 }
