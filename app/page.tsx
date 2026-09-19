@@ -25,8 +25,8 @@ export default async function Home() {
       <SiteHeader />
       <main id="contenu" tabIndex={-1}>
         <Hero bg="linen" />
-        <Shop bg="linen" products={products} />
-        <Gallery bg="pale-oak" />
+        <Shop bg="coffee-bean" products={products} />
+        <Gallery bg="linen" />
         <Prestations bg="burgundy" />
         <AtelierStrip bg="coffee-bean-2" />
         <About bg="linen" />

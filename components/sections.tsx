@@ -124,7 +124,7 @@ function ProductCard({ slug, name, tag, desc, price, variant, badge, category, i
         />
       </div>
       <div>
-        <p className="eyebrow" style={{ opacity: 0.6, marginBottom: 6 }}>{tag}</p>
+        <p className="eyebrow product-card__tag">{tag}</p>
         <h3 className="product-card__name">{name}</h3>
       </div>
       <div className="product-card__row">
