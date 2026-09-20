@@ -2,7 +2,15 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**36 library files** across 26 modules
+**43 library files** across 29 modules
+
+## Content (5 files)
+
+- `lib/content/fields.ts` — definePage, fieldMax, pageShape, pageStrict, firstIssue, mergeDefaults, …
+- `lib/content/registry.ts` — isPageSlug, pageFromAdminSlug, adminHref, PageSlug, ContentFor, PAGES, …
+- `lib/content/live.ts` — useLiveContent, ContentMessage, ReadyMessage, CONTENT_MESSAGE, READY_MESSAGE
+- `lib/content/server.ts` — queryPageContent, upsertPageContent, getPageContent
+- `lib/content/template.ts` — fillTemplate
 
 ## Mondial-relay (5 files)
 
@@ -41,6 +49,10 @@
 ## Cart (1 files)
 
 - `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
+
+## Image-normalize.ts (1 files)
+
+- `lib/image-normalize.ts` — targetSize, extensionFor, renameTo, normalizeImageFile, isAllowedOutput, MAX_IMAGE_EDGE, …
 
 ## Item-label.ts (1 files)
 
@@ -81,6 +93,10 @@
 ## Request-ip.ts (1 files)
 
 - `lib/request-ip.ts` — getRequestIp
+
+## Rich-text (1 files)
+
+- `lib/rich-text/schema.ts` — emptyRichDoc, sanitizeRichDoc, richDocFromPlainText, parseRichDoc, richDocToPlainText, isRichDocEmpty, …
 
 ## Security-headers.ts (1 files)
 

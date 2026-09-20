@@ -3,8 +3,30 @@
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import { productImageUrl, validateImageFile } from "@/lib/product-image";
+import { normalizeImageFile } from "@/lib/image-normalize";
 
 const UPLOAD_ENDPOINT = "/api/admin/product-image";
+
+export async function uploadImageFile(file: File): Promise<{ path: string } | { error: string }> {
+  let normalized: File;
+  try {
+    normalized = await normalizeImageFile(file);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Image illisible." };
+  }
+  const v = validateImageFile(normalized);
+  if (!v.ok) return { error: v.error };
+  const fd = new FormData();
+  fd.set("file", normalized);
+  try {
+    const res = await fetch(UPLOAD_ENDPOINT, { method: "POST", body: fd });
+    const data = (await res.json().catch(() => null)) as { path?: string; error?: string } | null;
+    if (!res.ok || !data?.path) return { error: data?.error ?? "Échec de l'upload." };
+    return { path: data.path };
+  } catch {
+    return { error: "Envoi impossible — vérifiez votre connexion." };
+  }
+}
 
 type Props = {
   value: string | null;
@@ -21,30 +43,15 @@ export function ImageUpload({ value, bgColor, onChange, fallback, label, size = 
   const box = size === "sm" ? "h-10 w-10" : "h-24 w-24";
 
   async function handleFile(file: File) {
-    const v = validateImageFile(file);
-    if (!v.ok) {
-      setError(v.error);
-      return;
-    }
     setError(null);
     setPending(true);
-    const fd = new FormData();
-    fd.set("file", file);
-    try {
-      const res = await fetch(UPLOAD_ENDPOINT, { method: "POST", body: fd });
-      const data = (await res.json().catch(() => null)) as
-        | { path?: string; error?: string }
-        | null;
-      if (!res.ok || !data?.path) {
-        setError(data?.error ?? "Échec de l'upload.");
-        return;
-      }
-      onChange({ imagePath: data.path, imageBgColor: bgColor });
-    } catch {
-      setError("Envoi impossible — vérifiez votre connexion.");
-    } finally {
-      setPending(false);
+    const result = await uploadImageFile(file);
+    setPending(false);
+    if ("error" in result) {
+      setError(result.error);
+      return;
     }
+    onChange({ imagePath: result.path, imageBgColor: bgColor });
   }
 
   return (
@@ -62,10 +69,10 @@ export function ImageUpload({ value, bgColor, onChange, fallback, label, size = 
       </div>
       <div className="flex flex-col items-center gap-1">
         <label className="cursor-pointer rounded-md border border-line px-2 py-1 text-xs font-medium text-ink transition hover:bg-stone-100">
-          {pending ? "Envoi…" : value ? "Remplacer" : "Ajouter une image"}
+          {pending ? "Optimisation…" : value ? "Remplacer" : "Ajouter une image"}
           <input
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/*"
             className="sr-only"
             disabled={pending}
             onChange={(e) => {

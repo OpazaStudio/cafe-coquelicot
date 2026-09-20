@@ -14,7 +14,7 @@ export default async function EditProduitPage({
   const { id } = await params;
   const data = await getProductWithVariants(await getDb(), id);
   if (!data) notFound();
-  const { product, sizes, colors } = data;
+  const { product, sizes, colors, images } = data;
 
   return (
     <>
@@ -35,6 +35,7 @@ export default async function EditProduitPage({
           product={product}
           sizes={sizes}
           colors={colors}
+          images={images}
           submitLabel="Enregistrer"
         />
       </div>

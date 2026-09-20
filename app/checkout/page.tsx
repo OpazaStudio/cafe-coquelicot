@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { SiteHeader, SiteFooter } from "@/components/sections";
-import { CheckoutForm } from "@/components/checkout-form";
+import { CheckoutView } from "@/components/views/checkout-view";
 import { getSettings, shippingFeesFromSettings } from "@/lib/settings";
 import { DEFAULT_SHIPPING_FEES, type ShippingFees } from "@/lib/order-status";
+import { getPageContent } from "@/lib/content/server";
 
 export const metadata: Metadata = {
   title: "Commander",
@@ -23,29 +22,10 @@ async function loadShippingFees(): Promise<ShippingFees> {
 }
 
 export default async function CheckoutPage() {
-  const fees = await loadShippingFees();
-  return (
-    <>
-      <SiteHeader />
-      <main id="contenu" tabIndex={-1}>
-        <section data-section data-bg="linen" className="cart-page">
-          <div className="container">
-            <nav className="boutique-crumb reveal is-visible" aria-label="Fil d'Ariane">
-              <Link href="/">accueil</Link>
-              <span aria-hidden>/</span>
-              <Link href="/panier">panier</Link>
-              <span aria-hidden>/</span>
-              <span>commander</span>
-            </nav>
-            <h1 className="display cart-page__title">
-              commander
-              <span className="script">encore un instant…</span>
-            </h1>
-            <CheckoutForm fees={fees} />
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </>
-  );
+  const [fees, content, chrome] = await Promise.all([
+    loadShippingFees(),
+    getPageContent("checkout"),
+    getPageContent("site"),
+  ]);
+  return <CheckoutView content={content} chrome={chrome} fees={fees} />;
 }

@@ -6,10 +6,10 @@ function asMap(isProduction: boolean): Map<string, string> {
 }
 
 describe("securityHeaders", () => {
-  it("interdit la mise en iframe (anti-clickjacking du back-office)", () => {
+  it("n'autorise la mise en iframe qu'en même origine (aperçu du back-office)", () => {
     const h = asMap(true);
-    expect(h.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
-    expect(h.get("X-Frame-Options")).toBe("DENY");
+    expect(h.get("Content-Security-Policy")).toContain("frame-ancestors 'self'");
+    expect(h.get("X-Frame-Options")).toBe("SAMEORIGIN");
   });
 
   it("pose nosniff et une Referrer-Policy stricte", () => {

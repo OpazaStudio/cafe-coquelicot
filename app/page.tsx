@@ -1,13 +1,11 @@
-import {
-  SiteHeader, Hero, Shop, Gallery, Prestations,
-  AtelierStrip, About, Contact, SiteFooter,
-} from "@/components/sections";
 import type { Metadata } from "next";
+import { HomeView } from "@/components/views/home-view";
 import { getHomeProducts } from "@/lib/products";
 import { JsonLd } from "@/components/json-ld";
 import { localBusinessJsonLd } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { getSiteUrl } from "@/lib/stripe";
+import { getPageContent } from "@/lib/content/server";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -17,22 +15,17 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [products, settings] = await Promise.all([getHomeProducts(), getSettings()]);
+  const [products, settings, content, chrome] = await Promise.all([
+    getHomeProducts(),
+    getSettings(),
+    getPageContent("home"),
+    getPageContent("site"),
+  ]);
 
   return (
     <>
       <JsonLd data={localBusinessJsonLd(getSiteUrl(), settings)} />
-      <SiteHeader />
-      <main id="contenu" tabIndex={-1}>
-        <Hero bg="linen" />
-        <Shop bg="coffee-bean" products={products} />
-        <Gallery bg="linen" />
-        <Prestations bg="burgundy" />
-        <AtelierStrip bg="coffee-bean-2" />
-        <About bg="linen" />
-        <Contact bg="burgundy" />
-      </main>
-      <SiteFooter />
+      <HomeView content={content} chrome={chrome} products={products} />
     </>
   );
 }

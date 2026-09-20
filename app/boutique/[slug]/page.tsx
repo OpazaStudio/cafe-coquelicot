@@ -8,9 +8,12 @@ import { JsonLd } from "@/components/json-ld";
 import { productImageUrl } from "@/lib/product-image";
 import { productJsonLd } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/stripe";
+import { getPageContent } from "@/lib/content/server";
 
 // Catalogue en base : rendu à la demande, jamais figé au build.
 export const dynamic = "force-dynamic";
+
+const oneLine = (text: string) => text.replace(/\s*\n+\s*/g, " ").trim();
 
 export async function generateMetadata({
   params,
@@ -18,17 +21,18 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) {
-    return { title: "Produit introuvable — Coquelicot · Fleuriste La Rochelle" };
+    return { title: "Produit introuvable : Café Coquelicot - Fleuriste" };
   }
   const image = product.imagePath ? productImageUrl(product.imagePath) : undefined;
+  const description = oneLine(product.desc);
   return {
     title: product.name,
-    description: product.desc,
+    description,
     alternates: { canonical: `/boutique/${slug}` },
     openGraph: {
       type: "website",
       title: product.name,
-      description: product.desc,
+      description,
       url: `/boutique/${slug}`,
       ...(image ? { images: [{ url: image, alt: product.name }] } : {}),
     },
@@ -41,6 +45,7 @@ export default async function ProduitPage({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
+  const site = await getPageContent("site");
 
   return (
     <>
@@ -49,12 +54,12 @@ export default async function ProduitPage({
           siteUrl: getSiteUrl(),
           slug: product.slug,
           name: product.name,
-          description: product.desc,
+          description: oneLine(product.desc),
           priceCents: product.priceCents,
           imageUrl: product.imagePath ? productImageUrl(product.imagePath) : null,
         })}
       />
-      <SiteHeader />
+      <SiteHeader nav={site.header.nav} />
       <main id="contenu" tabIndex={-1}>
         <section data-section data-bg="linen" className="product-detail-section">
           <div className="container">
@@ -69,7 +74,7 @@ export default async function ProduitPage({
           </div>
         </section>
       </main>
-      <SiteFooter />
+      <SiteFooter footer={site.footer} />
     </>
   );
 }

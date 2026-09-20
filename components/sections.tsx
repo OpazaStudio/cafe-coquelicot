@@ -1,9 +1,8 @@
-// Coquelicot site sections. Static content rendered on the server;
-// interactive bits (contact form, reveal, cursor) are client components.
-
 import type { ComponentType } from "react";
 import Link from "next/link";
 import type { ShopProduct } from "@/lib/products";
+import type { HomeContent } from "@/lib/content/pages/home";
+import type { SiteContent } from "@/lib/content/pages/site";
 import {
   HeroStorefront, Bouquet, AboutFlorist, ProductFigure,
   IconWedding, IconEvent, IconSubscription, IconWorkshop, IconCorporate, IconDelivery,
@@ -13,24 +12,23 @@ import { ContactForm } from "./contact-form";
 import { ManageCookiesButton } from "./consent/manage-cookies-button";
 import { CartLink } from "./cart-link";
 import { Logo } from "./logo";
+import { ContentImage, hasContentImage } from "./content/content-image";
+import { Lines, Paragraphs } from "./content/text";
 
 export type SectionBg = "linen" | "burgundy" | "pale-oak" | "coffee-bean" | "coffee-bean-2";
 
 type SectionProps = { bg: SectionBg };
 
-// ─── Header ─────────────────────────────────────────────────────
-export function SiteHeader() {
+export function SiteHeader({ nav }: { nav: SiteContent["header"]["nav"] }) {
   return (
     <header className="site-header">
       <Link href="/" className="site-header__logo" aria-label="Café Coquelicot">
         <Logo />
       </Link>
       <nav className="site-header__nav">
-        <Link href="/boutique">Boutique</Link>
-        <Link href="/#gallery">Galerie</Link>
-        <Link href="/#prestations">Prestations</Link>
-        <Link href="/#about">À propos</Link>
-        <Link href="/#contact">Contact</Link>
+        {nav.map((item, i) => (
+          <Link key={i} href={item.href}>{item.label}</Link>
+        ))}
       </nav>
       <div className="site-header__right">
         <CartLink />
@@ -39,31 +37,29 @@ export function SiteHeader() {
   );
 }
 
-// ─── Hero ──────────────────────────────────────────────────────
-export function Hero({ bg }: SectionProps) {
+export function Hero({ bg, content }: SectionProps & { content: HomeContent["hero"] }) {
+  const hasPhoto = hasContentImage(content.image);
   return (
     <section id="hero" data-section data-bg={bg} className="hero">
       <div className="hero__inner">
-        <div className="hero__media reveal">
-          <HeroStorefront />
+        <div className={`hero__media reveal${hasPhoto ? " hero__media--photo" : ""}`}>
+          <ContentImage image={content.image} fallback={<HeroStorefront />} sizes="(max-width: 900px) 100vw, 600px" />
         </div>
         <div className="hero__text">
           <h1 className="hero__display reveal">
-            Café<br/>Coquelicot
-            <span className="script">fleurs fraîches &amp; séchées</span>
+            <Lines text={content.title} />
+            <span className="script">{content.script}</span>
           </h1>
           <p className="body body--lg hero__sub reveal">
-            Un atelier pensé pour celles &amp; ceux qui veulent offrir
-            (ou s&apos;offrir) un bouquet qui raconte quelque chose. Brut, sincère,
-            jamais convenu.
+            <Lines text={content.sub} />
           </p>
           <div className="hero__cta reveal">
-            <Link href="/boutique" className="btn btn--filled">
-              Voir la boutique <ArrowRight />
+            <Link href={content.primary.href} className="btn btn--filled">
+              {content.primary.label} <ArrowRight />
             </Link>
-            <a href="#prestations" className="btn">
-              Nos prestations
-            </a>
+            <Link href={content.secondary.href} className="btn">
+              {content.secondary.label}
+            </Link>
           </div>
         </div>
       </div>
@@ -71,27 +67,26 @@ export function Hero({ bg }: SectionProps) {
   );
 }
 
-// ─── Shop ──────────────────────────────────────────────────────
 // La sélection de la home vient de la base (lib/products.ts, HOME_PICKS),
 // passée par app/page.tsx.
 
-export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] }) {
+export function Shop({ bg, content, products }: SectionProps & { content: HomeContent["shop"]; products: ShopProduct[] }) {
   return (
     <section id="shop" data-section data-bg={bg} className="shop">
       <div className="container">
         <div className="shop__head">
           <h2 className="shop__title reveal">
-            Nos bouquets,
+            {content.title}
             <br />
-            <span className="script">savamment</span> composés
+            <span className="script">{content.script}</span> {content.after}
           </h2>
           <div className="shop__intro reveal">
-            <p className="eyebrow">Collection du moment</p>
+            <p className="eyebrow">{content.eyebrow}</p>
             <p className="body">
-              Une collection permanente, ponctuée de créations éphémères au gré des saisons et des arrivages.
+              <Lines text={content.body} />
             </p>
             <Link href="/boutique" className="link-arrow">
-              Toute la boutique <ArrowRight />
+              {content.link} <ArrowRight />
             </Link>
           </div>
         </div>
@@ -102,7 +97,7 @@ export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] 
         </div>
         <div className="shop__cta reveal">
           <Link href="/boutique" className="btn">
-            Voir toute la boutique <ArrowRight />
+            {content.cta} <ArrowRight />
           </Link>
         </div>
       </div>
@@ -110,7 +105,7 @@ export function Shop({ bg, products }: SectionProps & { products: ShopProduct[] 
   );
 }
 
-function ProductCard({ slug, name, tag, desc, price, variant, badge, category, imagePath, imageBgColor }: ShopProduct) {
+function ProductCard({ slug, name, price, variant, badge, category, imagePath, imageBgColor }: ShopProduct) {
   return (
     <Link href={`/boutique/${slug}`} className="product-card">
       <div className="product-card__media">
@@ -123,214 +118,143 @@ function ProductCard({ slug, name, tag, desc, price, variant, badge, category, i
           alt={name}
         />
       </div>
-      <div>
-        <p className="eyebrow product-card__tag">{tag}</p>
-        <h3 className="product-card__name">{name}</h3>
-      </div>
       <div className="product-card__row">
-        <p className="product-card__desc">{desc}</p>
+        <h3 className="product-card__name">{name}</h3>
         <span className="product-card__price">{price}</span>
       </div>
     </Link>
   );
 }
 
-// ─── Gallery ───────────────────────────────────────────────────
-type Tile =
-  | { type: "illu"; variant: number; cls: string }
-  | { type: "label"; label: string; script?: string; cls: string };
-
-const TILES: Tile[] = [
-  { type: "illu", variant: 0, cls: "tile--1" },
-  { type: "label", label: "tout est", cls: "tile--2" },
-  { type: "illu", variant: 4, cls: "tile--4" },
-  { type: "illu", variant: 3, cls: "tile--3" },
-  { type: "label", label: "de saison", script: "✿", cls: "tile--7" },
-  { type: "illu", variant: 5, cls: "tile--6" },
-  { type: "illu", variant: 2, cls: "tile--5" },
-  { type: "illu", variant: 1, cls: "tile--8" },
+const TILE_LAYOUT = [
+  { cls: "tile--1", variant: 0 },
+  { cls: "tile--2", variant: 2 },
+  { cls: "tile--4", variant: 4 },
+  { cls: "tile--3", variant: 3 },
+  { cls: "tile--7", variant: 5 },
+  { cls: "tile--6", variant: 5 },
+  { cls: "tile--5", variant: 2 },
+  { cls: "tile--8", variant: 1 },
 ];
 
-export function Gallery({ bg }: SectionProps) {
+export function Gallery({ bg, content }: SectionProps & { content: HomeContent["gallery"] }) {
   return (
     <section id="gallery" data-section data-bg={bg} className="gallery">
       <div className="container">
         <div className="gallery__head reveal">
           <h2 className="gallery__title">
-            On aime
+            {content.title}
             <br />
-            <span className="script">le beau et le sincère.</span>
+            <span className="script">{content.script}</span>
           </h2>
           <p className="body body--lg gallery__sub">
-            Pas de fleurs hors-saison, pas de transport aérien, pas de
-            mousse Oasis. Juste ce que la terre veut bien nous donner
-            et qu&apos;on assemble avec soin.
+            <Lines text={content.sub} />
           </p>
         </div>
         <div className="gallery__grid reveal">
-          {TILES.map((t, i) => (
-            <div key={i} className={`gallery__tile ${t.cls}${t.type === "label" ? " gallery__tile--label" : ""}`}>
-              {t.type === "illu" ? (
-                <Bouquet variant={t.variant} />
-              ) : (
-                <>
-                  <div className="gallery__tile-label">{t.label}</div>
-                  {t.script && <div className="gallery__tile-script">{t.script}</div>}
-                </>
-              )}
-            </div>
-          ))}
+          {content.tiles.slice(0, TILE_LAYOUT.length).map((tile, i) => {
+            const layout = TILE_LAYOUT[i];
+            const isLabel = tile.kind === "mot";
+            return (
+              <div key={i} className={`gallery__tile ${layout.cls}${isLabel ? " gallery__tile--label" : ""}`}>
+                {isLabel ? (
+                  <>
+                    <div className="gallery__tile-label">{tile.label}</div>
+                    {tile.script && <div className="gallery__tile-script">{tile.script}</div>}
+                  </>
+                ) : (
+                  <ContentImage
+                    image={tile.image}
+                    fallback={<Bouquet variant={layout.variant} />}
+                    sizes="(max-width: 700px) 50vw, 25vw"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
         <div className="gallery__cta reveal">
-          <a href="#" className="link-arrow">
-            Toutes nos réalisations <ArrowRight />
-          </a>
+          <Link href={content.cta.href} className="link-arrow">
+            {content.cta.label} <ArrowRight />
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Prestations ───────────────────────────────────────────────
-type Prestation = {
-  Icon: ComponentType<{ className?: string }>;
-  name: string;
-  desc: string;
-  price: string;
+const PRESTATION_ICON: Record<string, ComponentType<{ className?: string }>> = {
+  mariage: IconWedding,
+  evenement: IconEvent,
+  abonnement: IconSubscription,
+  atelier: IconWorkshop,
+  entreprise: IconCorporate,
+  livraison: IconDelivery,
 };
 
-const PRESTATIONS: Prestation[] = [
-  {
-    Icon: IconWedding,
-    name: "mariages",
-    desc: "Bouquet de la mariée, boutonnières, arche, décor de table, on conçoit ensemble la scénographie florale de votre jour.",
-    price: "sur devis",
-  },
-  {
-    Icon: IconEvent,
-    name: "événementiel",
-    desc: "Galas, vernissages, lancements, anniversaires. Installations florales sur-mesure pour transformer un lieu.",
-    price: "sur devis",
-  },
-  // {
-  //   Icon: IconSubscription,
-  //   name: "abonnement",
-  //   desc: "Un bouquet frais à votre porte chaque semaine, quinzaine ou mois. Vous choisissez la fréquence et le budget.",
-  //   price: "dès 35€/mois",
-  // },
-  {
-    Icon: IconWorkshop,
-    name: "ateliers",
-    desc: "Apprenez à composer chez nous : bouquet champêtre, couronne séchée. En groupe ou en privé.",
-    price: "sur devis",
-  },
-  {
-    Icon: IconCorporate,
-    name: "entreprises",
-    desc: "Réception, salle de réunion, vitrine, événement client. Forfait livraison régulière ou prestation ponctuelle.",
-    price: "sur devis",
-  },
-  // {
-  //   Icon: IconDelivery,
-  //   name: "livraison",
-  //   desc: "Livraison en vélo dans toute La Rochelle le jour même, jusqu’à 17h. Au-delà, expédition France métropolitaine.",
-  //   price: "dès 6€",
-  // },
-];
-
-export function Prestations({ bg }: SectionProps) {
+export function Prestations({ bg, content }: SectionProps & { content: HomeContent["prestations"] }) {
   return (
     <section id="prestations" data-section data-bg={bg} className="prestations">
       <div className="container">
         <div className="prestations__head reveal">
           <h2 className="prestations__title">
-            Prestations
-            <span className="script">sur mesure</span>
+            {content.title}
+            <span className="script">{content.script}</span>
           </h2>
-          <p className="body body--lg prestations__sub">
-            Au-delà du bouquet quotidien, nous imaginons des créations florales pour chaque moment de vie.
-          </p>
-          <p className="body body--lg prestations__sub">
-            Une attention délicate, une table à fleurir, un dîner à mettre en scène, une réception à habiller ou des mariés à accompagner.
-          </p>
-          <p className="body body--lg prestations__sub">
-            Des compositions sur-mesures, fraîches ou séchées, pensées dans les moindres détails avec la même exigence de justesse, de saisonnalité et d'élégance.
-          </p>
+          <Paragraphs text={content.intro} className="body body--lg prestations__sub" />
         </div>
         <div className="prestations__grid reveal">
-          {PRESTATIONS.map(({ Icon, name, desc, price }) => (
-            <article key={name} className="prestation-card">
-              <Icon className="prestation-card__icon" />
-              <h3 className="prestation-card__name">{name}</h3>
-              <p className="prestation-card__desc">{desc}</p>
-              <div className="prestation-card__price">{price}</div>
-              <span className="prestation-card__arrow">
-                <ArrowDiag size={28} />
-              </span>
-            </article>
-          ))}
+          {content.items.map((item, i) => {
+            const Icon = PRESTATION_ICON[item.icon] ?? IconWedding;
+            return (
+              <article key={i} className="prestation-card">
+                <Icon className="prestation-card__icon" />
+                <h3 className="prestation-card__name">{item.name}</h3>
+                <p className="prestation-card__desc">{item.desc}</p>
+                <div className="prestation-card__price">{item.price}</div>
+                <span className="prestation-card__arrow">
+                  <ArrowDiag size={28} />
+                </span>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Atelier strip — big quote ─────────────────────────────────
-export function AtelierStrip({ bg }: SectionProps) {
+export function AtelierStrip({ bg, content }: SectionProps & { content: HomeContent["atelier"] }) {
   return (
     <section data-section data-bg={bg} className="atelier-strip">
       <div className="container">
         <div className="atelier-strip__inner reveal">
           <p className="atelier-strip__quote">
-            Une fleur cueillie aujourd&apos;hui
-            <br />
-            vaut <span className="script">mille importées d&apos;hier.</span>
+            <Lines text={content.quote} /> <span className="script">{content.script}</span>
           </p>
-          <p className="atelier-strip__author">— Céline</p>
+          <p className="atelier-strip__author">{content.author}</p>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── About ─────────────────────────────────────────────────────
-export function About({ bg }: SectionProps) {
+export function About({ bg, content }: SectionProps & { content: HomeContent["about"] }) {
   return (
     <section id="about" data-section data-bg={bg} className="about">
       <div className="container">
         <div className="about__inner">
           <div className="about__media reveal">
-            <div className="about__sticker">depuis 2026</div>
-            <AboutFlorist />
+            {content.sticker && <div className="about__sticker">{content.sticker}</div>}
+            <ContentImage image={content.image} fallback={<AboutFlorist />} sizes="(max-width: 900px) 100vw, 50vw" />
           </div>
           <div className="reveal">
             <h2 className="about__title">
-              Café Coquelicot
-              <span className="script">c&apos;est qui ?</span>
+              {content.title}
+              <span className="script">{content.script}</span>
             </h2>
-            <p className="body body--lg about__lede">
-              Après l'obtention d'un CAP fleuriste, Céline a choisi de quitter son métier de cheffe de projet en biotechnologie pour donner toute sa place à sa passion des fleurs.
-            </p>
-            <p className="body body--lg about__lede">
-              Son ambition : Créer du beau, simplement et avec justesse.
-            </p>
-            <p className="body about__body">
-              Pas de fioritures, pas de cellophane, pas de roses équatoriennes en plein hiver. Ici la fleur est choisie pour sa beauté, sa saisonnalité et son origine. Des fleurs fraîches locales ou européennes, des fleurs séchées et naturellement teintes, travaillées avec soin.
-            </p>
-            {/* <div className="about__stats">
-              <div>
-                <div className="about__stat-num">6</div>
-                <div className="about__stat-label">ans d&apos;atelier</div>
-              </div>
-              <div>
-                <div className="about__stat-num">+200</div>
-                <div className="about__stat-label">mariages fleuris</div>
-              </div>
-              <div>
-                <div className="about__stat-num">12</div>
-                <div className="about__stat-label">producteurs locaux</div>
-              </div>
-            </div> */}
+            <Paragraphs text={content.lede} className="body body--lg about__lede" />
+            <Paragraphs text={content.body} className="body about__body" />
           </div>
         </div>
       </div>
@@ -338,19 +262,17 @@ export function About({ bg }: SectionProps) {
   );
 }
 
-// ─── Contact ───────────────────────────────────────────────────
-export function Contact({ bg }: SectionProps) {
+export function Contact({ bg, content }: SectionProps & { content: HomeContent["contact"] }) {
   return (
     <section id="contact" data-section data-bg={bg} className="contact">
       <div className="container">
         <div className="contact__inner reveal">
           <h2 className="contact__title">
-            Dites nous
-            <span className="script">un petit mot</span>
+            {content.title}
+            <span className="script">{content.script}</span>
           </h2>
           <p className="body body--lg contact__sub">
-            Mariage, atelier, commande spéciale ou simple bonjour, écrivez-nous.
-            On répond aussi vite que possible, promis.
+            <Lines text={content.sub} />
           </p>
           <ContactForm />
         </div>
@@ -359,8 +281,11 @@ export function Contact({ bg }: SectionProps) {
   );
 }
 
-// ─── Footer ────────────────────────────────────────────────────
-export function SiteFooter() {
+export function SiteFooter({ footer }: { footer: SiteContent["footer"] }) {
+  const external = [
+    { label: "Instagram", href: footer.instagram },
+    { label: "Presse", href: footer.presse },
+  ].filter((l) => l.href !== "");
   return (
     <footer className="site-footer">
       <div className="container">
@@ -368,35 +293,24 @@ export function SiteFooter() {
           <div className="site-footer__brand">
             <Logo />
             <span className="sr-only">Café Coquelicot</span>
-            <span className="script">à très vite</span>
+            <span className="script">{footer.script}</span>
           </div>
-          <div className="site-footer__col">
-            <h4 className="site-footer__col-title">Boutique</h4>
-            <ul>
-              <li><Link href="/boutique">Bouquets frais</Link></li>
-              <li><Link href="/boutique">Bouquets séchés</Link></li>
-              <li><Link href="/boutique">Compositions séchées</Link></li>
-              <li><Link href="/boutique">Cartes cadeaux</Link></li>
-            </ul>
-          </div>
-          <div className="site-footer__col">
-            <h4 className="site-footer__col-title">Prestations</h4>
-            <ul>
-              <li><Link href="/#prestations">Mariages</Link></li>
-              <li><Link href="/#prestations">Événementiel</Link></li>
-              <li><Link href="/#prestations">Abonnement</Link></li>
-              <li><Link href="/#prestations">Ateliers</Link></li>
-            </ul>
-          </div>
-          <div className="site-footer__col">
-            <h4 className="site-footer__col-title">Studio</h4>
-            <ul>
-              <li><Link href="/#about">À propos</Link></li>
-              <li><Link href="/#contact">Contact</Link></li>
-              <li><a href="#">Instagram</a></li>
-              <li><a href="#">Presse</a></li>
-            </ul>
-          </div>
+          {footer.columns.map((column, ci) => (
+            <div key={ci} className="site-footer__col">
+              <h4 className="site-footer__col-title">{column.title}</h4>
+              <ul>
+                {column.links.map((link, li) => (
+                  <li key={li}><Link href={link.href}>{link.label}</Link></li>
+                ))}
+                {ci === footer.columns.length - 1 &&
+                  external.map((link) => (
+                    <li key={link.label}>
+                      <a href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))}
         </div>
         <div className="site-footer__bottom">
           <a href="https://opaza.fr" target="_blank" rel="noopener noreferrer">Développé par Opaza Studio</a>

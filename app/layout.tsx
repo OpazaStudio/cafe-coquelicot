@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
     default: SITE_TITLE,
-    template: "%s — Coquelicot · Fleuriste La Rochelle",
+    template: "%s : Café Coquelicot - Fleuriste",
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,

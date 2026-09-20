@@ -13,15 +13,23 @@
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
 - **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
 - **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
+- **ContenuPage** — props: params — `app/(admin)/admin/(panel)/contenu/[page]/page.tsx`
+- **ContentEditor** [client] — props: page, initial, action — `app/(admin)/admin/(panel)/contenu/content-editor.tsx`
+- **ContentFields** [client] — props: fields, value, onChange, idPrefix — `app/(admin)/admin/(panel)/contenu/content-fields.tsx`
+- **ImageField** [client] — props: id, label, hint, value, onChange — `app/(admin)/admin/(panel)/contenu/image-field.tsx`
+- **ContenuIndex** — `app/(admin)/admin/(panel)/contenu/page.tsx`
+- **PreviewFrame** [client] — props: src, onLoad, ref — `app/(admin)/admin/(panel)/contenu/preview-frame.tsx`
 - **EmailsPage** — `app/(admin)/admin/(panel)/emails/page.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
+- **ImageGallery** [client] — props: images, sizes, colors, onChange, nextKey — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
-- **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **RichEditor** [client] — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **SettingsForm** [client] — props: initial, groups, submit, savedLabel — `app/(admin)/admin/(panel)/settings-form.tsx`
@@ -43,15 +51,18 @@
 - **PanierPage** — `app/panier/page.tsx`
 - **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
 - **BgTweakPanel** [client] — `components/bg-tweak/panel.tsx`
-- **BoutiqueShop** [client] — props: catalogue — `components/boutique.tsx`
+- **BoutiqueShop** [client] — props: catalogue, copy — `components/boutique.tsx`
 - **CartLink** [client] — `components/cart-link.tsx`
-- **CartView** [client] — `components/cart-view.tsx`
+- **CartView** [client] — props: copy — `components/cart-view.tsx`
 - **CheckoutForm** [client] — props: fees — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
 - **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
 - **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
 - **ManageCookiesButton** [client] — `components/consent/manage-cookies-button.tsx`
 - **ContactForm** [client] — `components/contact-form.tsx`
+- **ContentImage** — props: image, fallback, sizes, className — `components/content/content-image.tsx`
+- **Lines** — props: text — `components/content/text.tsx`
+- **Paragraphs** — props: text, className — `components/content/text.tsx`
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
@@ -84,14 +95,20 @@
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
-- **SiteHeader** — `components/sections.tsx`
-- **Hero** — props: bg — `components/sections.tsx`
-- **Shop** — props: bg, products — `components/sections.tsx`
-- **Gallery** — props: bg — `components/sections.tsx`
-- **Prestations** — props: bg — `components/sections.tsx`
-- **AtelierStrip** — props: bg — `components/sections.tsx`
-- **About** — props: bg — `components/sections.tsx`
-- **Contact** — props: bg — `components/sections.tsx`
-- **SiteFooter** — `components/sections.tsx`
-- **VaseSuggestions** [client] — props: vases — `components/vase-suggestions.tsx`
+- **RichText** — props: doc, fallback, className — `components/rich-text.tsx`
+- **SiteHeader** — props: nav — `components/sections.tsx`
+- **Hero** — props: bg, content — `components/sections.tsx`
+- **Shop** — props: bg, content, products — `components/sections.tsx`
+- **Gallery** — props: bg, content — `components/sections.tsx`
+- **Prestations** — props: bg, content — `components/sections.tsx`
+- **AtelierStrip** — props: bg, content — `components/sections.tsx`
+- **About** — props: bg, content — `components/sections.tsx`
+- **Contact** — props: bg, content — `components/sections.tsx`
+- **SiteFooter** — props: footer — `components/sections.tsx`
+- **VaseSuggestions** [client] — props: vases, copy — `components/vase-suggestions.tsx`
+- **BoutiqueView** [client] — props: content, chrome, catalogue — `components/views/boutique-view.tsx`
+- **CheckoutView** [client] — props: content, chrome, fees — `components/views/checkout-view.tsx`
+- **ConfirmationView** [client] — props: content, chrome, state, vars — `components/views/confirmation-view.tsx`
+- **HomeView** [client] — props: content, chrome, products — `components/views/home-view.tsx`
+- **PanierView** [client] — props: content, chrome, vases — `components/views/panier-view.tsx`
 - **CartProvider** [client] — `lib/cart/cart-context.tsx`

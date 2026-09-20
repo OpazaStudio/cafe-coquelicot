@@ -10,7 +10,9 @@ import { useState } from "react";
 import Link from "next/link";
 import type { ProductCategory } from "@/lib/db/schema";
 import type { ShopProduct } from "@/lib/products";
+import type { BoutiqueContent } from "@/lib/content/pages/boutique";
 import { ProductFigure } from "./illustrations";
+import { Lines } from "./content/text";
 
 const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "tout", label: "Tout" },
@@ -20,7 +22,7 @@ const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
   { key: "vase", label: "Vases" },
 ];
 
-export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
+export function BoutiqueShop({ catalogue, copy }: { catalogue: ShopProduct[]; copy: BoutiqueContent["catalogue"] }) {
   const [active, setActive] = useState<ProductCategory | "tout">("tout");
 
   const products =
@@ -50,13 +52,12 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
       </div>
 
       <p className="boutique-count" aria-live="polite">
-        {products.length} composition{products.length > 1 ? "s" : ""} ·
-        cueillies ou réceptionnées le matin même
+        {products.length} composition{products.length > 1 ? "s" : ""} · {copy.countSuffix}
       </p>
 
       {products.length === 0 ? (
         <p className="boutique-empty">
-          Aucune composition dans cette catégorie pour le moment. Ne partez pas trop loin, on vous prépare plein de belles surprises !<br/>Restez informé sur notre Instagram.
+          <Lines text={copy.empty} />
         </p>
       ) : (
         <div className="shop__grid boutique-grid">
@@ -72,7 +73,7 @@ export function BoutiqueShop({ catalogue }: { catalogue: ShopProduct[] }) {
 // Carte présentationnelle : un lien vers la page produit, où se fait toute la
 // sélection (taille/coloris/quantité) et l'ajout au panier.
 function ProductCard(product: ShopProduct) {
-  const { slug, name, tag, desc, badge, price, variant, category, imagePath, imageBgColor } = product;
+  const { slug, name, badge, price, variant, category, imagePath, imageBgColor } = product;
   return (
     <Link href={`/boutique/${slug}`} className="product-card">
       <div className="product-card__media">
@@ -85,12 +86,8 @@ function ProductCard(product: ShopProduct) {
           alt={name}
         />
       </div>
-      <div>
-        <p className="eyebrow product-card__tag">{tag}</p>
-        <h3 className="product-card__name">{name}</h3>
-      </div>
       <div className="product-card__row">
-        <p className="product-card__desc">{desc}</p>
+        <h3 className="product-card__name">{name}</h3>
         <span className="product-card__price">{price}</span>
       </div>
     </Link>
