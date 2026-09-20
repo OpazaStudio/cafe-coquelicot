@@ -84,7 +84,7 @@ export async function sendContactMessage(
     return { status: "success" };
   }
 
-  const { resend, to, from } = mailer;
+  const { resend, to, from, bcc } = mailer;
   const templates = await loadTemplates();
 
   // 1) Notification boutique — critique. reply-to = visiteur (réponse directe).
@@ -95,6 +95,7 @@ export async function sendContactMessage(
   try {
     const notify = await resend.emails.send({
       from,
+      bcc,
       to: [to],
       replyTo: input.email,
       subject: shop.subject,
@@ -129,6 +130,7 @@ export async function sendContactMessage(
     const ack = buildAckEmail(input.name, templates);
     const ackRes = await resend.emails.send({
       from,
+      bcc,
       to: [input.email],
       replyTo: to,
       subject: ack.subject,

@@ -6,7 +6,8 @@ import { ProductDetail } from "@/components/product-detail";
 import { getProductBySlug } from "@/lib/products";
 import { JsonLd } from "@/components/json-ld";
 import { productImageUrl } from "@/lib/product-image";
-import { productJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
+import { getSettings, shippingFeesFromSettings } from "@/lib/settings";
 import { getSiteUrl } from "@/lib/stripe";
 import { getPageContent } from "@/lib/content/server";
 
@@ -45,19 +46,33 @@ export default async function ProduitPage({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
-  const site = await getPageContent("site");
+  const [site, settings] = await Promise.all([getPageContent("site"), getSettings()]);
+  const siteUrl = getSiteUrl();
+  const imagePaths = [product.imagePath, ...product.images.map((i) => i.path)].filter(
+    (p): p is string => Boolean(p),
+  );
 
   return (
     <>
       <JsonLd
         data={productJsonLd({
-          siteUrl: getSiteUrl(),
+          siteUrl,
           slug: product.slug,
           name: product.name,
           description: oneLine(product.desc),
           priceCents: product.priceCents,
-          imageUrl: product.imagePath ? productImageUrl(product.imagePath) : null,
+          imageUrls: [...new Set(imagePaths)].map(productImageUrl),
+          sizes: product.sizes,
+          category: product.category,
+          shippingFees: shippingFeesFromSettings(settings),
         })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd(siteUrl, [
+          { name: "Accueil", path: "/" },
+          { name: "Boutique", path: "/boutique" },
+          { name: product.name, path: `/boutique/${product.slug}` },
+        ])}
       />
       <SiteHeader nav={site.header.nav} />
       <main id="contenu" tabIndex={-1}>

@@ -20,6 +20,7 @@ pk: `id` (uuid)
 - `illustrationVariant`: integer _(default, required)_
 - `imagePath`: text
 - `imageBgColor`: text
+- `imageFrame`: text _(default, required)_
 - `active`: boolean _(default, required)_
 
 ### product_sizes

@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**46 library files** across 30 modules
+**48 library files** across 32 modules
 
 ## Content (5 files)
 
@@ -17,7 +17,7 @@
 - `lib/email/templates.ts` — escapeHtml, headerSafe, fillTextVars, fillHtmlVars, paragraphsHtmlVars, fillText, …
 - `lib/email/contact.ts` — parseContactForm, buildShopEmail, buildAckEmail, ContactInput, ContactParse, EmailContent, …
 - `lib/email/order.ts` — buildOrderAckEmail, buildOrderShopEmail, OrderEmailOrder, OrderEmailItem, OrderEmailContext, EmailContent
-- `lib/email/resend.ts` — getMailer, ContactMailer
+- `lib/email/resend.ts` — parseBcc, getMailer, ContactMailer
 - `lib/email/notify-order.ts` — notifyOrderPaid
 
 ## Mondial-relay (5 files)
@@ -56,6 +56,10 @@
 
 - `lib/contact-submissions.ts` — saveContactSubmission, markSubmissionEmailSent, listContactSubmissions, setSubmissionRead, deleteContactSubmission, ContactSubmissionInput
 
+## Gallery-layout.ts (1 files)
+
+- `lib/gallery-layout.ts` — spanFrame, gallerySlotSizes, gallerySlotHint, GallerySlot, GALLERY_COLUMNS, GALLERY_CONTAINER_WIDTH, …
+
 ## Image-normalize.ts (1 files)
 
 - `lib/image-normalize.ts` — targetSize, extensionFor, renameTo, normalizeImageFile, isAllowedOutput, MAX_IMAGE_EDGE, …
@@ -79,6 +83,10 @@
 ## Prep-status.ts (1 files)
 
 - `lib/prep-status.ts` — isPrepStatus, derivePrepStatus, isOnBoard, PREP_ORDER, PREP_LABELS, DONE_RETENTION_MS, …
+
+## Product-frame.ts (1 files)
+
+- `lib/product-frame.ts` — isProductFrame, normalizeProductFrame, productFrame, productFrameRatio, productFrameStyle, ProductFrameId, …
 
 ## Product-image.ts (1 files)
 
@@ -110,7 +118,7 @@
 
 ## Seo.ts (1 files)
 
-- `lib/seo.ts` — buildRobots, buildSitemap, jsonLdString, productJsonLd, localBusinessJsonLd, SitemapProduct, …
+- `lib/seo.ts` — buildRobots, buildSitemap, jsonLdString, productJsonLd, organizationJsonLd, breadcrumbJsonLd, …
 
 ## Settings-fields.ts (1 files)
 

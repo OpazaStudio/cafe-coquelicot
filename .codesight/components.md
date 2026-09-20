@@ -24,7 +24,7 @@
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
-- **ImageGallery** [client] — props: images, sizes, colors, onChange, nextKey — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
+- **ImageGallery** [client] — props: images, sizes, colors, onChange, nextKey, frame, onFrameChange — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
@@ -53,7 +53,7 @@
 - **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
 - **BgTweakPanel** [client] — `components/bg-tweak/panel.tsx`
 - **BoutiqueShop** [client] — props: catalogue, copy — `components/boutique.tsx`
-- **CartLink** [client] — `components/cart-link.tsx`
+- **CartLink** [client] — props: onClick — `components/cart-link.tsx`
 - **CartView** [client] — props: copy — `components/cart-view.tsx`
 - **CheckoutForm** [client] — props: fees — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
@@ -61,14 +61,14 @@
 - **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
 - **ManageCookiesButton** [client] — `components/consent/manage-cookies-button.tsx`
 - **ContactForm** [client] — `components/contact-form.tsx`
-- **ContentImage** — props: image, fallback, sizes, className — `components/content/content-image.tsx`
+- **ContentImage** — props: image, fallback, fallbackAlt, sizes, className — `components/content/content-image.tsx`
 - **Lines** — props: text — `components/content/text.tsx`
 - **Paragraphs** — props: text, className — `components/content/text.tsx`
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
 - **Vase** — props: variant, className — `components/illustrations.tsx`
-- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes, priority — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`
@@ -93,6 +93,7 @@
 - **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **Logo** — props: className — `components/logo.tsx`
+- **MobileMenu** [client] — props: nav — `components/mobile-menu.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`

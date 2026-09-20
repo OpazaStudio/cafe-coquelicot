@@ -6,7 +6,11 @@
 import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
 
-export function CartLink() {
+export function CartLink({ onClick }: { onClick?: () => void }) {
   const { count, ready } = useCart();
-  return <Link href="/panier">Panier ({ready ? count : 0})</Link>;
+  return (
+    <Link href="/panier" onClick={onClick}>
+      Panier ({ready ? count : 0})
+    </Link>
+  );
 }

@@ -51,7 +51,7 @@ describe("buildAckEmail avec des textes personnalisés", () => {
 
   it("reproduit le texte d'origine avec les gabarits par défaut", () => {
     expect(buildAckEmail("Camille")).toEqual(buildAckEmail("Camille", DEFAULT_EMAIL_TEMPLATES));
-    expect(buildAckEmail("Camille").text).toContain("L'équipe Coquelicot");
+    expect(buildAckEmail("Camille").text).toContain("L'équipe Café Coquelicot");
   });
 });
 

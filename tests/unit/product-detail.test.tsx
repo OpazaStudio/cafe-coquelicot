@@ -15,6 +15,7 @@ const solana: ShopProduct = {
   variant: 2,
   imagePath: null,
   imageBgColor: null,
+  imageFrame: "1:1",
   images: [],
   badge: null,
   category: "seche",
@@ -175,6 +176,58 @@ describe("ProductDetail — galerie", () => {
     fireEvent.click(screen.getByRole("button", { name: "Blanc" }));
     fireEvent.click(screen.getByRole("button", { name: /^Grand/ }));
     expect(mainImageSrc(container)).toContain(IMG_D);
+  });
+});
+
+describe("ProductDetail — cadre et mobile", () => {
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://abc.supabase.co";
+  });
+
+  it("applique le format de cadre du produit au média", () => {
+    const { container } = renderDetail({ ...withGallery, imageFrame: "4:5" });
+    const media = container.querySelector<HTMLElement>(".product-page__media")!;
+    expect(media.dataset.frame).toBe("4:5");
+    expect(media.style.getPropertyValue("--frame-w")).toBe("4");
+    expect(media.style.getPropertyValue("--frame-h")).toBe("5");
+  });
+
+  it("propose des points de navigation, un par photo visible", () => {
+    renderDetail(withGallery);
+    const dots = screen.getAllByRole("button", { name: /^Photo \d sur 3$/ });
+    expect(dots.length).toBe(3);
+    expect(dots[0].getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(dots[2]);
+    expect(dots[2].getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Les deux ensemble" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("masque du défilement les photos des autres coloris", () => {
+    const colored: ShopProduct = {
+      ...withGallery,
+      images: [
+        ...withGallery.images,
+        { id: "i-blanc", path: IMG_D, bgColor: null, alt: "Version blanche", sizeId: null, colorId: "c-b" },
+      ],
+    };
+    const { container } = renderDetail(colored);
+    const photos = () => [...container.querySelectorAll(".product-photo")];
+    expect(photos().filter((p) => p.classList.contains("is-hidden")).length).toBe(1);
+    expect(screen.getAllByRole("button", { name: /^Photo \d sur 3$/ }).length).toBe(3);
+    fireEvent.click(screen.getByRole("button", { name: "Blanc" }));
+    expect(photos().filter((p) => p.classList.contains("is-hidden")).length).toBe(0);
+    expect(screen.getAllByRole("button", { name: /^Photo \d sur 4$/ }).length).toBe(4);
+  });
+
+  it("suit le défilement tactile : la photo visible devient active", () => {
+    const { container } = renderDetail(withGallery);
+    const scroller = container.querySelector<HTMLElement>(".product-photos")!;
+    Object.defineProperty(scroller, "clientWidth", { value: 300, configurable: true });
+    Object.defineProperty(scroller, "scrollWidth", { value: 900, configurable: true });
+    scroller.scrollLeft = 600;
+    fireEvent.scroll(scroller);
+    expect(mainImageSrc(container)).toContain(IMG_C);
+    expect(screen.getByRole("button", { name: "Photo 3 sur 3" }).getAttribute("aria-pressed")).toBe("true");
   });
 });
 

@@ -15,6 +15,7 @@ import {
 import { sanitizeRichDoc, type RichDoc } from "./rich-text/schema";
 import { HOME_PICKS, SEED_PRODUCTS } from "./db/seed-data";
 import { formatFromPrice } from "./money";
+import { normalizeProductFrame, type ProductFrameId } from "./product-frame";
 import { isUuid } from "./uuid";
 
 export type ShopSize = { id: string; label: string; priceCents: number };
@@ -45,6 +46,7 @@ export type ShopProduct = {
   variant: number; // illustration par défaut (aucun coloris)
   imagePath: string | null; // image produit (null → SVG fallback)
   imageBgColor: string | null; // fond de l'image (null → fond gris)
+  imageFrame: ProductFrameId;
   images: ShopImage[];
   badge: string | null;
   category: ProductCategory;
@@ -72,6 +74,7 @@ function assemble(
     variant: row.illustrationVariant,
     imagePath: row.imagePath,
     imageBgColor: row.imageBgColor,
+    imageFrame: normalizeProductFrame(row.imageFrame),
     images: images.map((i) => ({
       id: i.id,
       path: i.path,

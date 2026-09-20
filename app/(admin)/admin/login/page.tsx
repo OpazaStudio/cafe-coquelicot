@@ -4,7 +4,7 @@ import "../admin.css";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Connexion — Coquelicot admin",
+  title: "Connexion — Café Coquelicot admin",
   robots: { index: false, follow: false },
 };
 

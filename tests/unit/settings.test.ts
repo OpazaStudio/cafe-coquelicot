@@ -16,7 +16,7 @@ describe("parseSettings", () => {
   it("renvoie les valeurs par défaut quand la table est vide", () => {
     const s = parseSettings([]);
     expect(s.host_name).toBe("Vercel Inc.");
-    expect(s.legal_name).toBe("Coquelicot");
+    expect(s.legal_name).toBe("Café Coquelicot");
     expect(s.siret).toBe("");
   });
 

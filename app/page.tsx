@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HomeView } from "@/components/views/home-view";
 import { getHomeProducts } from "@/lib/products";
 import { JsonLd } from "@/components/json-ld";
-import { localBusinessJsonLd } from "@/lib/seo";
+import { organizationJsonLd } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { getSiteUrl } from "@/lib/stripe";
 import { getPageContent } from "@/lib/content/server";
@@ -24,7 +24,7 @@ export default async function Home() {
 
   return (
     <>
-      <JsonLd data={localBusinessJsonLd(getSiteUrl(), settings)} />
+      <JsonLd data={organizationJsonLd(getSiteUrl(), settings)} />
       <HomeView content={content} chrome={chrome} products={products} />
     </>
   );

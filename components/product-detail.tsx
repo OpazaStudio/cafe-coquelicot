@@ -11,11 +11,12 @@ import { useCart } from "@/lib/cart/cart-context";
 import { MAX_QTY } from "@/lib/cart/cart";
 import { formatEuros } from "@/lib/money";
 import { productImageUrl } from "@/lib/product-image";
+import { productFrameStyle } from "@/lib/product-frame";
 import { ProductFigure, ArrowRight } from "./illustrations";
 import { RichText } from "./rich-text";
 
 export function ProductDetail({ product }: { product: ShopProduct }) {
-  const { name, desc, descRich, badge, sizes, colors, images } = product;
+  const { name, desc, descRich, badge, sizes, colors, images, imageFrame } = product;
   const { add } = useCart();
   const [size, setSize] = useState<ShopSize | null>(sizes[0] ?? null);
   const [color, setColor] = useState<ShopColor | null>(colors[0] ?? null);
@@ -35,6 +36,36 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   );
   const [activeId, setActiveId] = useState<string | null>(null);
   const active = views.find((v) => v.id === activeId) ?? views[0] ?? null;
+  const activeIndex = Math.max(0, views.findIndex((v) => v.id === active?.id));
+
+  const scrollerRef = useRef<HTMLSpanElement | null>(null);
+  const settling = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth + 1) return;
+    const target = activeIndex * el.clientWidth;
+    if (Math.abs(el.scrollLeft - target) < 2) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (settling.current) clearTimeout(settling.current);
+    settling.current = setTimeout(() => { settling.current = null; }, 400);
+    el.scrollTo({ left: target, behavior: reduce ? "auto" : "smooth" });
+  }, [activeIndex, views]);
+
+  useEffect(() => () => { if (settling.current) clearTimeout(settling.current); }, []);
+
+  function handleScroll() {
+    const el = scrollerRef.current;
+    if (!el || el.clientWidth === 0) return;
+    if (settling.current) {
+      clearTimeout(settling.current);
+      settling.current = setTimeout(() => { settling.current = null; }, 150);
+      return;
+    }
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    const next = views[index];
+    if (next && next.id !== active?.id) setActiveId(next.id);
+  }
 
   function pickFor(
     sizeId: string | null,
@@ -94,24 +125,30 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   return (
     <div className="product-page">
       <div className="product-page__gallery">
-        <div className="product-page__media">
+        <div
+          className="product-page__media"
+          data-frame={imageFrame}
+          style={productFrameStyle(imageFrame)}
+        >
           {badge && <span className="product-card__badge">{badge}</span>}
           {stacked ? (
-            <span className="product-photos">
+            <span className="product-photos" ref={scrollerRef} onScroll={handleScroll}>
               {images.map((v) => {
                 const isActive = active?.id === v.id;
+                const shown = views.some((s) => s.id === v.id);
                 return (
                   <span
                     key={v.id}
-                    className={`product-photo${isActive ? " is-active" : ""}`}
+                    className={`product-photo${isActive ? " is-active" : ""}${shown ? "" : " is-hidden"}`}
                     style={v.bgColor ? { background: v.bgColor } : undefined}
                     aria-hidden={!isActive}
                   >
                     <Image
                       src={productImageUrl(v.path)}
-                      alt={isActive ? v.alt || name : ""}
+                      alt={v.alt || name}
                       fill
                       sizes="(max-width: 768px) 100vw, 600px"
+                      priority={v.id === views[0]?.id}
                     />
                   </span>
                 );
@@ -125,9 +162,24 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
               imageBgColor={active?.bgColor ?? null}
               alt={active?.alt || name}
               sizes="(max-width: 768px) 100vw, 600px"
+              priority
             />
           )}
         </div>
+        {views.length > 1 && (
+          <div className="product-dots" role="group" aria-label={`Défilement des photos de ${name}`}>
+            {views.map((v, i) => (
+              <button
+                key={v.id}
+                type="button"
+                className={`product-dot${active?.id === v.id ? " is-active" : ""}`}
+                aria-pressed={active?.id === v.id}
+                aria-label={`Photo ${i + 1} sur ${views.length}`}
+                onClick={() => setActiveId(v.id)}
+              />
+            ))}
+          </div>
+        )}
         {views.length > 1 && (
           <div className="product-thumbs" role="group" aria-label={`Photos de ${name}`}>
             {views.map((v, i) => (
@@ -140,7 +192,12 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
                 style={v.bgColor ? { background: v.bgColor } : undefined}
                 onClick={() => setActiveId(v.id)}
               >
-                <Image src={productImageUrl(v.path)} alt="" fill sizes="80px" />
+                <Image
+                  src={productImageUrl(v.path)}
+                  alt={v.alt || `${name} — photo ${i + 1}`}
+                  fill
+                  sizes="80px"
+                />
               </button>
             ))}
           </div>

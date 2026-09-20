@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Coquelicot — fleuriste à La Rochelle";
+export const alt = "Café Coquelicot — fleurs fraîches & séchées";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +20,7 @@ export default function OpengraphImage() {
           fontFamily: "Georgia, serif",
         }}
       >
-        <div style={{ fontSize: 168, fontStyle: "italic", lineHeight: 1 }}>coquelicot</div>
+        <div style={{ fontSize: 132, fontStyle: "italic", lineHeight: 1 }}>café coquelicot</div>
         <div
           style={{
             marginTop: 28,
@@ -30,10 +30,10 @@ export default function OpengraphImage() {
             fontFamily: "Helvetica, Arial, sans-serif",
           }}
         >
-          fleuriste · La Rochelle
+          fleuriste · fleurs fraîches & séchées
         </div>
         <div style={{ marginTop: 18, fontSize: 26, opacity: 0.75, fontFamily: "Helvetica, Arial, sans-serif" }}>
-          fleurs fraîches & séchées — cueillies le matin
+          atelier floral — livraison en France
         </div>
       </div>
     ),

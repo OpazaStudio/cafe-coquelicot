@@ -6,6 +6,7 @@
 - `ADMIN_PASSWORD` (has default) — .env.local
 - `ADMIN_PASSWORD_HASH` (has default) — .env.local
 - `CI` **required** — playwright.config.ts
+- `CONTACT_BCC` (has default) — .env.local
 - `CONTACT_FROM` (has default) — .env.local
 - `CONTACT_TO` (has default) — .env.local
 - `DATABASE_URL` (has default) — .env.local

@@ -18,6 +18,7 @@ import {
 } from "@/lib/db/schema";
 import { parsePriceToCents } from "@/lib/money";
 import { IMAGE_PATH_RE } from "@/lib/product-image";
+import { PRODUCT_FRAME_IDS } from "@/lib/product-frame";
 import {
   RichDocSchema,
   isRichDocEmpty,
@@ -57,6 +58,7 @@ const ProductSchema = z.object({
     .int()
     .min(0)
     .max(5, { error: "Variante entre 0 et 5." }),
+  imageFrame: z.enum(PRODUCT_FRAME_IDS, { error: "Format de cadre invalide." }),
   active: z.boolean(),
 });
 
@@ -113,6 +115,7 @@ function readForm(formData: FormData) {
     category: formData.get("category"),
     badge: formData.get("badge") ?? "",
     illustrationVariant: formData.get("illustrationVariant"),
+    imageFrame: formData.get("imageFrame") ?? "1:1",
     active: formData.get("active") === "on",
   });
 }

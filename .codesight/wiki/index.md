@@ -20,8 +20,8 @@ Structural map compiled from source code via AST. No LLM — deterministic, 200m
 
 - Routes: **3**
 - Models: **10**
-- Components: **113**
-- Env vars: **7** required, **22** with defaults
+- Components: **114**
+- Env vars: **7** required, **23** with defaults
 
 ## How to Use
 

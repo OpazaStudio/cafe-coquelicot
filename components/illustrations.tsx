@@ -266,6 +266,7 @@ export function ProductFigure({
   alt,
   className,
   sizes = "(max-width: 640px) 50vw, 320px",
+  priority = false,
 }: {
   category: string;
   variant?: number;
@@ -274,6 +275,7 @@ export function ProductFigure({
   alt?: string;
   className?: string;
   sizes?: string;
+  priority?: boolean;
 }) {
   // I5 : NEXT_PUBLIC_SUPABASE_URL est inliné au build, donc disponible côté
   // client comme serveur — si absent, productImageUrl renverrait une URL à
@@ -289,6 +291,7 @@ export function ProductFigure({
           alt={alt ?? ""}
           fill
           sizes={sizes}
+          priority={priority}
         />
       </span>
     );

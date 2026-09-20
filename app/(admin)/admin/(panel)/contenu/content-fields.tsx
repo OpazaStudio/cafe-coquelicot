@@ -165,6 +165,7 @@ function ListControl({
               )}
             </summary>
             <div className="border-t border-line-soft p-3">
+              {field.itemHints?.[i] && <p className="mb-3 text-xs text-muted">{field.itemHints[i]}</p>}
               <ContentFields
                 fields={field.fields}
                 value={item}

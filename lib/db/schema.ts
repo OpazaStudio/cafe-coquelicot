@@ -53,6 +53,7 @@ export const products = pgTable("products", {
   illustrationVariant: integer("illustration_variant").notNull().default(0),
   imagePath: text("image_path"),
   imageBgColor: text("image_bg_color"),
+  imageFrame: text("image_frame").notNull().default("1:1"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

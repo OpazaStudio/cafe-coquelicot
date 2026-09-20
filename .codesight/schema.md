@@ -13,6 +13,7 @@
 - illustrationVariant: integer (default, required)
 - imagePath: text
 - imageBgColor: text
+- imageFrame: text (default, required)
 - active: boolean (default, required)
 
 ### product_sizes

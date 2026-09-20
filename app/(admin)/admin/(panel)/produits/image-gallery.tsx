@@ -3,6 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import { productImageUrl } from "@/lib/product-image";
+import {
+  PRODUCT_FRAMES,
+  productFrameRatio,
+  type ProductFrameId,
+} from "@/lib/product-frame";
 import { uploadImageFile } from "./image-upload";
 
 export type ImageDraft = {
@@ -28,13 +33,18 @@ export function ImageGallery({
   colors,
   onChange,
   nextKey,
+  frame,
+  onFrameChange,
 }: {
   images: ImageDraft[];
   sizes: VariantOption[];
   colors: VariantOption[];
   onChange: (next: ImageDraft[]) => void;
   nextKey: () => string;
+  frame: ProductFrameId;
+  onFrameChange: (next: ProductFrameId) => void;
 }) {
+  const ratio = productFrameRatio(frame);
   const [pending, setPending] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -82,6 +92,29 @@ export function ImageGallery({
         </span>
       </legend>
 
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex w-48 flex-col gap-1">
+          <span className="text-xs text-muted">Format du cadre</span>
+          <select
+            name="imageFrame"
+            aria-label="Format du cadre"
+            value={frame}
+            onChange={(e) => onFrameChange(e.target.value as ProductFrameId)}
+            className={inputCls}
+          >
+            {PRODUCT_FRAMES.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="pb-2 text-xs text-muted">
+          Toutes les photos du produit s&apos;affichent dans ce cadre en boutique ;
+          les vignettes ci-dessous montrent le recadrage obtenu.
+        </span>
+      </div>
+
       {images.length === 0 && (
         <p className="text-sm text-muted">
           Aucune photo — le produit s&apos;affiche avec son illustration au trait.
@@ -95,14 +128,15 @@ export function ImageGallery({
           data-testid={`image-row-${i}`}
         >
           <div
-            className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-line"
-            style={img.bgColor ? { background: img.bgColor } : undefined}
+            className="relative w-20 shrink-0 overflow-hidden rounded-lg border border-line"
+            data-testid={`image-frame-${i}`}
+            style={{ aspectRatio: ratio, ...(img.bgColor ? { background: img.bgColor } : {}) }}
           >
             <Image
               src={productImageUrl(img.path)}
               alt=""
               fill
-              sizes="64px"
+              sizes="80px"
               style={{ objectFit: "cover" }}
             />
             {i === 0 && (

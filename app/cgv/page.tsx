@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Conditions générales de vente",
-  description: "Conditions générales de vente de la boutique en ligne Coquelicot : commande, paiement, livraison, rétractation, médiation.",
+  description: "Conditions générales de vente de la boutique en ligne Café Coquelicot : commande, paiement, livraison, rétractation, médiation.",
   alternates: { canonical: "/cgv" },
 };
 

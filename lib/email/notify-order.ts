@@ -36,13 +36,14 @@ export async function notifyOrderPaid(db: Db, orderId: string): Promise<void> {
   const settings = await loadSettings(db);
   const templates = emailTemplatesFromSettings(settings);
   const context = orderEmailContextFromSettings(settings);
-  const { resend, to, from } = mailer;
+  const { resend, to, from, bcc } = mailer;
   const { order, items } = found;
 
   const shop = buildOrderShopEmail(order, items, templates, context);
   try {
     const notify = await resend.emails.send({
       from,
+      bcc,
       to: [to],
       replyTo: order.customerEmail,
       subject: shop.subject,
@@ -60,6 +61,7 @@ export async function notifyOrderPaid(db: Db, orderId: string): Promise<void> {
   try {
     const confirm = await resend.emails.send({
       from,
+      bcc,
       to: [order.customerEmail],
       replyTo: to,
       subject: ack.subject,

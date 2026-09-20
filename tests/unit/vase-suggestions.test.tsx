@@ -6,7 +6,7 @@ import type { ShopProduct } from "@/lib/products";
 import { DEFAULT_PANIER } from "@/lib/content/pages/panier";
 
 const vases: ShopProduct[] = [
-  { id: "v1", slug: "galet", name: "galet", desc: "x", descRich: null, price: "24€", priceCents: 2400, variant: 0, imagePath: null, imageBgColor: null, images: [], badge: null, category: "vase", sizes: [], colors: [] },
+  { id: "v1", slug: "galet", name: "galet", desc: "x", descRich: null, price: "24€", priceCents: 2400, variant: 0, imagePath: null, imageBgColor: null, imageFrame: "1:1", images: [], badge: null, category: "vase", sizes: [], colors: [] },
 ];
 
 // Sonde déterministe : expose l'état d'hydratation du panier (ready) pour

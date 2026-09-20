@@ -1,3 +1,4 @@
+import { GALLERY_SLOTS, gallerySlotSizes } from "@/lib/gallery-layout";
 import type { ComponentType } from "react";
 import Link from "next/link";
 import type { ShopProduct } from "@/lib/products";
@@ -13,6 +14,7 @@ import {
 import { ContactForm } from "./contact-form";
 import { ManageCookiesButton } from "./consent/manage-cookies-button";
 import { CartLink } from "./cart-link";
+import { MobileMenu } from "./mobile-menu";
 import { Logo } from "./logo";
 import { ContentImage, hasContentImage } from "./content/content-image";
 import { Lines, Paragraphs } from "./content/text";
@@ -34,6 +36,7 @@ export function SiteHeader({ nav }: { nav: SiteContent["header"]["nav"] }) {
       </nav>
       <div className="site-header__right">
         <CartLink />
+        <MobileMenu nav={nav} />
       </div>
     </header>
   );
@@ -50,12 +53,13 @@ export function Hero({ bg, content }: SectionProps & { content: HomeContent["her
             fallback={
               <Image
                 src={heroFleurs}
-                alt=""
+                alt="Fleurs séchées suspendues, atelier Café Coquelicot"
                 priority
                 sizes="(max-width: 1100px) 100vw, 600px"
                 className="hero__cutout"
               />
             }
+            fallbackAlt="Fleurs de l'atelier Café Coquelicot"
             sizes="(max-width: 900px) 100vw, 600px"
           />
         </div>
@@ -140,17 +144,6 @@ function ProductCard({ slug, name, price, variant, badge, category, imagePath, i
   );
 }
 
-const TILE_LAYOUT = [
-  { cls: "tile--1", variant: 0 },
-  { cls: "tile--2", variant: 2 },
-  { cls: "tile--4", variant: 4 },
-  { cls: "tile--3", variant: 3 },
-  { cls: "tile--7", variant: 5 },
-  { cls: "tile--6", variant: 5 },
-  { cls: "tile--5", variant: 2 },
-  { cls: "tile--8", variant: 1 },
-];
-
 export function Gallery({ bg, content }: SectionProps & { content: HomeContent["gallery"] }) {
   return (
     <section id="gallery" data-section data-bg={bg} className="gallery">
@@ -165,9 +158,10 @@ export function Gallery({ bg, content }: SectionProps & { content: HomeContent["
             <Lines text={content.sub} />
           </p>
         </div>
-        <div className="gallery__grid reveal">
-          {content.tiles.slice(0, TILE_LAYOUT.length).map((tile, i) => {
-            const layout = TILE_LAYOUT[i];
+        <div className="gallery__frame reveal">
+        <div className="gallery__grid">
+          {content.tiles.slice(0, GALLERY_SLOTS.length).map((tile, i) => {
+            const layout = GALLERY_SLOTS[i];
             const isLabel = tile.kind === "mot";
             return (
               <div key={i} className={`gallery__tile ${layout.cls}${isLabel ? " gallery__tile--label" : ""}`}>
@@ -180,12 +174,13 @@ export function Gallery({ bg, content }: SectionProps & { content: HomeContent["
                   <ContentImage
                     image={tile.image}
                     fallback={<Bouquet variant={layout.variant} />}
-                    sizes="(max-width: 700px) 50vw, 25vw"
+                    sizes={gallerySlotSizes(layout)}
                   />
                 )}
               </div>
             );
           })}
+        </div>
         </div>
         <div className="gallery__cta reveal">
           <Link href={content.cta.href} className="link-arrow">
@@ -260,7 +255,12 @@ export function About({ bg, content }: SectionProps & { content: HomeContent["ab
         <div className="about__inner">
           <div className="about__media reveal">
             {content.sticker && <div className="about__sticker">{content.sticker}</div>}
-            <ContentImage image={content.image} fallback={<AboutFlorist />} sizes="(max-width: 900px) 100vw, 50vw" />
+            <ContentImage
+              image={content.image}
+              fallback={<AboutFlorist />}
+              fallbackAlt="La fleuriste de Café Coquelicot, bouquets de fleurs séchées en main"
+              sizes="(max-width: 900px) 100vw, 50vw"
+            />
           </div>
           <div className="reveal">
             <h2 className="about__title">

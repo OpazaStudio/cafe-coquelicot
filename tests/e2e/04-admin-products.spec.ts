@@ -19,6 +19,7 @@ test.describe("CRUD produits", () => {
     await page.getByLabel("Prix de base (€)").fill("29,90");
     await page.getByLabel("Catégorie").selectOption("frais");
     await page.getByLabel("Badge", { exact: false }).fill("Test");
+    await page.getByLabel("Format du cadre").selectOption("4:5");
     await page.getByRole("button", { name: "Créer le produit" }).click();
     await page.waitForURL("**/admin/produits");
 
@@ -33,6 +34,9 @@ test.describe("CRUD produits", () => {
     const card = page.locator(".product-card", { hasText: "pivoine du test" });
     await expect(card).toContainText("dès 29,90€");
     await expect(card).toContainText("Test");
+    await card.click();
+    await page.waitForURL("**/boutique/pivoine-du-test");
+    await expect(page.locator(".product-page__media")).toHaveAttribute("data-frame", "4:5");
 
     // Éditer le prix
     await page.goto("/admin/produits");

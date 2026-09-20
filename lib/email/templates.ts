@@ -22,7 +22,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplates = {
 
 Merci pour votre message — on l'a bien reçu et on vous répond au plus vite.`,
   ackSignature: `À très vite,
-L'équipe Coquelicot 🌺`,
+L'équipe Café Coquelicot 🌺`,
   shopSubject: `Nouveau message du site — ${NAME_PLACEHOLDER}`,
   shopHeading: "Nouveau message du site",
   orderAckSubject: `Votre commande ${NUMBER_PLACEHOLDER} est confirmée ✿`,
@@ -31,7 +31,7 @@ L'équipe Coquelicot 🌺`,
 Merci pour votre commande — nous l'avons bien reçue et nous la préparons avec soin.
 Vous trouverez le récapitulatif ci-dessous.`,
   orderAckSignature: `À très vite,
-L'équipe Coquelicot 🌺`,
+L'équipe Café Coquelicot 🌺`,
   orderShopSubject: `Nouvelle commande ${NUMBER_PLACEHOLDER} — ${NAME_PLACEHOLDER}`,
   orderShopHeading: "Nouvelle commande",
 };

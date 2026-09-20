@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ProductForm } from "@/app/(admin)/admin/(panel)/produits/product-form";
 import type { ProductRow } from "@/lib/db/schema";
 
@@ -18,6 +18,7 @@ const base: ProductRow = {
   illustrationVariant: 2,
   imagePath: null,
   imageBgColor: null,
+  imageFrame: "1:1",
   active: true,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -118,6 +119,33 @@ describe("ProductForm", () => {
       { path: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.webp", bgColor: "#eee", sizeKey: null },
     ]);
     expect(JSON.parse(hidden(container, "images")!.value)[0].id).toBeUndefined();
+  });
+
+  it("propose un format de cadre, carré par défaut, et recadre les vignettes en conséquence", () => {
+    const { container } = render(
+      <ProductForm
+        action={async () => undefined}
+        product={{ ...base, imageFrame: "3:4" }}
+        images={[
+          { id: "22222222-2222-2222-2222-222222222222", productId: "p1", sizeId: null, colorId: null, path: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.webp", bgColor: null, alt: null, sortOrder: 0, createdAt: new Date() },
+        ]}
+        submitLabel="Enregistrer"
+      />,
+    );
+    const select = screen.getByLabelText("Format du cadre") as HTMLSelectElement;
+    expect(select.name).toBe("imageFrame");
+    expect(select.value).toBe("3:4");
+    expect([...select.options].map((o) => o.value)).toContain("16:9");
+    expect(screen.getByTestId("image-frame-0").style.aspectRatio).toBe("3 / 4");
+
+    fireEvent.change(select, { target: { value: "4:3" } });
+    expect(screen.getByTestId("image-frame-0").style.aspectRatio).toBe("4 / 3");
+    expect(container.querySelector<HTMLSelectElement>('select[name="imageFrame"]')!.value).toBe("4:3");
+  });
+
+  it("retombe sur le carré quand le produit n'a pas encore de format", () => {
+    render(<ProductForm action={async () => undefined} submitLabel="Créer" />);
+    expect((screen.getByLabelText("Format du cadre") as HTMLSelectElement).value).toBe("1:1");
   });
 
   it("monte la barre d'outils de l'éditeur riche", async () => {

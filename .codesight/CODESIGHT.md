@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 113 components | 46 lib files | 29 env vars | 6 middleware | 54% test coverage
-> **Token savings:** this file is ~8,300 tokens. Without it, AI exploration would cost ~68,600 tokens. **Saves ~60,300 tokens per conversation.**
-> **Last scanned:** 2026-09-20 13:38 — re-run after significant changes
+> 3 routes | 10 models | 114 components | 48 lib files | 30 env vars | 6 middleware | 54% test coverage
+> **Token savings:** this file is ~8,500 tokens. Without it, AI exploration would cost ~69,600 tokens. **Saves ~61,000 tokens per conversation.**
+> **Last scanned:** 2026-09-20 15:20 — re-run after significant changes
 
 ---
 
@@ -31,6 +31,7 @@
 - illustrationVariant: integer (default, required)
 - imagePath: text
 - imageBgColor: text
+- imageFrame: text (default, required)
 - active: boolean (default, required)
 
 ### product_sizes
@@ -157,7 +158,7 @@
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
-- **ImageGallery** [client] — props: images, sizes, colors, onChange, nextKey — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
+- **ImageGallery** [client] — props: images, sizes, colors, onChange, nextKey, frame, onFrameChange — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
@@ -186,7 +187,7 @@
 - **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
 - **BgTweakPanel** [client] — `components/bg-tweak/panel.tsx`
 - **BoutiqueShop** [client] — props: catalogue, copy — `components/boutique.tsx`
-- **CartLink** [client] — `components/cart-link.tsx`
+- **CartLink** [client] — props: onClick — `components/cart-link.tsx`
 - **CartView** [client] — props: copy — `components/cart-view.tsx`
 - **CheckoutForm** [client] — props: fees — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
@@ -194,14 +195,14 @@
 - **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
 - **ManageCookiesButton** [client] — `components/consent/manage-cookies-button.tsx`
 - **ContactForm** [client] — `components/contact-form.tsx`
-- **ContentImage** — props: image, fallback, sizes, className — `components/content/content-image.tsx`
+- **ContentImage** — props: image, fallback, fallbackAlt, sizes, className — `components/content/content-image.tsx`
 - **Lines** — props: text — `components/content/text.tsx`
 - **Paragraphs** — props: text, className — `components/content/text.tsx`
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
 - **Vase** — props: variant, className — `components/illustrations.tsx`
-- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes, priority — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`
@@ -226,6 +227,7 @@
 - **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **Logo** — props: className — `components/logo.tsx`
+- **MobileMenu** [client] — props: nav — `components/mobile-menu.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
@@ -363,7 +365,10 @@
   - type OrderEmailItem
   - type OrderEmailContext
   - type EmailContent
-- `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
+- `lib/email/resend.ts`
+  - function parseBcc: (raw) => string[]
+  - function getMailer: () => ContactMailer | null
+  - type ContactMailer
 - `lib/email/templates.ts`
   - function escapeHtml: (value) => string
   - function headerSafe: (value) => string
@@ -372,6 +377,14 @@
   - function paragraphsHtmlVars: (template, vars, style) => string
   - function fillText: (template, name) => string
   - _...7 more_
+- `lib/gallery-layout.ts`
+  - function spanFrame: (span) => ProductFrameId
+  - function gallerySlotSizes: (s) => string
+  - function gallerySlotHint: (s) => string
+  - type GallerySlot
+  - const GALLERY_COLUMNS
+  - const GALLERY_CONTAINER_WIDTH
+  - _...1 more_
 - `lib/image-normalize.ts`
   - function targetSize: (width, height, maxEdge) => void
   - function extensionFor: (type) => string
@@ -420,6 +433,14 @@
   - const PREP_LABELS: Record<PrepStatus, string>
   - const DONE_RETENTION_MS
   - _...1 more_
+- `lib/product-frame.ts`
+  - function isProductFrame: (value) => value is ProductFrameId
+  - function normalizeProductFrame: (value) => ProductFrameId
+  - function productFrame: (id) => void
+  - function productFrameRatio: (id) => string
+  - function productFrameStyle: (id) => void
+  - type ProductFrameId
+  - _...3 more_
 - `lib/product-image.ts`
   - function productImageUrl: (path) => string
   - function validateImageFile: (file) => ImageValidation
@@ -459,9 +480,9 @@
   - function buildSitemap: (siteUrl, products) => MetadataRoute.Sitemap
   - function jsonLdString: (data) => string
   - function productJsonLd: (input) => JsonLd
-  - function localBusinessJsonLd: (siteUrl, s) => JsonLd
-  - type SitemapProduct
-  - _...5 more_
+  - function organizationJsonLd: (siteUrl, s) => JsonLd
+  - function breadcrumbJsonLd: (siteUrl, items) => JsonLd
+  - _...8 more_
 - `lib/settings-fields.ts`
   - function fieldMaxLength: (field) => number
   - function fieldsForGroups: (groups) => SettingField[]
@@ -501,6 +522,7 @@
 - `ADMIN_PASSWORD` (has default) — .env.local
 - `ADMIN_PASSWORD_HASH` (has default) — .env.local
 - `CI` **required** — playwright.config.ts
+- `CONTACT_BCC` (has default) — .env.local
 - `CONTACT_FROM` (has default) — .env.local
 - `CONTACT_TO` (has default) — .env.local
 - `DATABASE_URL` (has default) — .env.local
@@ -603,7 +625,7 @@
 # Test Coverage
 
 > **54%** of routes and models are covered by tests
-> 84 test files found
+> 88 test files found
 
 ## Covered Routes
 

@@ -10,11 +10,13 @@ export function hasContentImage(image: ImageValue): image is ImageValue & { path
 export function ContentImage({
   image,
   fallback,
+  fallbackAlt = "",
   sizes,
   className,
 }: {
   image: ImageValue;
   fallback: ReactNode;
+  fallbackAlt?: string;
   sizes: string;
   className?: string;
 }) {
@@ -22,7 +24,7 @@ export function ContentImage({
     return (
       <Image
         src={productImageUrl(image.path)}
-        alt={image.alt}
+        alt={image.alt || fallbackAlt}
         fill
         sizes={sizes}
         className={className}

@@ -91,6 +91,7 @@ export function ShopPhone({ settings }: { settings: Settings }) {
 
 export function Mediator({ settings }: { settings: Settings }) {
   const url = settings.mediator_website.trim();
+  return null;
   return (
     <>
       <LegalValue value={settings.mediator_name} label="nom du médiateur" />

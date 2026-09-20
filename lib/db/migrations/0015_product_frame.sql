@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "image_frame" text DEFAULT '1:1' NOT NULL;

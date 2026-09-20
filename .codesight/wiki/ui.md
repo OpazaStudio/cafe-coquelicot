@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**113 components** (react)
+**114 components** (react)
 
 ## Client Components
 
@@ -17,7 +17,7 @@
 - **ContentFields** — props: fields, value, onChange, idPrefix — `app/(admin)/admin/(panel)/contenu/content-fields.tsx`
 - **ImageField** — props: id, label, hint, value, onChange — `app/(admin)/admin/(panel)/contenu/image-field.tsx`
 - **PreviewFrame** — props: src, onLoad, ref — `app/(admin)/admin/(panel)/contenu/preview-frame.tsx`
-- **ImageGallery** — props: images, sizes, colors, onChange, nextKey — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
+- **ImageGallery** — props: images, sizes, colors, onChange, nextKey, frame, onFrameChange — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
 - **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **ProductForm** — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RichEditor** — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
@@ -28,7 +28,7 @@
 - **BgTweakGate** — `components/bg-tweak/gate.tsx`
 - **BgTweakPanel** — `components/bg-tweak/panel.tsx`
 - **BoutiqueShop** — props: catalogue, copy — `components/boutique.tsx`
-- **CartLink** — `components/cart-link.tsx`
+- **CartLink** — props: onClick — `components/cart-link.tsx`
 - **CartView** — props: copy — `components/cart-view.tsx`
 - **CheckoutForm** — props: fees — `components/checkout-form.tsx`
 - **ClearCart** — `components/clear-cart.tsx`
@@ -36,6 +36,7 @@
 - **ManageCookiesButton** — `components/consent/manage-cookies-button.tsx`
 - **ContactForm** — `components/contact-form.tsx`
 - **Effects** — `components/effects.tsx`
+- **MobileMenu** — props: nav — `components/mobile-menu.tsx`
 - **ProductDetail** — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** — props: value, onSelect — `components/relay-picker.tsx`
@@ -81,13 +82,13 @@
 - **Home** — `app/page.tsx`
 - **PanierPage** — `app/panier/page.tsx`
 - **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
-- **ContentImage** — props: image, fallback, sizes, className — `components/content/content-image.tsx`
+- **ContentImage** — props: image, fallback, fallbackAlt, sizes, className — `components/content/content-image.tsx`
 - **Lines** — props: text — `components/content/text.tsx`
 - **Paragraphs** — props: text, className — `components/content/text.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
 - **Vase** — props: variant, className — `components/illustrations.tsx`
-- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes — `components/illustrations.tsx`
+- **ProductFigure** — props: category, variant, imagePath, imageBgColor, alt, className, sizes, priority — `components/illustrations.tsx`
 - **IconWedding** — props: className — `components/illustrations.tsx`
 - **IconEvent** — props: className — `components/illustrations.tsx`
 - **IconSubscription** — props: className — `components/illustrations.tsx`

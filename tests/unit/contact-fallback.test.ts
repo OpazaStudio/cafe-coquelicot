@@ -12,7 +12,7 @@ const send = vi.fn(async () => sendResult);
 vi.mock("@/lib/email/resend", () => ({
   getMailer: () =>
     mailerEnabled
-      ? { resend: { emails: { send } }, to: "boutique@test.local", from: "Test <no@test.local>" }
+      ? { resend: { emails: { send } }, to: "boutique@test.local", from: "Test <no@test.local>", bcc: ["copie@test.local"] }
       : null,
 }));
 
@@ -57,6 +57,14 @@ describe("sendContactMessage — filet de sécurité en base", () => {
     expect(rows[0].name).toBe("Camille Martin");
     expect(rows[0].message).toBe("Bonjour, je cherche un bouquet.");
     expect(rows[0].emailSent).toBe(true);
+  });
+
+  it("met les adresses bcc du mailer sur la notification et l'accusé", async () => {
+    await sendContactMessage(undefined, form());
+    expect(send).toHaveBeenCalledTimes(2);
+    for (const call of send.mock.calls as unknown as [{ bcc: string[] }][]) {
+      expect(call[0].bcc).toEqual(["copie@test.local"]);
+    }
   });
 
   it("confirme la réception et garde emailSent=false si Resend renvoie une erreur", async () => {

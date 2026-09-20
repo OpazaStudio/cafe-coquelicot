@@ -112,7 +112,10 @@
   - type OrderEmailItem
   - type OrderEmailContext
   - type EmailContent
-- `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
+- `lib/email/resend.ts`
+  - function parseBcc: (raw) => string[]
+  - function getMailer: () => ContactMailer | null
+  - type ContactMailer
 - `lib/email/templates.ts`
   - function escapeHtml: (value) => string
   - function headerSafe: (value) => string
@@ -121,6 +124,14 @@
   - function paragraphsHtmlVars: (template, vars, style) => string
   - function fillText: (template, name) => string
   - _...7 more_
+- `lib/gallery-layout.ts`
+  - function spanFrame: (span) => ProductFrameId
+  - function gallerySlotSizes: (s) => string
+  - function gallerySlotHint: (s) => string
+  - type GallerySlot
+  - const GALLERY_COLUMNS
+  - const GALLERY_CONTAINER_WIDTH
+  - _...1 more_
 - `lib/image-normalize.ts`
   - function targetSize: (width, height, maxEdge) => void
   - function extensionFor: (type) => string
@@ -169,6 +180,14 @@
   - const PREP_LABELS: Record<PrepStatus, string>
   - const DONE_RETENTION_MS
   - _...1 more_
+- `lib/product-frame.ts`
+  - function isProductFrame: (value) => value is ProductFrameId
+  - function normalizeProductFrame: (value) => ProductFrameId
+  - function productFrame: (id) => void
+  - function productFrameRatio: (id) => string
+  - function productFrameStyle: (id) => void
+  - type ProductFrameId
+  - _...3 more_
 - `lib/product-image.ts`
   - function productImageUrl: (path) => string
   - function validateImageFile: (file) => ImageValidation
@@ -208,9 +227,9 @@
   - function buildSitemap: (siteUrl, products) => MetadataRoute.Sitemap
   - function jsonLdString: (data) => string
   - function productJsonLd: (input) => JsonLd
-  - function localBusinessJsonLd: (siteUrl, s) => JsonLd
-  - type SitemapProduct
-  - _...5 more_
+  - function organizationJsonLd: (siteUrl, s) => JsonLd
+  - function breadcrumbJsonLd: (siteUrl, items) => JsonLd
+  - _...8 more_
 - `lib/settings-fields.ts`
   - function fieldMaxLength: (field) => number
   - function fieldsForGroups: (groups) => SettingField[]

@@ -1,3 +1,4 @@
+import { GALLERY_SLOTS, gallerySlotHint } from "@/lib/gallery-layout";
 import { definePage, f, type ContentOf } from "../fields";
 
 const link = (label: string, hint?: string) =>
@@ -60,6 +61,7 @@ export const HOME_DEF = definePage({
           max: 8,
           fixed: true,
           hint: "Huit tuiles, dans l'ordre de la grille. Une tuile « Photo » sans photo garde son illustration.",
+          itemHints: GALLERY_SLOTS.map(gallerySlotHint),
           fields: {
             kind: f.select({ label: "Type", options: [{ value: "photo", label: "Photo" }, { value: "mot", label: "Mot" }] }),
             image: f.image({ label: "Photo" }),

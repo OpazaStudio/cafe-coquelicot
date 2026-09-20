@@ -58,3 +58,22 @@ describe("ContentFields", () => {
     expect(screen.queryByRole("button", { name: /Supprimer/ })).toBeNull();
   });
 });
+
+describe("ContentFields — aides par élément de liste", () => {
+  it("affiche l'aide propre à chaque tuile d'une liste fixe", () => {
+    const fields = {
+      tiles: f.list({
+        label: "Tuiles",
+        labels: { singular: "tuile", plural: "tuiles" },
+        fixed: true,
+        itemHints: ["Cadre paysage 5:4", "Cadre portrait 3:4"],
+        fields: { label: f.text({ label: "Mot" }) },
+      }),
+    };
+    render(
+      <ContentFields fields={fields} value={{ tiles: [{ label: "" }, { label: "" }] }} onChange={() => {}} idPrefix="g" />,
+    );
+    expect(screen.getByText("Cadre paysage 5:4")).toBeTruthy();
+    expect(screen.getByText("Cadre portrait 3:4")).toBeTruthy();
+  });
+});

@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Confidentialité & cookies",
-  description: "Politique de confidentialité et cookies du site Coquelicot : données collectées, sous-traitants, droits RGPD.",
+  description: "Politique de confidentialité et cookies du site Café Coquelicot : données collectées, sous-traitants, droits RGPD.",
   alternates: { canonical: "/confidentialite" },
 };
 

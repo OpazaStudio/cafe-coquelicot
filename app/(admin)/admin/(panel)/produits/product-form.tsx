@@ -10,6 +10,7 @@ import type {
   ProductSizeRow,
 } from "@/lib/db/schema";
 import { Bouquet } from "@/components/illustrations";
+import { normalizeProductFrame, type ProductFrameId } from "@/lib/product-frame";
 import {
   parseRichDoc,
   richDocFromPlainText,
@@ -79,6 +80,9 @@ export function ProductForm({
     undefined,
   );
   const [variant, setVariant] = useState(product?.illustrationVariant ?? 0);
+  const [frame, setFrame] = useState<ProductFrameId>(() =>
+    normalizeProductFrame(product?.imageFrame),
+  );
   const [description, setDescription] = useState<RichDoc>(
     () =>
       parseRichDoc(product?.descriptionRich) ??
@@ -179,8 +183,11 @@ export function ProductForm({
         colors={colors.map((c) => ({ key: c.key, label: c.label }))}
         onChange={setImages}
         nextKey={nextKey}
+        frame={frame}
+        onFrameChange={setFrame}
       />
       <FieldErrors errors={state?.errors?.images} />
+      <FieldErrors errors={state?.errors?.imageFrame} />
 
       <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
         <label className="flex flex-col gap-1.5">

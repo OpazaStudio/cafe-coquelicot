@@ -246,7 +246,7 @@ export const SETTING_FIELDS: SettingField[] = [
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
-  legal_name: "Coquelicot",
+  legal_name: "Café Coquelicot",
   legal_form: "",
   capital: "",
   siret: "",

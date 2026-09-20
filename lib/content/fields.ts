@@ -32,6 +32,7 @@ export type ListField<I extends FieldMap = FieldMap> = Base & {
   max?: number;
   fixed?: boolean;
   labels: { singular: string; plural: string; add?: string };
+  itemHints?: readonly string[];
 };
 export type GroupField<G extends FieldMap = FieldMap> = Base & {
   type: "group";
