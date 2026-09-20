@@ -61,6 +61,11 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
     if (linked) setActiveId(linked.id);
   }
 
+  const stacked =
+    views.length > 0 &&
+    images.length > 1 &&
+    Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+
   // Le coloris change l'illustration au trait ; la taille porte le prix.
   const illustration = color?.illustrationVariant ?? product.variant;
   const priceCents = size?.priceCents ?? product.priceCents;
@@ -91,14 +96,37 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
       <div className="product-page__gallery">
         <div className="product-page__media">
           {badge && <span className="product-card__badge">{badge}</span>}
-          <ProductFigure
-            category={product.category}
-            variant={illustration}
-            imagePath={active?.path ?? null}
-            imageBgColor={active?.bgColor ?? null}
-            alt={active?.alt || name}
-            sizes="(max-width: 768px) 100vw, 600px"
-          />
+          {stacked ? (
+            <span className="product-photos">
+              {images.map((v) => {
+                const isActive = active?.id === v.id;
+                return (
+                  <span
+                    key={v.id}
+                    className={`product-photo${isActive ? " is-active" : ""}`}
+                    style={v.bgColor ? { background: v.bgColor } : undefined}
+                    aria-hidden={!isActive}
+                  >
+                    <Image
+                      src={productImageUrl(v.path)}
+                      alt={isActive ? v.alt || name : ""}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 600px"
+                    />
+                  </span>
+                );
+              })}
+            </span>
+          ) : (
+            <ProductFigure
+              category={product.category}
+              variant={illustration}
+              imagePath={active?.path ?? null}
+              imageBgColor={active?.bgColor ?? null}
+              alt={active?.alt || name}
+              sizes="(max-width: 768px) 100vw, 600px"
+            />
+          )}
         </div>
         {views.length > 1 && (
           <div className="product-thumbs" role="group" aria-label={`Photos de ${name}`}>

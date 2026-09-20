@@ -89,12 +89,16 @@ const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_
  * Parse la réponse. NB : noms d'éléments à confirmer contre la sandbox
  * (cf. Task 4, step de vérification). On gère plusieurs casses courantes.
  */
-export function parseShipmentResponse(xml: string): RelayShipmentResult {
-  const doc = parser.parse(xml) as Record<string, unknown>;
-  // Recherche tolérante des statuts d'erreur.
+export function parseShipmentResponse(raw: string): RelayShipmentResult {
+  const text = raw.trim();
+  const doc = text.startsWith("{")
+    ? (JSON.parse(text) as Record<string, unknown>)
+    : (parser.parse(text) as Record<string, unknown>);
+  // Recherche tolérante des statuts d'erreur (XML → attributs @_Level/@_Message,
+  // JSON → levelField/messageField).
   const flat = JSON.stringify(doc);
-  if (/"@_Level"\s*:\s*"error"/i.test(flat)) {
-    const msg = flat.match(/"@_Message"\s*:\s*"([^"]*)"/i)?.[1] ?? "Erreur Mondial Relay";
+  if (/"(?:@_Level|levelField)"\s*:\s*"[^"]*error[^"]*"/i.test(flat)) {
+    const msg = flat.match(/"(?:@_Message|messageField)"\s*:\s*"([^"]*)"/i)?.[1] ?? "Erreur Mondial Relay";
     throw new MondialRelayError(msg);
   }
   const shipmentNumber = flat.match(/"ShipmentNumber"\s*:\s*"?([0-9A-Z-]+)"?/i)?.[1];

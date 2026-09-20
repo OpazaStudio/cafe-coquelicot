@@ -208,6 +208,19 @@ export const pageContent = pgTable("page_content", {
     .defaultNow(),
 });
 
+export const contactSubmissions = pgTable("contact_submissions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  message: text("message").notNull(),
+  emailSent: boolean("email_sent").notNull().default(false),
+  readAt: timestamp("read_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
 export type ProductSizeRow = typeof productSizes.$inferSelect;
@@ -224,6 +237,8 @@ export type AdminUserRow = typeof adminUsers.$inferSelect;
 export type NewAdminUserRow = typeof adminUsers.$inferInsert;
 export type SettingRow = typeof settings.$inferSelect;
 export type PageContentRow = typeof pageContent.$inferSelect;
+export type ContactSubmissionRow = typeof contactSubmissions.$inferSelect;
+export type NewContactSubmissionRow = typeof contactSubmissions.$inferInsert;
 
 export type ProductCategory = (typeof productCategory.enumValues)[number];
 export type OrderStatus = (typeof orderStatus.enumValues)[number];

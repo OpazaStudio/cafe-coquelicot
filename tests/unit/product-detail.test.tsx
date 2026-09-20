@@ -97,7 +97,10 @@ const withGallery: ShopProduct = {
 };
 
 function mainImageSrc(container: HTMLElement): string {
-  return container.querySelector(".product-page__media img")!.getAttribute("src") ?? "";
+  const media = container.querySelector(".product-page__media")!;
+  const img =
+    media.querySelector(".is-active img") ?? media.querySelector("img")!;
+  return img.getAttribute("src") ?? "";
 }
 
 describe("ProductDetail — galerie", () => {

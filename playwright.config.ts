@@ -40,6 +40,7 @@ export default defineConfig({
       // Forcer PGlite (pas Supabase) : .env.local définit DATABASE_URL mais
       // Next.js ne l'écrase pas si la variable est déjà dans process.env.
       DATABASE_URL: "",
+      RESEND_API_KEY: "",
       // Pas d'appel Mondial Relay réel en e2e → ensureRelayShipment saute.
       MONDIAL_RELAY_API_URL: "",
       MONDIAL_RELAY_API_LOGIN: "",

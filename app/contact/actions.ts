@@ -1,6 +1,11 @@
 "use server";
 
 import { getMailer } from "@/lib/email/resend";
+import { getDb } from "@/lib/db/client";
+import {
+  markSubmissionEmailSent,
+  saveContactSubmission,
+} from "@/lib/contact-submissions";
 import {
   buildAckEmail,
   buildShopEmail,
@@ -13,9 +18,14 @@ import { contactLimiter } from "@/lib/rate-limit";
 import { getRequestIp } from "@/lib/request-ip";
 
 export type ContactState =
-  | { status: "success" }
+  | { status: "success"; message?: string }
   | { status: "error"; message: string }
   | undefined;
+
+const RECEIVED_WITHOUT_EMAIL =
+  "Votre message est bien arrivé — on vous répond au plus vite.";
+
+const SEND_FAILED = "L'envoi a échoué. Réessayez dans un instant.";
 
 async function loadTemplates(): Promise<EmailTemplates> {
   try {
@@ -50,11 +60,19 @@ export async function sendContactMessage(
     };
   }
 
+  let submissionId: string | null = null;
+  try {
+    submissionId = await saveContactSubmission(await getDb(), input);
+  } catch (err) {
+    console.error("[contact] enregistrement du message impossible", err);
+  }
+
   const mailer = getMailer();
   if (!mailer) {
     // Pas de clé API : erreur explicite en prod, succès simulé en dev (testable).
     if (process.env.NODE_ENV === "production") {
       console.error("[contact] RESEND_API_KEY manquante — message non envoyé");
+      if (submissionId) return { status: "success", message: RECEIVED_WITHOUT_EMAIL };
       return {
         status: "error",
         message:
@@ -73,6 +91,7 @@ export async function sendContactMessage(
   //    On capture aussi les exceptions réseau (le SDK ne renvoie pas toujours
   //    { error } ; un throw doit produire notre message, pas une 500 brute).
   const shop = buildShopEmail(input, templates);
+  let shopEmailSent = false;
   try {
     const notify = await resend.emails.send({
       from,
@@ -84,17 +103,24 @@ export async function sendContactMessage(
     });
     if (notify.error) {
       console.error("[contact] échec d'envoi (notification boutique)", notify.error);
-      return {
-        status: "error",
-        message: "L'envoi a échoué. Réessayez dans un instant.",
-      };
+    } else {
+      shopEmailSent = true;
     }
   } catch (err) {
     console.error("[contact] exception réseau (notification boutique)", err);
-    return {
-      status: "error",
-      message: "L'envoi a échoué. Réessayez dans un instant.",
-    };
+  }
+
+  if (!shopEmailSent) {
+    if (!submissionId) return { status: "error", message: SEND_FAILED };
+    return { status: "success", message: RECEIVED_WITHOUT_EMAIL };
+  }
+
+  if (submissionId) {
+    try {
+      await markSubmissionEmailSent(await getDb(), submissionId);
+    } catch (err) {
+      console.error("[contact] marquage e-mail envoyé impossible", err);
+    }
   }
 
   // 2) Accusé de réception visiteur — best-effort : un échec ici ne doit pas

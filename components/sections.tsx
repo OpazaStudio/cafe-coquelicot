@@ -3,8 +3,10 @@ import Link from "next/link";
 import type { ShopProduct } from "@/lib/products";
 import type { HomeContent } from "@/lib/content/pages/home";
 import type { SiteContent } from "@/lib/content/pages/site";
+import Image from "next/image";
+import heroFleurs from "@/public/hero-fleurs.webp";
 import {
-  HeroStorefront, Bouquet, AboutFlorist, ProductFigure,
+  Bouquet, AboutFlorist, ProductFigure,
   IconWedding, IconEvent, IconSubscription, IconWorkshop, IconCorporate, IconDelivery,
   ArrowRight, ArrowDiag,
 } from "./illustrations";
@@ -43,7 +45,19 @@ export function Hero({ bg, content }: SectionProps & { content: HomeContent["her
     <section id="hero" data-section data-bg={bg} className="hero">
       <div className="hero__inner">
         <div className={`hero__media reveal${hasPhoto ? " hero__media--photo" : ""}`}>
-          <ContentImage image={content.image} fallback={<HeroStorefront />} sizes="(max-width: 900px) 100vw, 600px" />
+          <ContentImage
+            image={content.image}
+            fallback={
+              <Image
+                src={heroFleurs}
+                alt=""
+                priority
+                sizes="(max-width: 1100px) 100vw, 600px"
+                className="hero__cutout"
+              />
+            }
+            sizes="(max-width: 900px) 100vw, 600px"
+          />
         </div>
         <div className="hero__text">
           <h1 className="hero__display reveal">

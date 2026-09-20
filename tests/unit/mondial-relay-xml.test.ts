@@ -50,4 +50,14 @@ describe("parseShipmentResponse", () => {
   it("lève MondialRelayError sur statut d'erreur", () => {
     expect(() => parseShipmentResponse(err)).toThrow(MondialRelayError);
   });
+
+  it("remonte le message d'une erreur critique XML (réponse réelle de l'API)", () => {
+    const critical = `<ShipmentCreationResponse xmlns="http://www.example.org/Response"><StatusList><Status Code="10001" Level="Critical error" Message="Login et/ou mot de passe non valide." /></StatusList></ShipmentCreationResponse>`;
+    expect(() => parseShipmentResponse(critical)).toThrow("Login et/ou mot de passe non valide.");
+  });
+
+  it("remonte le message d'une erreur renvoyée en JSON (réponse sans en-tête Accept)", () => {
+    const json = `{"contextField":null,"outputOptionsField":null,"shipmentsListField":null,"statusListField":[{"codeField":"10066","levelField":"Error","messageField":"Aucun droit d'accès."}]}`;
+    expect(() => parseShipmentResponse(json)).toThrow("Aucun droit d'accès.");
+  });
 });

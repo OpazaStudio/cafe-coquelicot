@@ -10,7 +10,7 @@ export async function adminLogin(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Se connecter" }).click();
   await page.waitForURL("**/admin");
   await expect(
-    page.getByRole("heading", { name: "Dashboard" }),
+    page.getByRole("heading", { name: "Tableau de bord" }),
   ).toBeVisible();
 }
 

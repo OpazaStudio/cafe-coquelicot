@@ -10,6 +10,7 @@ export function ContactForm() {
     undefined,
   );
   const success = state?.status === "success";
+  const successMessage = state?.status === "success" ? state.message : undefined;
   const doneRef = useRef<HTMLDivElement>(null);
 
   // Au succès le formulaire est démonté : on déplace le focus sur la
@@ -34,7 +35,7 @@ export function ContactForm() {
           <>
             <p className="contact-form__done-title">merci ✿</p>
             <p className="contact-form__done-text">
-              Votre message est parti — on vous répond au plus vite.
+              {successMessage ?? "Votre message est parti — on vous répond au plus vite."}
             </p>
           </>
         )}

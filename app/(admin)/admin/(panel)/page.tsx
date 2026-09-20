@@ -58,7 +58,7 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Tableau de bord</h1>
         <p className="text-sm text-muted">
           Chiffres sur les commandes encaissées (payées, en préparation ou
           livrées).

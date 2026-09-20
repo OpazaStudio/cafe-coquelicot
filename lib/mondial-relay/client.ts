@@ -11,7 +11,7 @@ export function createMondialRelayClient(
       const body = buildShipmentXml(input, config);
       const res = await fetchImpl(`${config.apiUrl}/api/shipment`, {
         method: "POST",
-        headers: { "Content-Type": "application/xml" },
+        headers: { "Content-Type": "application/xml", Accept: "application/xml" },
         body,
       });
       if (!res.ok) {
