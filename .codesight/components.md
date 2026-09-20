@@ -33,6 +33,7 @@
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **SettingsForm** [client] — props: initial, groups, submit, savedLabel — `app/(admin)/admin/(panel)/settings-form.tsx`
+- **SoumissionsPage** — `app/(admin)/admin/(panel)/soumissions/page.tsx`
 - **Panel** — props: title, className — `app/(admin)/admin/(panel)/ui.tsx`
 - **Pill** — props: tone — `app/(admin)/admin/(panel)/ui.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`

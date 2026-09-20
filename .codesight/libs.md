@@ -45,6 +45,13 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/contact-submissions.ts`
+  - function saveContactSubmission: (db, input) => Promise<string>
+  - function markSubmissionEmailSent: (db, id) => Promise<void>
+  - function listContactSubmissions: (db) => Promise<ContactSubmissionRow[]>
+  - function setSubmissionRead: (db, id, read) => Promise<void>
+  - function deleteContactSubmission: (db, id) => Promise<void>
+  - type ContactSubmissionInput
 - `lib/content/fields.ts`
   - function definePage: (def) => PageDef<S>
   - function fieldMax: (field) => number
@@ -97,15 +104,23 @@
   - type ContactParse
   - type EmailContent
   - _...2 more_
+- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>
+- `lib/email/order.ts`
+  - function buildOrderAckEmail: (order, items, templates, context) => EmailContent
+  - function buildOrderShopEmail: (order, items, templates, context) => EmailContent
+  - type OrderEmailOrder
+  - type OrderEmailItem
+  - type OrderEmailContext
+  - type EmailContent
 - `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
 - `lib/email/templates.ts`
   - function escapeHtml: (value) => string
   - function headerSafe: (value) => string
+  - function fillTextVars: (template, vars) => string
+  - function fillHtmlVars: (template, vars) => string
+  - function paragraphsHtmlVars: (template, vars, style) => string
   - function fillText: (template, name) => string
-  - function fillHtml: (template, name) => string
-  - function paragraphsHtml: (template, name, style) => string
-  - type EmailTemplates
-  - _...2 more_
+  - _...7 more_
 - `lib/image-normalize.ts`
   - function targetSize: (width, height, maxEdge) => void
   - function extensionFor: (type) => string
@@ -125,7 +140,7 @@
   - type RelayShipmentResult
   - type SenderAddress
   - type MondialRelayConfig
-- `lib/mondial-relay/xml.ts` — function buildShipmentXml: (input, config) => string, function parseShipmentResponse: (xml) => RelayShipmentResult
+- `lib/mondial-relay/xml.ts` — function buildShipmentXml: (input, config) => string, function parseShipmentResponse: (raw) => RelayShipmentResult
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string
@@ -202,8 +217,8 @@
   - function keysForGroups: (groups) => SettingKey[]
   - function readSettingsForm: (formData, keys) => SettingsFormResult
   - function emailTemplatesFromSettings: (values) => EmailTemplates
-  - function shippingFeesFromSettings: (values) => ShippingFees
-  - _...13 more_
+  - function orderEmailContextFromSettings: (values) => OrderEmailContext
+  - _...14 more_
 - `lib/settings.ts`
   - function querySettings: (db) => Promise<Settings>
   - function saveSettings: (db, values) => Promise<void>

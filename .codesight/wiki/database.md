@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Schema shapes and field types extracted via AST. Read the actual schema source files before writing migrations or query logic.
 
-**drizzle** — 9 models
+**drizzle** — 10 models
 
 ### products
 
@@ -133,13 +133,25 @@ pk: `page` (text)
 - `page`: text _(pk)_
 - `data`: jsonb _(default, required)_
 
+### contact_submissions
+
+pk: `id` (uuid)
+
+- `id`: uuid _(pk)_
+- `name`: text _(required)_
+- `email`: text _(required)_
+- `phone`: text _(required)_
+- `message`: text _(required)_
+- `emailSent`: boolean _(default, required)_
+- `readAt`: timestamp
+
 ## Schema Source Files
 
 Read and edit these files when adding columns, creating migrations, or changing relations:
 
-- `tests/helpers/db.ts` — imported by **12** files
+- `tests/helpers/db.ts` — imported by **13** files
 - `lib/db/schema.ts` — imported by **7** files
-- `lib/db/client.ts` — imported by **6** files
+- `lib/db/client.ts` — imported by **7** files
 
 ---
 _Back to [overview.md](./overview.md)_

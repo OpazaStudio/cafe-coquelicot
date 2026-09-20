@@ -1,7 +1,9 @@
 import * as z from "zod";
+import type { OrderEmailContext } from "./email/order";
 import {
   DEFAULT_EMAIL_TEMPLATES,
   NAME_PLACEHOLDER,
+  NUMBER_PLACEHOLDER,
   type EmailTemplates,
 } from "./email/templates";
 import {
@@ -19,7 +21,9 @@ export type SettingGroup =
   | "mediator"
   | "shipping"
   | "email_ack"
-  | "email_shop";
+  | "email_shop"
+  | "email_order_ack"
+  | "email_order_shop";
 
 export type SettingField = {
   key: SettingKey;
@@ -41,6 +45,8 @@ export const SETTING_GROUPS: Record<SettingGroup, string> = {
   shipping: "Livraison",
   email_ack: "E-mail envoyé au visiteur (accusé de réception)",
   email_shop: "E-mail de notification reçu par la boutique",
+  email_order_ack: "E-mail de confirmation de commande envoyé au client",
+  email_order_shop: "E-mail de commande reçu par la boutique",
 };
 
 export const LEGAL_SETTING_GROUPS: SettingGroup[] = [
@@ -52,7 +58,12 @@ export const LEGAL_SETTING_GROUPS: SettingGroup[] = [
   "shipping",
 ];
 
-export const EMAIL_SETTING_GROUPS: SettingGroup[] = ["email_ack", "email_shop"];
+export const EMAIL_SETTING_GROUPS: SettingGroup[] = [
+  "email_order_ack",
+  "email_order_shop",
+  "email_ack",
+  "email_shop",
+];
 
 export const SETTING_KEYS = [
   "legal_name",
@@ -82,10 +93,17 @@ export const SETTING_KEYS = [
   "email_ack_signature",
   "email_shop_subject",
   "email_shop_heading",
+  "email_order_ack_subject",
+  "email_order_ack_body",
+  "email_order_ack_signature",
+  "email_order_shop_subject",
+  "email_order_shop_heading",
 ] as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[number];
 export type Settings = Record<SettingKey, string>;
+
+const ORDER_PLACEHOLDER_HINT = `${NAME_PLACEHOLDER} est remplacé par le nom du client et ${NUMBER_PLACEHOLDER} par le numéro de commande.`;
 
 export const SETTING_FIELDS: SettingField[] = [
   { key: "legal_name", label: "Raison sociale / nom commercial", group: "identity" },
@@ -187,6 +205,44 @@ export const SETTING_FIELDS: SettingField[] = [
     max: 200,
     hint: "Les coordonnées et le message du visiteur sont ajoutés automatiquement en dessous.",
   },
+  {
+    key: "email_order_ack_subject",
+    label: "Objet",
+    group: "email_order_ack",
+    max: 200,
+    hint: ORDER_PLACEHOLDER_HINT,
+  },
+  {
+    key: "email_order_ack_body",
+    label: "Message d'introduction",
+    group: "email_order_ack",
+    multiline: true,
+    rows: 8,
+    max: 4000,
+    hint: `${ORDER_PLACEHOLDER_HINT} Le récapitulatif (articles, totaux, livraison) est ajouté automatiquement en dessous.`,
+  },
+  {
+    key: "email_order_ack_signature",
+    label: "Signature",
+    group: "email_order_ack",
+    multiline: true,
+    rows: 3,
+    max: 500,
+  },
+  {
+    key: "email_order_shop_subject",
+    label: "Objet",
+    group: "email_order_shop",
+    max: 200,
+    hint: ORDER_PLACEHOLDER_HINT,
+  },
+  {
+    key: "email_order_shop_heading",
+    label: "Titre affiché en haut du message",
+    group: "email_order_shop",
+    max: 200,
+    hint: "Les coordonnées du client et le récapitulatif sont ajoutés automatiquement en dessous.",
+  },
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -217,6 +273,11 @@ export const DEFAULT_SETTINGS: Settings = {
   email_ack_signature: DEFAULT_EMAIL_TEMPLATES.ackSignature,
   email_shop_subject: DEFAULT_EMAIL_TEMPLATES.shopSubject,
   email_shop_heading: DEFAULT_EMAIL_TEMPLATES.shopHeading,
+  email_order_ack_subject: DEFAULT_EMAIL_TEMPLATES.orderAckSubject,
+  email_order_ack_body: DEFAULT_EMAIL_TEMPLATES.orderAckBody,
+  email_order_ack_signature: DEFAULT_EMAIL_TEMPLATES.orderAckSignature,
+  email_order_shop_subject: DEFAULT_EMAIL_TEMPLATES.orderShopSubject,
+  email_order_shop_heading: DEFAULT_EMAIL_TEMPLATES.orderShopHeading,
 };
 
 const MAX_SHORT = 500;
@@ -288,6 +349,21 @@ export function emailTemplatesFromSettings(values: Settings): EmailTemplates {
     ackSignature: values.email_ack_signature,
     shopSubject: values.email_shop_subject,
     shopHeading: values.email_shop_heading,
+    orderAckSubject: values.email_order_ack_subject,
+    orderAckBody: values.email_order_ack_body,
+    orderAckSignature: values.email_order_ack_signature,
+    orderShopSubject: values.email_order_shop_subject,
+    orderShopHeading: values.email_order_shop_heading,
+  };
+}
+
+export function orderEmailContextFromSettings(values: Settings): OrderEmailContext {
+  const city = [values.address_postal_code, values.address_city].filter(Boolean).join(" ");
+  return {
+    pickupAddress: [values.address_street, city].filter(Boolean).join(", "),
+    preparationDelay: values.preparation_delay,
+    shippingDelay: values.shipping_delay,
+    shippingDelayColissimo: values.shipping_delay_colissimo,
   };
 }
 

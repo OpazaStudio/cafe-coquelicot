@@ -12,6 +12,7 @@ import {
 } from "@/lib/settings-fields";
 
 const CUSTOM: EmailTemplates = {
+  ...DEFAULT_EMAIL_TEMPLATES,
   ackSubject: "Merci {{nom}} !",
   ackBody: "Coucou {{nom}},\n\nOn revient vers vous vite.",
   ackSignature: "Bises,\nL'atelier",

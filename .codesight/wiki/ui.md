@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**112 components** (react)
+**113 components** (react)
 
 ## Client Components
 
@@ -64,6 +64,7 @@
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
+- **SoumissionsPage** — `app/(admin)/admin/(panel)/soumissions/page.tsx`
 - **Panel** — props: title, className — `app/(admin)/admin/(panel)/ui.tsx`
 - **Pill** — props: tone — `app/(admin)/admin/(panel)/ui.tsx`
 - **LoginPage** — `app/(admin)/admin/login/page.tsx`

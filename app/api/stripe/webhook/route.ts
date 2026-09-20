@@ -3,6 +3,7 @@
 // (idempotent) pour le dev local sans `stripe listen`.
 import type Stripe from "stripe";
 import { getDb } from "@/lib/db/client";
+import { notifyOrderPaid } from "@/lib/email/notify-order";
 import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";
 import {
   cancelOrderBySession,
@@ -55,6 +56,11 @@ export async function POST(request: Request) {
             await ensureRelayShipment(db, order.id);
           } catch (err) {
             console.error("[mondial-relay] étiquette non générée (webhook)", err);
+          }
+          try {
+            await notifyOrderPaid(db, order.id);
+          } catch (err) {
+            console.error("[commande] e-mails non envoyés (webhook)", err);
           }
         }
       }

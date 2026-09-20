@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**43 library files** across 29 modules
+**46 library files** across 30 modules
 
 ## Content (5 files)
 
@@ -11,6 +11,14 @@
 - `lib/content/live.ts` — useLiveContent, ContentMessage, ReadyMessage, CONTENT_MESSAGE, READY_MESSAGE
 - `lib/content/server.ts` — queryPageContent, upsertPageContent, getPageContent
 - `lib/content/template.ts` — fillTemplate
+
+## Email (5 files)
+
+- `lib/email/templates.ts` — escapeHtml, headerSafe, fillTextVars, fillHtmlVars, paragraphsHtmlVars, fillText, …
+- `lib/email/contact.ts` — parseContactForm, buildShopEmail, buildAckEmail, ContactInput, ContactParse, EmailContent, …
+- `lib/email/order.ts` — buildOrderAckEmail, buildOrderShopEmail, OrderEmailOrder, OrderEmailItem, OrderEmailContext, EmailContent
+- `lib/email/resend.ts` — getMailer, ContactMailer
+- `lib/email/notify-order.ts` — notifyOrderPaid
 
 ## Mondial-relay (5 files)
 
@@ -25,12 +33,6 @@
 - `lib/db/admin-users.ts` — normalizeEmail, findAdminByEmail, findAdminById, setAdminPassword, seedAdminUser, MIN_PASSWORD_LENGTH
 - `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
-
-## Email (3 files)
-
-- `lib/email/contact.ts` — parseContactForm, buildShopEmail, buildAckEmail, ContactInput, ContactParse, EmailContent, …
-- `lib/email/templates.ts` — escapeHtml, headerSafe, fillText, fillHtml, paragraphsHtml, EmailTemplates, …
-- `lib/email/resend.ts` — getMailer, ContactMailer
 
 ## Analytics (2 files)
 
@@ -49,6 +51,10 @@
 ## Cart (1 files)
 
 - `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
+
+## Contact-submissions.ts (1 files)
+
+- `lib/contact-submissions.ts` — saveContactSubmission, markSubmissionEmailSent, listContactSubmissions, setSubmissionRead, deleteContactSubmission, ContactSubmissionInput
 
 ## Image-normalize.ts (1 files)
 
@@ -108,7 +114,7 @@
 
 ## Settings-fields.ts (1 files)
 
-- `lib/settings-fields.ts` — fieldMaxLength, fieldsForGroups, keysForGroups, readSettingsForm, emailTemplatesFromSettings, shippingFeesFromSettings, …
+- `lib/settings-fields.ts` — fieldMaxLength, fieldsForGroups, keysForGroups, readSettingsForm, emailTemplatesFromSettings, orderEmailContextFromSettings, …
 
 ## Settings.ts (1 files)
 

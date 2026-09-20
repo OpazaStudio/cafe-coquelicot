@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 9 models | 112 components | 43 lib files | 29 env vars | 6 middleware | 50% test coverage
-> **Token savings:** this file is ~8,000 tokens. Without it, AI exploration would cost ~67,100 tokens. **Saves ~59,100 tokens per conversation.**
-> **Last scanned:** 2026-09-20 08:55 — re-run after significant changes
+> 3 routes | 10 models | 113 components | 46 lib files | 29 env vars | 6 middleware | 54% test coverage
+> **Token savings:** this file is ~8,300 tokens. Without it, AI exploration would cost ~68,600 tokens. **Saves ~60,300 tokens per conversation.**
+> **Last scanned:** 2026-09-20 12:36 — re-run after significant changes
 
 ---
 
@@ -120,6 +120,15 @@
 - page: text (pk)
 - data: jsonb (default, required)
 
+### contact_submissions
+- id: uuid (pk)
+- name: text (required)
+- email: text (required)
+- phone: text (required)
+- message: text (required)
+- emailSent: boolean (default, required)
+- readAt: timestamp
+
 ---
 
 # Components
@@ -157,6 +166,7 @@
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **SettingsForm** [client] — props: initial, groups, submit, savedLabel — `app/(admin)/admin/(panel)/settings-form.tsx`
+- **SoumissionsPage** — `app/(admin)/admin/(panel)/soumissions/page.tsx`
 - **Panel** — props: title, className — `app/(admin)/admin/(panel)/ui.tsx`
 - **Pill** — props: tone — `app/(admin)/admin/(panel)/ui.tsx`
 - **LoginForm** [client] — `app/(admin)/admin/login/login-form.tsx`
@@ -286,6 +296,13 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/contact-submissions.ts`
+  - function saveContactSubmission: (db, input) => Promise<string>
+  - function markSubmissionEmailSent: (db, id) => Promise<void>
+  - function listContactSubmissions: (db) => Promise<ContactSubmissionRow[]>
+  - function setSubmissionRead: (db, id, read) => Promise<void>
+  - function deleteContactSubmission: (db, id) => Promise<void>
+  - type ContactSubmissionInput
 - `lib/content/fields.ts`
   - function definePage: (def) => PageDef<S>
   - function fieldMax: (field) => number
@@ -338,15 +355,23 @@
   - type ContactParse
   - type EmailContent
   - _...2 more_
+- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>
+- `lib/email/order.ts`
+  - function buildOrderAckEmail: (order, items, templates, context) => EmailContent
+  - function buildOrderShopEmail: (order, items, templates, context) => EmailContent
+  - type OrderEmailOrder
+  - type OrderEmailItem
+  - type OrderEmailContext
+  - type EmailContent
 - `lib/email/resend.ts` — function getMailer: () => ContactMailer | null, type ContactMailer
 - `lib/email/templates.ts`
   - function escapeHtml: (value) => string
   - function headerSafe: (value) => string
+  - function fillTextVars: (template, vars) => string
+  - function fillHtmlVars: (template, vars) => string
+  - function paragraphsHtmlVars: (template, vars, style) => string
   - function fillText: (template, name) => string
-  - function fillHtml: (template, name) => string
-  - function paragraphsHtml: (template, name, style) => string
-  - type EmailTemplates
-  - _...2 more_
+  - _...7 more_
 - `lib/image-normalize.ts`
   - function targetSize: (width, height, maxEdge) => void
   - function extensionFor: (type) => string
@@ -366,7 +391,7 @@
   - type RelayShipmentResult
   - type SenderAddress
   - type MondialRelayConfig
-- `lib/mondial-relay/xml.ts` — function buildShipmentXml: (input, config) => string, function parseShipmentResponse: (xml) => RelayShipmentResult
+- `lib/mondial-relay/xml.ts` — function buildShipmentXml: (input, config) => string, function parseShipmentResponse: (raw) => RelayShipmentResult
 - `lib/money.ts`
   - function formatEuros: (cents) => string
   - function formatFromPrice: (cents) => string
@@ -443,8 +468,8 @@
   - function keysForGroups: (groups) => SettingKey[]
   - function readSettingsForm: (formData, keys) => SettingsFormResult
   - function emailTemplatesFromSettings: (values) => EmailTemplates
-  - function shippingFeesFromSettings: (values) => ShippingFees
-  - _...13 more_
+  - function orderEmailContextFromSettings: (values) => OrderEmailContext
+  - _...14 more_
 - `lib/settings.ts`
   - function querySettings: (db) => Promise<Settings>
   - function saveSettings: (db, values) => Promise<void>
@@ -539,13 +564,13 @@
 
 ## Most Imported Files (change these carefully)
 
-- `app/(admin)/admin/(panel)/ui.tsx` — imported by **17** files
-- `tests/e2e/helpers.ts` — imported by **12** files
-- `tests/helpers/db.ts` — imported by **12** files
+- `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
+- `tests/e2e/helpers.ts` — imported by **13** files
+- `tests/helpers/db.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
+- `lib/db/client.ts` — imported by **7** files
 - `components/illustrations.tsx` — imported by **6** files
-- `lib/db/client.ts` — imported by **6** files
 - `app/(admin)/admin/(panel)/commandes/actions.ts` — imported by **4** files
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/settings-form.tsx` — imported by **4** files
@@ -562,13 +587,13 @@
 
 ## Import Map (who imports what)
 
-- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +12 more
-- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +7 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts` +7 more
+- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +13 more
+- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +8 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +8 more
 - `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
+- `lib/db/client.ts` ← `lib/contact-submissions.ts`, `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts` +2 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
-- `lib/db/client.ts` ← `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/admin-set-password.ts` +1 more
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/settings-form.tsx` ← `app/(admin)/admin/(panel)/emails/actions.ts`, `app/(admin)/admin/(panel)/emails/page.tsx`, `app/(admin)/admin/(panel)/parametres/actions.ts`, `app/(admin)/admin/(panel)/parametres/page.tsx`
@@ -577,8 +602,8 @@
 
 # Test Coverage
 
-> **50%** of routes and models are covered by tests
-> 80 test files found
+> **54%** of routes and models are covered by tests
+> 84 test files found
 
 ## Covered Routes
 
@@ -591,6 +616,7 @@
 - admin_users
 - settings
 - page_content
+- contact_submissions
 
 ---
 

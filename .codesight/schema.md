@@ -101,3 +101,12 @@
 ### page_content
 - page: text (pk)
 - data: jsonb (default, required)
+
+### contact_submissions
+- id: uuid (pk)
+- name: text (required)
+- email: text (required)
+- phone: text (required)
+- message: text (required)
+- emailSent: boolean (default, required)
+- readAt: timestamp

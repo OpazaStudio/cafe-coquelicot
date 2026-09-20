@@ -55,6 +55,12 @@ export default async function ConfirmationPage({
           } catch (err) {
             console.error("[mondial-relay] étiquette non générée (confirmation)", err);
           }
+          try {
+            const { notifyOrderPaid } = await import("@/lib/email/notify-order");
+            await notifyOrderPaid(db, paid.id);
+          } catch (err) {
+            console.error("[commande] e-mails non envoyés (confirmation)", err);
+          }
         }
       }
     } catch {
