@@ -64,7 +64,9 @@ export default async function ProduitsPage() {
                     </div>
                     <div>
                       <div className="font-semibold">{p.name}</div>
-                      <div className="text-xs text-muted">{p.tag}</div>
+                      <div className="line-clamp-1 text-xs text-muted">
+                        {p.description}
+                      </div>
                     </div>
                   </div>
                 </td>

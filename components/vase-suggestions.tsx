@@ -4,11 +4,12 @@
 // panier (même si un vase y est déjà). Quick-add du vase "nu" — le prix est
 // revalidé en base au checkout, comme tout produit.
 import type { ShopProduct } from "@/lib/products";
+import type { PanierContent } from "@/lib/content/pages/panier";
 import { useCart } from "@/lib/cart/cart-context";
 import { formatEuros } from "@/lib/money";
 import { ProductFigure, ArrowRight } from "./illustrations";
 
-export function VaseSuggestions({ vases }: { vases: ShopProduct[] }) {
+export function VaseSuggestions({ vases, copy }: { vases: ShopProduct[]; copy: PanierContent["vases"] }) {
   const { items, ready, add } = useCart();
   if (!ready || vases.length === 0 || items.length === 0) return null;
 
@@ -18,8 +19,8 @@ export function VaseSuggestions({ vases }: { vases: ShopProduct[] }) {
       data-testid="vase-suggestions"
       aria-label="Vases à ajouter"
     >
-      <h2 className="vase-suggest__title">Et pourquoi pas un vase&nbsp;?</h2>
-      <p className="vase-suggest__lead">Faits main, à offrir ou pour vos prochains bouquets.</p>
+      <h2 className="vase-suggest__title">{copy.title}</h2>
+      <p className="vase-suggest__lead">{copy.lead}</p>
       <ul className="vase-suggest__grid">
         {vases.map((v) => (
           <li key={v.slug} className="vase-suggest__card">

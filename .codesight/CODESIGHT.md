@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 8 models | 95 components | 37 lib files | 29 env vars | 6 middleware | 55% test coverage
-> **Token savings:** this file is ~6,900 tokens. Without it, AI exploration would cost ~59,600 tokens. **Saves ~52,700 tokens per conversation.**
-> **Last scanned:** 2026-09-19 17:15 — re-run after significant changes
+> 3 routes | 9 models | 112 components | 43 lib files | 29 env vars | 6 middleware | 50% test coverage
+> **Token savings:** this file is ~8,000 tokens. Without it, AI exploration would cost ~67,100 tokens. **Saves ~59,100 tokens per conversation.**
+> **Last scanned:** 2026-09-20 08:26 — re-run after significant changes
 
 ---
 
@@ -22,8 +22,9 @@
 - id: uuid (pk)
 - slug: text (unique, required)
 - name: text (required)
-- tag: text (required)
+- tag: text
 - description: text (required)
+- descriptionRich: jsonb
 - priceCents: integer (required)
 - category: productCategory (required)
 - badge: text
@@ -51,6 +52,17 @@
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
 - _relations_: productId -> products.id
+
+### product_images
+- id: uuid (pk)
+- productId: uuid (fk, required)
+- sizeId: uuid (fk)
+- colorId: uuid (fk)
+- path: text (required)
+- bgColor: text
+- alt: text
+- sortOrder: integer (default, required)
+- _relations_: productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ### orders
 - id: uuid (pk)
@@ -125,15 +137,23 @@
 - **StatusBadge** — props: status — `app/(admin)/admin/(panel)/commandes/status-badge.tsx`
 - **ComptePage** — `app/(admin)/admin/(panel)/compte/page.tsx`
 - **PasswordForm** [client] — `app/(admin)/admin/(panel)/compte/password-form.tsx`
+- **ContenuPage** — props: params — `app/(admin)/admin/(panel)/contenu/[page]/page.tsx`
+- **ContentEditor** [client] — props: page, initial, action — `app/(admin)/admin/(panel)/contenu/content-editor.tsx`
+- **ContentFields** [client] — props: fields, value, onChange, idPrefix — `app/(admin)/admin/(panel)/contenu/content-fields.tsx`
+- **ImageField** [client] — props: id, label, hint, value, onChange — `app/(admin)/admin/(panel)/contenu/image-field.tsx`
+- **ContenuIndex** — `app/(admin)/admin/(panel)/contenu/page.tsx`
+- **PreviewFrame** [client] — props: src, onLoad, ref — `app/(admin)/admin/(panel)/contenu/preview-frame.tsx`
 - **EmailsPage** — `app/(admin)/admin/(panel)/emails/page.tsx`
 - **AdminLayout** — `app/(admin)/admin/(panel)/layout.tsx`
 - **AdminDashboardPage** — `app/(admin)/admin/(panel)/page.tsx`
 - **ParametresPage** — `app/(admin)/admin/(panel)/parametres/page.tsx`
 - **EditProduitPage** — props: params — `app/(admin)/admin/(panel)/produits/[id]/page.tsx`
+- **ImageGallery** [client] — props: images, sizes, colors, onChange, nextKey — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
-- **ProductForm** [client] — props: action, product, initialSizes, initialColors, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **RichEditor** [client] — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
 - **SettingsForm** [client] — props: initial, groups, submit, savedLabel — `app/(admin)/admin/(panel)/settings-form.tsx`
@@ -155,15 +175,18 @@
 - **PanierPage** — `app/panier/page.tsx`
 - **BgTweakGate** [client] — `components/bg-tweak/gate.tsx`
 - **BgTweakPanel** [client] — `components/bg-tweak/panel.tsx`
-- **BoutiqueShop** [client] — props: catalogue — `components/boutique.tsx`
+- **BoutiqueShop** [client] — props: catalogue, copy — `components/boutique.tsx`
 - **CartLink** [client] — `components/cart-link.tsx`
-- **CartView** [client] — `components/cart-view.tsx`
+- **CartView** [client] — props: copy — `components/cart-view.tsx`
 - **CheckoutForm** [client] — props: fees — `components/checkout-form.tsx`
 - **ClearCart** [client] — `components/clear-cart.tsx`
 - **ConsentDefaultScript** — `components/consent/consent-default-script.tsx`
 - **CookieBanner** [client] — `components/consent/cookie-banner.tsx`
 - **ManageCookiesButton** [client] — `components/consent/manage-cookies-button.tsx`
 - **ContactForm** [client] — `components/contact-form.tsx`
+- **ContentImage** — props: image, fallback, sizes, className — `components/content/content-image.tsx`
+- **Lines** — props: text — `components/content/text.tsx`
+- **Paragraphs** — props: text, className — `components/content/text.tsx`
 - **Effects** [client] — `components/effects.tsx`
 - **HeroStorefront** — props: className — `components/illustrations.tsx`
 - **Bouquet** — props: variant, className — `components/illustrations.tsx`
@@ -196,16 +219,22 @@
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
-- **SiteHeader** — `components/sections.tsx`
-- **Hero** — props: bg — `components/sections.tsx`
-- **Shop** — props: bg, products — `components/sections.tsx`
-- **Gallery** — props: bg — `components/sections.tsx`
-- **Prestations** — props: bg — `components/sections.tsx`
-- **AtelierStrip** — props: bg — `components/sections.tsx`
-- **About** — props: bg — `components/sections.tsx`
-- **Contact** — props: bg — `components/sections.tsx`
-- **SiteFooter** — `components/sections.tsx`
-- **VaseSuggestions** [client] — props: vases — `components/vase-suggestions.tsx`
+- **RichText** — props: doc, fallback, className — `components/rich-text.tsx`
+- **SiteHeader** — props: nav — `components/sections.tsx`
+- **Hero** — props: bg, content — `components/sections.tsx`
+- **Shop** — props: bg, content, products — `components/sections.tsx`
+- **Gallery** — props: bg, content — `components/sections.tsx`
+- **Prestations** — props: bg, content — `components/sections.tsx`
+- **AtelierStrip** — props: bg, content — `components/sections.tsx`
+- **About** — props: bg, content — `components/sections.tsx`
+- **Contact** — props: bg, content — `components/sections.tsx`
+- **SiteFooter** — props: footer — `components/sections.tsx`
+- **VaseSuggestions** [client] — props: vases, copy — `components/vase-suggestions.tsx`
+- **BoutiqueView** [client] — props: content, chrome, catalogue — `components/views/boutique-view.tsx`
+- **CheckoutView** [client] — props: content, chrome, fees — `components/views/checkout-view.tsx`
+- **ConfirmationView** [client] — props: content, chrome, state, vars — `components/views/confirmation-view.tsx`
+- **HomeView** [client] — props: content, chrome, products — `components/views/home-view.tsx`
+- **PanierView** [client] — props: content, chrome, vases — `components/views/panier-view.tsx`
 - **CartProvider** [client] — `lib/cart/cart-context.tsx`
 
 ---
@@ -257,6 +286,32 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/content/fields.ts`
+  - function definePage: (def) => PageDef<S>
+  - function fieldMax: (field) => number
+  - function pageShape: (def) => z.ZodType<ContentOf<D>>
+  - function pageStrict: (def) => z.ZodType<ContentOf<D>>
+  - function firstIssue: (error) => string
+  - function mergeDefaults: (defaults, data) => T
+  - _...22 more_
+- `lib/content/live.ts`
+  - function useLiveContent: (page, initial) => ContentFor<P>
+  - type ContentMessage
+  - type ReadyMessage
+  - const CONTENT_MESSAGE
+  - const READY_MESSAGE
+- `lib/content/registry.ts`
+  - function isPageSlug: (value) => value is PageSlug
+  - function pageFromAdminSlug: (value) => PageSlug | null
+  - function adminHref: (slug) => string
+  - type PageSlug
+  - type ContentFor
+  - const PAGES
+  - _...2 more_
+- `lib/content/server.ts`
+  - function queryPageContent: (db, page) => Promise<ContentFor<P>>
+  - function upsertPageContent: (db, page, data) => Promise<void>
+  - const getPageContent
 - `lib/content/template.ts` — function fillTemplate: (text, vars, string>) => string
 - `lib/db/admin-users.ts`
   - function normalizeEmail: (email) => string
@@ -292,6 +347,14 @@
   - function paragraphsHtml: (template, name, style) => string
   - type EmailTemplates
   - _...2 more_
+- `lib/image-normalize.ts`
+  - function targetSize: (width, height, maxEdge) => void
+  - function extensionFor: (type) => string
+  - function renameTo: (name, type) => string
+  - function normalizeImageFile: (file) => Promise<File>
+  - function isAllowedOutput: (type) => type is AllowedImageType
+  - const MAX_IMAGE_EDGE
+  - _...1 more_
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
@@ -347,7 +410,7 @@
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
-  - _...10 more_
+  - _...11 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -357,6 +420,14 @@
   - const loginLimiter: RateLimiter
   - _...1 more_
 - `lib/request-ip.ts` — function getRequestIp: () => Promise<string>
+- `lib/rich-text/schema.ts`
+  - function emptyRichDoc: () => RichDoc
+  - function sanitizeRichDoc: (value) => RichDoc | null
+  - function richDocFromPlainText: (text) => RichDoc
+  - function parseRichDoc: (value) => RichDoc | null
+  - function richDocToPlainText: (doc) => string
+  - function isRichDocEmpty: (doc) => boolean
+  - _...9 more_
 - `lib/security-headers.ts` — function securityHeaders: (isProduction) => HttpHeader[], type HttpHeader
 - `lib/seo.ts`
   - function buildRobots: (siteUrl) => MetadataRoute.Robots
@@ -468,9 +539,10 @@
 
 ## Most Imported Files (change these carefully)
 
-- `app/(admin)/admin/(panel)/ui.tsx` — imported by **14** files
-- `tests/e2e/helpers.ts` — imported by **11** files
-- `tests/helpers/db.ts` — imported by **11** files
+- `app/(admin)/admin/(panel)/ui.tsx` — imported by **17** files
+- `tests/e2e/helpers.ts` — imported by **12** files
+- `tests/helpers/db.ts` — imported by **12** files
+- `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
 - `components/illustrations.tsx` — imported by **6** files
 - `lib/db/client.ts` — imported by **6** files
@@ -478,36 +550,35 @@
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/settings-form.tsx` — imported by **4** files
 - `app/(admin)/admin/(panel)/produits/actions.ts` — imported by **4** files
+- `components/content/text.tsx` — imported by **4** files
 - `components/legal/legal-value.tsx` — imported by **4** files
 - `components/legal/legal-page.tsx` — imported by **4** files
+- `lib/content/registry.ts` — imported by **4** files
 - `lib/uuid.ts` — imported by **3** files
 - `lib/mondial-relay/types.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
-- `app/(admin)/admin/(panel)/produits/product-form.tsx` — imported by **2** files
-- `lib/db/seed-data.ts` — imported by **2** files
-- `lib/db/admin-users.ts` — imported by **2** files
-- `lib/mondial-relay/config.ts` — imported by **2** files
-- `lib/settings-fields.ts` — imported by **2** files
+- `app/(admin)/admin/(panel)/contenu/actions.ts` — imported by **2** files
+- `app/(admin)/admin/(panel)/produits/image-upload.tsx` — imported by **2** files
 
 ## Import Map (who imports what)
 
-- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +9 more
-- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +6 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts`, `tests/unit/product-image-columns.test.ts` +6 more
+- `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +12 more
+- `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +7 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts`, `tests/unit/orders.test.ts` +7 more
+- `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `components/illustrations.tsx` ← `components/boutique.tsx`, `components/cart-view.tsx`, `components/checkout-form.tsx`, `components/contact-form.tsx`, `components/product-detail.tsx` +1 more
 - `lib/db/client.ts` ← `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts`, `scripts/admin-set-password.ts` +1 more
 - `app/(admin)/admin/(panel)/commandes/actions.ts` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - `app/(admin)/admin/(panel)/commandes/status-badge.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx`, `app/(admin)/admin/(panel)/page.tsx`
 - `app/(admin)/admin/(panel)/settings-form.tsx` ← `app/(admin)/admin/(panel)/emails/actions.ts`, `app/(admin)/admin/(panel)/emails/page.tsx`, `app/(admin)/admin/(panel)/parametres/actions.ts`, `app/(admin)/admin/(panel)/parametres/page.tsx`
-- `app/(admin)/admin/(panel)/produits/actions.ts` ← `app/(admin)/admin/(panel)/produits/[id]/page.tsx`, `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`, `app/(admin)/admin/(panel)/produits/page.tsx`, `app/(admin)/admin/(panel)/produits/product-form.tsx`
 
 ---
 
 # Test Coverage
 
-> **55%** of routes and models are covered by tests
-> 64 test files found
+> **50%** of routes and models are covered by tests
+> 80 test files found
 
 ## Covered Routes
 

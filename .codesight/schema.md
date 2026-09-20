@@ -4,8 +4,9 @@
 - id: uuid (pk)
 - slug: text (unique, required)
 - name: text (required)
-- tag: text (required)
+- tag: text
 - description: text (required)
+- descriptionRich: jsonb
 - priceCents: integer (required)
 - category: productCategory (required)
 - badge: text
@@ -33,6 +34,17 @@
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
 - _relations_: productId -> products.id
+
+### product_images
+- id: uuid (pk)
+- productId: uuid (fk, required)
+- sizeId: uuid (fk)
+- colorId: uuid (fk)
+- path: text (required)
+- bgColor: text
+- alt: text
+- sortOrder: integer (default, required)
+- _relations_: productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ### orders
 - id: uuid (pk)

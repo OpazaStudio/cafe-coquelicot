@@ -12,11 +12,9 @@ export function securityHeaders(
   isProduction = process.env.NODE_ENV === "production",
 ): HttpHeader[] {
   const headers: HttpHeader[] = [
-    // Anti-clickjacking : le back-office ne doit jamais être embarquable
-    // (clics volés sur « Supprimer » ou sur un changement de statut).
-    { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+    { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
     // Doublon volontaire : navigateurs sans support de frame-ancestors.
-    { key: "X-Frame-Options", value: "DENY" },
+    { key: "X-Frame-Options", value: "SAMEORIGIN" },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     // `geolocation` reste autorisée : le widget Mondial Relay l'utilise pour

@@ -13,9 +13,8 @@ test.describe("CRUD produits", () => {
     await page.getByRole("link", { name: "+ Nouveau produit" }).click();
     await page.waitForURL("**/admin/produits/nouveau");
     await page.getByLabel("Nom").fill("pivoine du test");
-    await page.getByLabel("Sous-titre").fill("Bouquet éphémère");
     await page
-      .getByLabel("Description")
+      .getByLabel("Description du produit")
       .fill("Pivoines de test, assemblées par Playwright.");
     await page.getByLabel("Prix de base (€)").fill("29,90");
     await page.getByLabel("Catégorie").selectOption("frais");
@@ -63,8 +62,7 @@ test.describe("CRUD produits", () => {
     await adminLogin(page);
     await page.goto("/admin/produits/nouveau");
     await page.getByLabel("Nom").fill("produit cassé");
-    await page.getByLabel("Sous-titre").fill("x");
-    await page.getByLabel("Description").fill("x");
+    await page.getByLabel("Description du produit").fill("x");
     await page.getByLabel("Prix de base (€)").fill("pas-un-prix");
     await page.getByRole("button", { name: "Créer le produit" }).click();
     await expect(page.getByText("Prix invalide — ex : 48 ou 48,50.")).toBeVisible();
@@ -77,9 +75,8 @@ test.describe("CRUD produits", () => {
     await adminLogin(page);
     await page.goto("/admin/produits/nouveau");
     await page.getByLabel("Nom").fill("bouquet variantes test");
-    await page.getByLabel("Sous-titre").fill("Décliné");
     await page
-      .getByLabel("Description")
+      .getByLabel("Description du produit")
       .fill("Produit variantisé par Playwright.");
     await page.getByLabel("Prix de base (€)").fill("20");
     await page.getByLabel("Catégorie").selectOption("frais");

@@ -45,6 +45,32 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/content/fields.ts`
+  - function definePage: (def) => PageDef<S>
+  - function fieldMax: (field) => number
+  - function pageShape: (def) => z.ZodType<ContentOf<D>>
+  - function pageStrict: (def) => z.ZodType<ContentOf<D>>
+  - function firstIssue: (error) => string
+  - function mergeDefaults: (defaults, data) => T
+  - _...22 more_
+- `lib/content/live.ts`
+  - function useLiveContent: (page, initial) => ContentFor<P>
+  - type ContentMessage
+  - type ReadyMessage
+  - const CONTENT_MESSAGE
+  - const READY_MESSAGE
+- `lib/content/registry.ts`
+  - function isPageSlug: (value) => value is PageSlug
+  - function pageFromAdminSlug: (value) => PageSlug | null
+  - function adminHref: (slug) => string
+  - type PageSlug
+  - type ContentFor
+  - const PAGES
+  - _...2 more_
+- `lib/content/server.ts`
+  - function queryPageContent: (db, page) => Promise<ContentFor<P>>
+  - function upsertPageContent: (db, page, data) => Promise<void>
+  - const getPageContent
 - `lib/content/template.ts` — function fillTemplate: (text, vars, string>) => string
 - `lib/db/admin-users.ts`
   - function normalizeEmail: (email) => string
@@ -80,6 +106,14 @@
   - function paragraphsHtml: (template, name, style) => string
   - type EmailTemplates
   - _...2 more_
+- `lib/image-normalize.ts`
+  - function targetSize: (width, height, maxEdge) => void
+  - function extensionFor: (type) => string
+  - function renameTo: (name, type) => string
+  - function normalizeImageFile: (file) => Promise<File>
+  - function isAllowedOutput: (type) => type is AllowedImageType
+  - const MAX_IMAGE_EDGE
+  - _...1 more_
 - `lib/item-label.ts` — function composeItemName: (name, sizeLabel?, colorLabel?) => string
 - `lib/mondial-relay/client.ts` — function createMondialRelayClient: (config, fetchImpl) => MondialRelayClient, function getMondialRelayClient: () => MondialRelayClient | null
 - `lib/mondial-relay/config.ts` — function getMondialRelayConfig: () => MondialRelayConfig | null, const DEFAULT_PARCEL_WEIGHT_GR
@@ -135,7 +169,7 @@
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
   - function getProductWithVariants: (db, id) => Promise<
-  - _...10 more_
+  - _...11 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -145,6 +179,14 @@
   - const loginLimiter: RateLimiter
   - _...1 more_
 - `lib/request-ip.ts` — function getRequestIp: () => Promise<string>
+- `lib/rich-text/schema.ts`
+  - function emptyRichDoc: () => RichDoc
+  - function sanitizeRichDoc: (value) => RichDoc | null
+  - function richDocFromPlainText: (text) => RichDoc
+  - function parseRichDoc: (value) => RichDoc | null
+  - function richDocToPlainText: (doc) => string
+  - function isRichDocEmpty: (doc) => boolean
+  - _...9 more_
 - `lib/security-headers.ts` — function securityHeaders: (isProduction) => HttpHeader[], type HttpHeader
 - `lib/seo.ts`
   - function buildRobots: (siteUrl) => MetadataRoute.Robots

@@ -4,7 +4,7 @@
 // les lignes retirées disparaissent, les existantes sont mises à jour.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { asc, eq } from "drizzle-orm";
-import { productColors, products, productSizes } from "@/lib/db/schema";
+import { productColors, productImages, products, productSizes } from "@/lib/db/schema";
 import { createTestDb } from "../helpers/db";
 import type { Db } from "@/lib/db/client";
 
@@ -29,24 +29,36 @@ async function solana() {
   return row;
 }
 
+let keyCounter = 0;
+type Draft = { id?: string; key?: string };
+
+function withKeys<T extends Draft>(rows: T[]) {
+  return rows.map((r) => ({ key: r.key ?? r.id ?? `k${keyCounter++}`, ...r }));
+}
+
 function formFor(
-  row: { name: string; tag: string; description: string; category: string },
-  sizes: unknown[],
-  colors: unknown[],
+  row: { name: string; description: string; category: string },
+  sizes: (Draft & { label: string; price: string; active: boolean })[],
+  colors: (Draft & { label: string; illustrationVariant: number; active: boolean })[],
+  images: unknown[] = [],
 ): FormData {
   const fd = new FormData();
   fd.set("name", row.name);
-  fd.set("tag", row.tag);
-  fd.set("description", row.description);
+  fd.set(
+    "descriptionRich",
+    JSON.stringify({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: row.description }] }],
+    }),
+  );
   fd.set("price", "34");
   fd.set("category", row.category);
   fd.set("badge", "");
   fd.set("illustrationVariant", "0");
-  fd.set("imagePath", "");
-  fd.set("imageBgColor", "");
   fd.set("active", "on");
-  fd.set("sizes", JSON.stringify(sizes));
-  fd.set("colors", JSON.stringify(colors));
+  fd.set("sizes", JSON.stringify(withKeys(sizes)));
+  fd.set("colors", JSON.stringify(withKeys(colors)));
+  fd.set("images", JSON.stringify(images));
   return fd;
 }
 
@@ -114,12 +126,12 @@ describe("syncChildren", () => {
     expect(after[0].priceCents).toBe(2500);
   });
 
-  it("insère plusieurs coloris avec leurs champs image", async () => {
+  it("insère plusieurs coloris dans l'ordre de soumission", async () => {
     const p = await solana();
     await submit(
       formFor(p, [], [
-        { label: "Rose", illustrationVariant: 1, imagePath: "", imageBgColor: "#fff", active: true },
-        { label: "Bleu", illustrationVariant: 2, imagePath: "", imageBgColor: "", active: true },
+        { key: "c-rose", label: "Rose", illustrationVariant: 1, active: true },
+        { key: "c-bleu", label: "Bleu", illustrationVariant: 2, active: false },
       ]),
       p.id,
     );
@@ -131,7 +143,152 @@ describe("syncChildren", () => {
       .orderBy(asc(productColors.sortOrder));
     expect(rows.map((r) => r.label)).toEqual(["Rose", "Bleu"]);
     expect(rows.map((r) => r.illustrationVariant)).toEqual([1, 2]);
-    expect(rows[0].imageBgColor).toBe("#fff");
-    expect(rows[1].imageBgColor).toBeNull();
+    expect(rows.map((r) => r.active)).toEqual([true, false]);
+  });
+
+  it("rattache une photo à un coloris créé dans la même soumission", async () => {
+    const p = await solana();
+    const a = "11111111-1111-1111-1111-111111111111.webp";
+    await submit(
+      formFor(
+        p,
+        [],
+        [
+          { key: "c-rose", label: "Rose", illustrationVariant: 1, active: true },
+          { key: "c-bleu", label: "Bleu", illustrationVariant: 2, active: true },
+        ],
+        [{ path: a, bgColor: null, alt: null, sizeKey: null, colorKey: "c-bleu" }],
+      ),
+      p.id,
+    );
+
+    const [img] = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, p.id));
+    const cols = await db
+      .select()
+      .from(productColors)
+      .where(eq(productColors.productId, p.id))
+      .orderBy(asc(productColors.sortOrder));
+    expect(img.colorId).toBe(cols.find((c) => c.label === "Bleu")!.id);
+  });
+
+  it("détache la photo quand son coloris est supprimé", async () => {
+    const p = await solana();
+    const a = "11111111-1111-1111-1111-111111111111.webp";
+    await submit(
+      formFor(
+        p,
+        [],
+        [{ key: "c-rose", label: "Rose", illustrationVariant: 1, active: true }],
+        [{ path: a, bgColor: null, alt: null, sizeKey: null, colorKey: "c-rose" }],
+      ),
+      p.id,
+    );
+    const [before] = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, p.id));
+    expect(before.colorId).not.toBeNull();
+
+    const [img] = await db
+      .select({ id: productImages.id })
+      .from(productImages)
+      .where(eq(productImages.productId, p.id));
+    await submit(
+      formFor(p, [], [], [
+        { id: img.id, path: a, bgColor: null, alt: null, sizeKey: null, colorKey: "c-rose" },
+      ]),
+      p.id,
+    );
+
+    const [after] = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, p.id));
+    expect(after.colorId).toBeNull();
+  });
+
+  it("enregistre la galerie dans l'ordre soumis et recopie la couverture", async () => {
+    const p = await solana();
+    const a = "11111111-1111-1111-1111-111111111111.webp";
+    const b = "22222222-2222-2222-2222-222222222222.png";
+    await submit(
+      formFor(p, [], [], [
+        { path: a, bgColor: "#fff", alt: "De face", sizeKey: null },
+        { path: b, bgColor: null, alt: null, sizeKey: null },
+      ]),
+      p.id,
+    );
+
+    const rows = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, p.id))
+      .orderBy(asc(productImages.sortOrder));
+    expect(rows.map((r) => r.path)).toEqual([a, b]);
+    expect(rows.map((r) => r.sortOrder)).toEqual([0, 1]);
+    expect(rows[0].alt).toBe("De face");
+    expect(rows[0].bgColor).toBe("#fff");
+
+    const [row] = await db.select().from(products).where(eq(products.id, p.id));
+    expect(row.imagePath).toBe(a);
+    expect(row.imageBgColor).toBe("#fff");
+  });
+
+  it("efface la couverture quand la galerie est vidée", async () => {
+    const p = await solana();
+    const a = "11111111-1111-1111-1111-111111111111.webp";
+    await submit(formFor(p, [], [], [{ path: a, bgColor: null, alt: null, sizeKey: null }]), p.id);
+    await submit(formFor(p, [], [], []), p.id);
+
+    const [row] = await db.select().from(products).where(eq(products.id, p.id));
+    expect(row.imagePath).toBeNull();
+    expect(row.imageBgColor).toBeNull();
+  });
+
+  it("rattache une photo à une taille créée dans la même soumission", async () => {
+    const p = await solana();
+    const a = "11111111-1111-1111-1111-111111111111.webp";
+    await submit(
+      formFor(
+        p,
+        [
+          { key: "s-petit", label: "Petit", price: "29", active: true },
+          { key: "s-grand", label: "Grand", price: "42", active: true },
+        ],
+        [],
+        [{ path: a, bgColor: null, alt: null, sizeKey: "s-grand" }],
+      ),
+      p.id,
+    );
+
+    const [img] = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, p.id));
+    const sizes = await db
+      .select()
+      .from(productSizes)
+      .where(eq(productSizes.productId, p.id))
+      .orderBy(asc(productSizes.sortOrder));
+    const grand = sizes.find((s) => s.label === "Grand");
+    expect(img.sizeId).toBe(grand!.id);
+  });
+
+  it("laisse la photo sans taille quand la taille visée a été retirée", async () => {
+    const p = await solana();
+    const a = "11111111-1111-1111-1111-111111111111.webp";
+    await submit(
+      formFor(p, [], [], [{ path: a, bgColor: null, alt: null, sizeKey: "s-disparue" }]),
+      p.id,
+    );
+
+    const [img] = await db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, p.id));
+    expect(img.sizeId).toBeNull();
   });
 });

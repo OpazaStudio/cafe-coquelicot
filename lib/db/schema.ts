@@ -1,7 +1,9 @@
+import type { RichDoc } from "../rich-text/schema";
 import {
   boolean,
   date,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -42,8 +44,9 @@ export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
-  tag: text("tag").notNull(),
+  tag: text("tag"),
   description: text("description").notNull(),
+  descriptionRich: jsonb("description_rich").$type<RichDoc>(),
   priceCents: integer("price_cents").notNull(),
   category: productCategory("category").notNull(),
   badge: text("badge"),
@@ -88,6 +91,26 @@ export const productColors = pgTable("product_colors", {
   imageBgColor: text("image_bg_color"),
   sortOrder: integer("sort_order").notNull().default(0),
   active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const productImages = pgTable("product_images", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  sizeId: uuid("size_id").references(() => productSizes.id, {
+    onDelete: "set null",
+  }),
+  colorId: uuid("color_id").references(() => productColors.id, {
+    onDelete: "set null",
+  }),
+  path: text("path").notNull(),
+  bgColor: text("bg_color"),
+  alt: text("alt"),
+  sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -177,11 +200,21 @@ export const settings = pgTable("settings", {
     .defaultNow(),
 });
 
+export const pageContent = pgTable("page_content", {
+  page: text("page").primaryKey(),
+  data: jsonb("data").$type<Record<string, unknown>>().notNull().default({}),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type ProductRow = typeof products.$inferSelect;
 export type NewProductRow = typeof products.$inferInsert;
 export type ProductSizeRow = typeof productSizes.$inferSelect;
 export type NewProductSizeRow = typeof productSizes.$inferInsert;
 export type ProductColorRow = typeof productColors.$inferSelect;
+export type ProductImageRow = typeof productImages.$inferSelect;
+export type NewProductImageRow = typeof productImages.$inferInsert;
 export type NewProductColorRow = typeof productColors.$inferInsert;
 export type OrderRow = typeof orders.$inferSelect;
 export type NewOrderRow = typeof orders.$inferInsert;
@@ -190,6 +223,7 @@ export type NewOrderItemRow = typeof orderItems.$inferInsert;
 export type AdminUserRow = typeof adminUsers.$inferSelect;
 export type NewAdminUserRow = typeof adminUsers.$inferInsert;
 export type SettingRow = typeof settings.$inferSelect;
+export type PageContentRow = typeof pageContent.$inferSelect;
 
 export type ProductCategory = (typeof productCategory.enumValues)[number];
 export type OrderStatus = (typeof orderStatus.enumValues)[number];

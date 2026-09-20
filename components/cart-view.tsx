@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import type { PanierContent } from "@/lib/content/pages/panier";
 import { useCart } from "@/lib/cart/cart-context";
 import { formatEuros } from "@/lib/money";
 import { ArrowRight } from "./illustrations";
+import { Lines } from "./content/text";
 
-export function CartView() {
+export function CartView({ copy }: { copy: { empty: PanierContent["empty"]; summary: PanierContent["summary"] } }) {
   const { items, count, subtotalCents, ready, changeQty, remove } = useCart();
 
   if (!ready) {
@@ -19,9 +21,9 @@ export function CartView() {
   if (items.length === 0) {
     return (
       <div className="cart-empty reveal is-visible">
-        <p className="body body--lg">Votre panier est vide pour l&apos;instant.</p>
+        <p className="body body--lg">{copy.empty.text}</p>
         <Link href="/boutique" className="btn btn--filled" style={{ marginTop: 24 }}>
-          Découvrir la boutique <ArrowRight />
+          {copy.empty.cta} <ArrowRight />
         </Link>
       </div>
     );
@@ -84,14 +86,13 @@ export function CartView() {
           <span data-testid="cart-subtotal">{formatEuros(subtotalCents)}</span>
         </div>
         <p className="cart-summary__note">
-          Livraison en point relais Mondial Relay ou à domicile par Colissimo —
-          frais affichés à l&apos;étape suivante.
+          <Lines text={copy.summary.note} />
         </p>
         <Link href="/checkout" className="btn btn--filled cart-summary__cta">
-          Commander <ArrowRight />
+          {copy.summary.cta} <ArrowRight />
         </Link>
         <Link href="/boutique" className="link-arrow">
-          Continuer mes achats
+          {copy.summary.continue}
         </Link>
       </aside>
     </div>

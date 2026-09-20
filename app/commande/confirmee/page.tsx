@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { SiteHeader, SiteFooter } from "@/components/sections";
-import { ClearCart } from "@/components/clear-cart";
-import { PurchaseTracking } from "@/components/purchase-tracking";
-import { ArrowRight } from "@/components/illustrations";
+import { ConfirmationView, type ConfirmationState } from "@/components/views/confirmation-view";
 import { getDb } from "@/lib/db/client";
 import { composeItemName } from "@/lib/item-label";
-import { formatEuros } from "@/lib/money";
 import {
   getOrderBySessionId,
   markOrderPaidBySession,
 } from "@/lib/orders";
 import { getStripe } from "@/lib/stripe";
+import { getPageContent } from "@/lib/content/server";
+import { getSettings, DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Commande confirmée",
@@ -19,6 +16,15 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+async function loadSettings(): Promise<Settings> {
+  try {
+    return await getSettings();
+  } catch (err) {
+    console.error("[confirmation] lecture des paramètres impossible", err);
+    return DEFAULT_SETTINGS;
+  }
+}
 
 export default async function ConfirmationPage({
   searchParams,
@@ -57,119 +63,41 @@ export default async function ConfirmationPage({
     data = await getOrderBySessionId(db, sessionId);
   }
 
-  return (
-    <>
-      <SiteHeader />
-      <main id="contenu" tabIndex={-1}>
-        <section data-section data-bg="linen" className="cart-page">
-          <div className="container">
-            {data && data.order.status !== "pending" && data.order.status !== "cancelled" ? (
-              <>
-                <ClearCart />
-                <PurchaseTracking
-                  transactionId={data.order.number}
-                  valueCents={data.order.totalCents}
-                  shippingCents={data.order.deliveryFeeCents}
-                  items={data.items.map((item) => {
-                    const variant = [
-                      item.sizeLabelSnapshot,
-                      item.colorLabelSnapshot,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ");
-                    return {
-                      item_id: item.productId ?? item.nameSnapshot,
-                      item_name: item.nameSnapshot,
-                      price: item.priceCentsSnapshot / 100,
-                      quantity: item.qty,
-                      ...(variant ? { item_variant: variant } : {}),
-                    };
-                  })}
-                />
-                <h1 className="display cart-page__title">
-                  merci !
-                  <span className="script">c&apos;est commandé.</span>
-                </h1>
-                <div className="confirm-card" data-testid="order-confirmation">
-                  <p className="eyebrow">
-                    Commande {data.order.number} — payée
-                  </p>
-                  <ul className="confirm-card__items">
-                    {data.items.map((item) => (
-                      <li key={item.id} className="cart-summary__row">
-                        <span>
-                          {composeItemName(
-                            item.nameSnapshot,
-                            item.sizeLabelSnapshot,
-                            item.colorLabelSnapshot,
-                          )}{" "}
-                          × {item.qty}
-                        </span>
-                        <span>
-                          {formatEuros(item.priceCentsSnapshot * item.qty)}
-                        </span>
-                      </li>
-                    ))}
-                    {data.order.deliveryFeeCents > 0 && (
-                      <li className="cart-summary__row">
-                        <span>Envoi postal</span>
-                        <span>{formatEuros(data.order.deliveryFeeCents)}</span>
-                      </li>
-                    )}
-                    {data.order.cardFeeCents > 0 && (
-                      <li className="cart-summary__row">
-                        <span>Carte manuscrite</span>
-                        <span>{formatEuros(data.order.cardFeeCents)}</span>
-                      </li>
-                    )}
-                  </ul>
-                  <div className="cart-summary__row cart-summary__row--total">
-                    <span>Total payé</span>
-                    <span>{formatEuros(data.order.totalCents)}</span>
-                  </div>
-                  <p className="cart-summary__note">
-                    Un email de confirmation Stripe a été envoyé à{" "}
-                    {data.order.customerEmail}.{" "}
-                    {data.order.fulfillment === "poste"
-                      ? "Votre commande partira par Colissimo à votre domicile très vite."
-                      : data.order.fulfillment === "mondial_relay"
-                        ? "Votre commande partira en point relais Mondial Relay très vite."
-                        : "Votre commande vous attendra à l'atelier, 12 rue du Gabut."}
-                  </p>
-                </div>
-              </>
-            ) : data ? (
-              <>
-                <h1 className="display cart-page__title">
-                  un instant
-                  <span className="script">paiement en cours…</span>
-                </h1>
-                <p className="body body--lg">
-                  Le paiement de la commande {data.order.number} est en cours de
-                  validation. Rechargez cette page dans un instant.
-                </p>
-              </>
-            ) : (
-              <>
-                <h1 className="display cart-page__title">
-                  hmm…
-                  <span className="script">commande introuvable</span>
-                </h1>
-                <p className="body body--lg">
-                  Nous ne retrouvons pas cette commande. Si vous avez été
-                  débité·e, écrivez-nous : bonjour@coquelicot-lr.fr.
-                </p>
-              </>
-            )}
-            <p style={{ marginTop: 40 }}>
-              <Link href="/boutique" className="link-arrow">
-                Retour à la boutique <ArrowRight />
-              </Link>
-            </p>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </>
-  );
+  const [content, chrome, settings] = await Promise.all([
+    getPageContent("confirmation"),
+    getPageContent("site"),
+    loadSettings(),
+  ]);
+  const vars = {
+    adresse: [settings.address_street, [settings.address_postal_code, settings.address_city].filter(Boolean).join(" ")]
+      .filter(Boolean)
+      .join(", "),
+    contact: settings.contact_email,
+  };
+  const state: ConfirmationState =
+    data && data.order.status !== "pending" && data.order.status !== "cancelled"
+      ? {
+          kind: "paid",
+          number: data.order.number,
+          totalCents: data.order.totalCents,
+          deliveryFeeCents: data.order.deliveryFeeCents,
+          cardFeeCents: data.order.cardFeeCents,
+          customerEmail: data.order.customerEmail,
+          fulfillment: data.order.fulfillment,
+          items: data.items.map((item) => ({
+            id: item.id,
+            label: composeItemName(item.nameSnapshot, item.sizeLabelSnapshot, item.colorLabelSnapshot),
+            qty: item.qty,
+            priceCents: item.priceCentsSnapshot,
+            productId: item.productId,
+            nameSnapshot: item.nameSnapshot,
+            sizeLabelSnapshot: item.sizeLabelSnapshot,
+            colorLabelSnapshot: item.colorLabelSnapshot,
+          })),
+        }
+      : data
+        ? { kind: "pending", number: data.order.number }
+        : { kind: "notFound" };
+
+  return <ConfirmationView content={content} chrome={chrome} state={state} vars={vars} />;
 }

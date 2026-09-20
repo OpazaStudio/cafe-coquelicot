@@ -3,24 +3,33 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb, type Db } from "./db/client";
 import {
   productColors,
+  productImages,
   productSizes,
   products,
   type ProductCategory,
   type ProductColorRow,
+  type ProductImageRow,
   type ProductRow,
   type ProductSizeRow,
 } from "./db/schema";
+import { sanitizeRichDoc, type RichDoc } from "./rich-text/schema";
 import { HOME_PICKS, SEED_PRODUCTS } from "./db/seed-data";
 import { formatFromPrice } from "./money";
 import { isUuid } from "./uuid";
 
 export type ShopSize = { id: string; label: string; priceCents: number };
+export type ShopImage = {
+  id: string;
+  path: string;
+  bgColor: string | null;
+  alt: string | null;
+  sizeId: string | null;
+  colorId: string | null;
+};
 export type ShopColor = {
   id: string;
   label: string;
   illustrationVariant: number;
-  imagePath: string | null;
-  imageBgColor: string | null;
 };
 
 // Forme consommée par les cartes produit (boutique + home). Les composants
@@ -29,13 +38,14 @@ export type ShopProduct = {
   id: string;
   slug: string;
   name: string;
-  tag: string;
   desc: string;
+  descRich: RichDoc | null;
   price: string; // affichage « dès 48€ » (min des tailles, ou prix de base)
   priceCents: number;
   variant: number; // illustration par défaut (aucun coloris)
   imagePath: string | null; // image produit (null → SVG fallback)
   imageBgColor: string | null; // fond de l'image (null → fond gris)
+  images: ShopImage[];
   badge: string | null;
   category: ProductCategory;
   sizes: ShopSize[]; // [] si le produit n'a pas de taille
@@ -46,6 +56,7 @@ function assemble(
   row: ProductRow,
   sizes: ProductSizeRow[],
   colors: ProductColorRow[],
+  images: ProductImageRow[],
 ): ShopProduct {
   const minCents = sizes.length
     ? Math.min(...sizes.map((s) => s.priceCents))
@@ -54,13 +65,21 @@ function assemble(
     id: row.id,
     slug: row.slug,
     name: row.name,
-    tag: row.tag,
     desc: row.description,
+    descRich: sanitizeRichDoc(row.descriptionRich),
     price: formatFromPrice(minCents),
     priceCents: minCents,
     variant: row.illustrationVariant,
     imagePath: row.imagePath,
     imageBgColor: row.imageBgColor,
+    images: images.map((i) => ({
+      id: i.id,
+      path: i.path,
+      bgColor: i.bgColor,
+      alt: i.alt,
+      sizeId: i.sizeId,
+      colorId: i.colorId,
+    })),
     badge: row.badge,
     category: row.category,
     sizes: sizes.map((s) => ({ id: s.id, label: s.label, priceCents: s.priceCents })),
@@ -68,8 +87,6 @@ function assemble(
       id: c.id,
       label: c.label,
       illustrationVariant: c.illustrationVariant,
-      imagePath: c.imagePath,
-      imageBgColor: c.imageBgColor,
     })),
   };
 }
@@ -90,6 +107,7 @@ async function activeChildren(db: Db, ids: string[]) {
     return {
       sizes: new Map<string, ProductSizeRow[]>(),
       colors: new Map<string, ProductColorRow[]>(),
+      images: new Map<string, ProductImageRow[]>(),
     };
   }
   const sizes = await db
@@ -102,7 +120,16 @@ async function activeChildren(db: Db, ids: string[]) {
     .from(productColors)
     .where(and(inArray(productColors.productId, ids), eq(productColors.active, true)))
     .orderBy(asc(productColors.sortOrder));
-  return { sizes: groupByProduct(sizes), colors: groupByProduct(colors) };
+  const images = await db
+    .select()
+    .from(productImages)
+    .where(inArray(productImages.productId, ids))
+    .orderBy(asc(productImages.sortOrder));
+  return {
+    sizes: groupByProduct(sizes),
+    colors: groupByProduct(colors),
+    images: groupByProduct(images),
+  };
 }
 
 // L'ordre d'affichage historique de la boutique ; les produits créés ensuite
@@ -122,11 +149,13 @@ export async function queryActiveProducts(db: Db): Promise<ShopProduct[]> {
   const rows = (
     await db.select().from(products).where(eq(products.active, true))
   ).sort(bySeedOrder);
-  const { sizes, colors } = await activeChildren(
+  const { sizes, colors, images } = await activeChildren(
     db,
     rows.map((r) => r.id),
   );
-  return rows.map((r) => assemble(r, sizes.get(r.id) ?? [], colors.get(r.id) ?? []));
+  return rows.map((r) =>
+    assemble(r, sizes.get(r.id) ?? [], colors.get(r.id) ?? [], images.get(r.id) ?? []),
+  );
 }
 
 export const getActiveProducts = cache(
@@ -162,8 +191,13 @@ export async function queryProductBySlug(
     .where(and(eq(products.slug, slug), eq(products.active, true)))
     .limit(1);
   if (!row) return null;
-  const { sizes, colors } = await activeChildren(db, [row.id]);
-  return assemble(row, sizes.get(row.id) ?? [], colors.get(row.id) ?? []);
+  const { sizes, colors, images } = await activeChildren(db, [row.id]);
+  return assemble(
+    row,
+    sizes.get(row.id) ?? [],
+    colors.get(row.id) ?? [],
+    images.get(row.id) ?? [],
+  );
 }
 
 export const getProductBySlug = cache(
@@ -198,6 +232,7 @@ export async function getProductWithVariants(
   product: ProductRow;
   sizes: ProductSizeRow[];
   colors: ProductColorRow[];
+  images: ProductImageRow[];
 } | null> {
   if (!isUuid(id)) return null;
   const [product] = await db
@@ -216,7 +251,12 @@ export async function getProductWithVariants(
     .from(productColors)
     .where(eq(productColors.productId, id))
     .orderBy(asc(productColors.sortOrder));
-  return { product, sizes, colors };
+  const images = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, id))
+    .orderBy(asc(productImages.sortOrder));
+  return { product, sizes, colors, images };
 }
 
 // Liste admin avec récap variantes (tailles/coloris ACTIFS) et prix « dès ».

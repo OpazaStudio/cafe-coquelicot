@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { SiteFooter, SiteHeader } from "@/components/sections";
+import { getPageContent } from "@/lib/content/server";
 import type { Settings } from "@/lib/settings";
 import { LegalValue } from "./legal-value";
 
-export function LegalPage({
+export async function LegalPage({
   crumb,
   title,
   script,
@@ -15,9 +16,10 @@ export function LegalPage({
   script: string;
   children: ReactNode;
 }) {
+  const site = await getPageContent("site");
   return (
     <>
-      <SiteHeader />
+      <SiteHeader nav={site.header.nav} />
       <main id="contenu" tabIndex={-1}>
         <section data-section data-bg="linen" className="legal-page">
           <div className="container">
@@ -34,7 +36,7 @@ export function LegalPage({
           </div>
         </section>
       </main>
-      <SiteFooter />
+      <SiteFooter footer={site.footer} />
     </>
   );
 }

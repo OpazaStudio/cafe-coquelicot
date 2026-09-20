@@ -14,6 +14,8 @@ export const ALLOWED_IMAGE_TYPES = [
 
 export type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
 
+export const IMAGE_PATH_RE = /^[0-9a-f-]{36}\.(png|jpe?g|webp)$/;
+
 export function productImageUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   return `${base}/storage/v1/object/public/${BUCKET}/${path}`;

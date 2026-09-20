@@ -12,7 +12,6 @@ describe("colonnes image", () => {
       .values({
         slug: "test-image-col",
         name: "test",
-        tag: "t",
         description: "d",
         priceCents: 1000,
         category: "frais",

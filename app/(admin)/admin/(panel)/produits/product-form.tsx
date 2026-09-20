@@ -5,13 +5,20 @@ import { CATEGORY_LABELS, VARIANT_LABELS } from "@/lib/categories";
 import type {
   ProductCategory,
   ProductColorRow,
+  ProductImageRow,
   ProductRow,
   ProductSizeRow,
 } from "@/lib/db/schema";
 import { Bouquet } from "@/components/illustrations";
+import {
+  parseRichDoc,
+  richDocFromPlainText,
+  type RichDoc,
+} from "@/lib/rich-text/schema";
 import { btnPrimary } from "../ui";
 import type { ProductFormState } from "./actions";
-import { ImageUpload } from "./image-upload";
+import { ImageGallery, type ImageDraft } from "./image-gallery";
+import { RichEditor } from "./rich-editor";
 
 type Props = {
   action: (
@@ -21,6 +28,7 @@ type Props = {
   product?: ProductRow;
   sizes?: ProductSizeRow[];
   colors?: ProductColorRow[];
+  images?: ProductImageRow[];
   submitLabel: string;
 };
 
@@ -39,8 +47,6 @@ type ColorDraft = {
   id?: string;
   label: string;
   illustrationVariant: number;
-  imagePath: string | null;
-  imageBgColor: string | null;
   active: boolean;
 };
 
@@ -65,6 +71,7 @@ export function ProductForm({
   product,
   sizes: initialSizes,
   colors: initialColors,
+  images: initialImages,
   submitLabel,
 }: Props) {
   const [state, formAction, pending] = useActionState<ProductFormState, FormData>(
@@ -72,16 +79,51 @@ export function ProductForm({
     undefined,
   );
   const [variant, setVariant] = useState(product?.illustrationVariant ?? 0);
-  const [productImage, setProductImage] = useState<{
-    imagePath: string | null;
-    imageBgColor: string | null;
-  }>({
-    imagePath: product?.imagePath ?? null,
-    imageBgColor: product?.imageBgColor ?? null,
-  });
+  const [description, setDescription] = useState<RichDoc>(
+    () =>
+      parseRichDoc(product?.descriptionRich) ??
+      richDocFromPlainText(product?.description ?? ""),
+  );
   // Compteur pour les clés des lignes ajoutées à la volée.
   const uid = useRef(0);
   const nextKey = () => `new-${uid.current++}`;
+  const [images, setImages] = useState<ImageDraft[]>(() => {
+    const rows: ImageDraft[] = (initialImages ?? []).map((i) => ({
+      key: i.id,
+      id: i.id,
+      path: i.path,
+      bgColor: i.bgColor,
+      alt: i.alt,
+      sizeKey: i.sizeId,
+      colorKey: i.colorId,
+    }));
+    const known = new Set(rows.map((r) => r.path));
+    if (product?.imagePath && !known.has(product.imagePath)) {
+      rows.unshift({
+        key: "cover",
+        path: product.imagePath,
+        bgColor: product.imageBgColor,
+        alt: null,
+        sizeKey: null,
+        colorKey: null,
+      });
+      known.add(product.imagePath);
+    }
+    for (const c of initialColors ?? []) {
+      if (c.imagePath && !known.has(c.imagePath)) {
+        rows.push({
+          key: `color-${c.id}`,
+          path: c.imagePath,
+          bgColor: c.imageBgColor,
+          alt: null,
+          sizeKey: null,
+          colorKey: c.id,
+        });
+        known.add(c.imagePath);
+      }
+    }
+    return rows;
+  });
   const [sizes, setSizes] = useState<SizeDraft[]>(
     (initialSizes ?? []).map((s) => ({
       key: s.id,
@@ -97,8 +139,6 @@ export function ProductForm({
       id: c.id,
       label: c.label,
       illustrationVariant: c.illustrationVariant,
-      imagePath: c.imagePath,
-      imageBgColor: c.imageBgColor,
       active: c.active,
     })),
   );
@@ -115,58 +155,32 @@ export function ProductForm({
 
   return (
     <form action={formAction} className="flex max-w-2xl flex-col gap-5">
-      <div className="grid grid-cols-[1fr_auto] gap-6">
-        <div className="flex flex-col gap-5">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-stone-700">Nom</span>
-            <input
-              name="name"
-              defaultValue={product?.name}
-              required
-              className={inputCls}
-              placeholder="rivage"
-            />
-            <FieldErrors errors={state?.errors?.name} />
-          </label>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium text-stone-700">Nom</span>
+        <input
+          name="name"
+          defaultValue={product?.name}
+          required
+          className={inputCls}
+          placeholder="rivage"
+        />
+        <FieldErrors errors={state?.errors?.name} />
+      </label>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-stone-700">
-              Sous-titre
-            </span>
-            <input
-              name="tag"
-              defaultValue={product?.tag}
-              required
-              className={inputCls}
-              placeholder="Bouquet signature"
-            />
-            <FieldErrors errors={state?.errors?.tag} />
-          </label>
-        </div>
-
-        <div className="flex w-36 flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3">
-          <ImageUpload
-            value={productImage.imagePath}
-            bgColor={productImage.imageBgColor}
-            onChange={setProductImage}
-            fallback={<Bouquet variant={variant} />}
-            label="Image du produit"
-          />
-        </div>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium text-stone-700">Description</span>
+        <RichEditor value={description} onChange={setDescription} />
+        <FieldErrors errors={state?.errors?.description} />
       </div>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-stone-700">Description</span>
-        <textarea
-          name="description"
-          defaultValue={product?.description}
-          required
-          rows={2}
-          className={inputCls}
-          placeholder="Pivoines, eucalyptus, blé, ruban lin."
-        />
-        <FieldErrors errors={state?.errors?.description} />
-      </label>
+      <ImageGallery
+        images={images}
+        sizes={sizes.map((s) => ({ key: s.key, label: s.label }))}
+        colors={colors.map((c) => ({ key: c.key, label: c.label }))}
+        onChange={setImages}
+        nextKey={nextKey}
+      />
+      <FieldErrors errors={state?.errors?.images} />
 
       <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
         <label className="flex flex-col gap-1.5">
@@ -303,19 +317,16 @@ export function ProductForm({
         <legend className="px-1 text-sm font-semibold text-stone-700">
           Coloris{" "}
           <span className="font-normal text-muted">
-            (optionnel — même prix, illustration différente)
+            (optionnel — même prix ; rattachez ses photos dans le bloc ci-dessus)
           </span>
         </legend>
         {colors.map((c, i) => (
           <div key={c.key} className="flex items-end gap-2" data-testid={`color-row-${i}`}>
-            <div className="shrink-0 text-wine">
-              <ImageUpload
-                value={c.imagePath}
-                bgColor={c.imageBgColor}
-                onChange={(v) => updateColor(i, v)}
-                fallback={<Bouquet variant={c.illustrationVariant} />}
-                size="sm"
-              />
+            <div
+              className="mb-1 size-10 shrink-0 text-wine [&_svg]:h-full [&_svg]:w-full"
+              aria-hidden
+            >
+              <Bouquet variant={c.illustrationVariant} />
             </div>
             <label className="flex flex-1 flex-col gap-1">
               <span className="text-xs text-muted">Libellé</span>
@@ -368,7 +379,7 @@ export function ProductForm({
           onClick={() =>
             setColors((l) => [
               ...l,
-              { key: nextKey(), label: "", illustrationVariant: 0, imagePath: null, imageBgColor: null, active: true },
+              { key: nextKey(), label: "", illustrationVariant: 0, active: true },
             ])
           }
           className="self-start rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"
@@ -390,12 +401,12 @@ export function ProductForm({
         </span>
       </label>
 
-      <input type="hidden" name="imagePath" value={productImage.imagePath ?? ""} />
-      <input type="hidden" name="imageBgColor" value={productImage.imageBgColor ?? ""} />
-
-      {/* Variantes sérialisées (parsées et validées côté serveur). */}
+      {/* Description, variantes et photos sérialisées (parsées et validées
+          côté serveur). */}
+      <input type="hidden" name="descriptionRich" value={JSON.stringify(description)} />
       <input type="hidden" name="sizes" value={JSON.stringify(sizes)} />
       <input type="hidden" name="colors" value={JSON.stringify(colors)} />
+      <input type="hidden" name="images" value={JSON.stringify(images)} />
 
       {state?.message && (
         <p role="alert" className="text-sm font-medium text-danger">
