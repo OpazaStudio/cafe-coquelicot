@@ -82,7 +82,6 @@ export const DEFAULT_SITE: SiteContent = {
           { label: "Bouquets frais", href: "/boutique" },
           { label: "Bouquets séchés", href: "/boutique" },
           { label: "Compositions séchées", href: "/boutique" },
-          { label: "Cartes cadeaux", href: "/boutique" },
         ],
       },
       {

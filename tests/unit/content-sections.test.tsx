@@ -28,7 +28,7 @@ describe("sections à contenu", () => {
     expect(container.querySelectorAll(".gallery__tile")).toHaveLength(8);
     expect(container.querySelectorAll(".gallery__tile--label")).toHaveLength(2);
     expect(container.querySelectorAll(".gallery__tile svg")).toHaveLength(6);
-    expect(screen.getByRole("link", { name: /Toutes nos réalisations/ }).getAttribute("href")).toBe("/boutique");
+    expect(screen.getByRole("link", { name: /Découvrir la boutique/ }).getAttribute("href")).toBe("/boutique");
   });
   it("Prestations rend une carte par élément avec son icône", () => {
     const content = { ...DEFAULT_HOME.prestations, items: DEFAULT_HOME.prestations.items.slice(0, 2) };

@@ -216,7 +216,7 @@ export function Prestations({ bg, content }: SectionProps & { content: HomeConte
           {content.items.map((item, i) => {
             const Icon = PRESTATION_ICON[item.icon] ?? IconWedding;
             return (
-              <article key={i} className="prestation-card">
+              <Link key={i} href="/#contact" className="prestation-card">
                 <Icon className="prestation-card__icon" />
                 <h3 className="prestation-card__name">{item.name}</h3>
                 <p className="prestation-card__desc">{item.desc}</p>
@@ -224,7 +224,7 @@ export function Prestations({ bg, content }: SectionProps & { content: HomeConte
                 <span className="prestation-card__arrow">
                   <ArrowDiag size={28} />
                 </span>
-              </article>
+              </Link>
             );
           })}
         </div>

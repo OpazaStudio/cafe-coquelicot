@@ -158,7 +158,7 @@ export const DEFAULT_HOME: HomeContent = {
       { kind: "photo", image: noImage, label: "", script: "" },
       { kind: "photo", image: noImage, label: "", script: "" },
     ],
-    cta: { label: "Toutes nos réalisations", href: "/boutique" },
+    cta: { label: "Découvrir la boutique", href: "/boutique" },
   },
   prestations: {
     title: "Prestations",

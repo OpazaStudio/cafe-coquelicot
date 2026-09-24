@@ -1131,6 +1131,9 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   overflow-wrap: break-word;
   margin: 0;
 }
+.prestation-card__name::first-letter {
+  text-transform: uppercase;
+}
 .prestation-card__desc {
   font-size: 15px;
   line-height: 1.5;
