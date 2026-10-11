@@ -101,7 +101,7 @@ export function parseShipmentResponse(raw: string): RelayShipmentResult {
     const msg = flat.match(/"(?:@_Message|messageField)"\s*:\s*"([^"]*)"/i)?.[1] ?? "Erreur Mondial Relay";
     throw new MondialRelayError(msg);
   }
-  const shipmentNumber = flat.match(/"ShipmentNumber"\s*:\s*"?([0-9A-Z-]+)"?/i)?.[1];
+  const shipmentNumber = flat.match(/"(?:@_)?ShipmentNumber"\s*:\s*"?([0-9A-Z-]+)"?/i)?.[1];
   const labelUrl = flat.match(/"Output"\s*:\s*"(https?:\/\/[^"]+)"/i)?.[1];
   if (!shipmentNumber || !labelUrl) {
     throw new MondialRelayError("Réponse Mondial Relay inattendue (n° ou étiquette absents).");

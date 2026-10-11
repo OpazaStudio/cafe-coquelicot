@@ -47,6 +47,13 @@ describe("parseShipmentResponse", () => {
     expect(r.trackingNumber).toBe("12345678");
   });
 
+  it("lit le n° porté en attribut de Shipment (format documenté par Mondial Relay)", () => {
+    const real = `<?xml version="1.0" encoding="utf-16"?><ShipmentCreationResponse xmlns="http://www.example.org/Response"><ShipmentsList><Shipment ShipmentNumber="96408887"><LabelList><Label><RawContent><LabelValues Key="MR.PlanTri.Mode" Value="24R" /></RawContent><Output>http://connect.mondialrelay.com//BDTEST/etiquette/GetStickersExpeditionsAnonyme?ens=BDTEST&amp;expedition=96408887&amp;lg=fr-FR&amp;format=A4&amp;crc=ABC</Output></Label></LabelList></Shipment></ShipmentsList></ShipmentCreationResponse>`;
+    const r = parseShipmentResponse(real);
+    expect(r.shipmentNumber).toBe("96408887");
+    expect(r.labelUrl).toBe("http://connect.mondialrelay.com//BDTEST/etiquette/GetStickersExpeditionsAnonyme?ens=BDTEST&expedition=96408887&lg=fr-FR&format=A4&crc=ABC");
+  });
+
   it("lève MondialRelayError sur statut d'erreur", () => {
     expect(() => parseShipmentResponse(err)).toThrow(MondialRelayError);
   });
