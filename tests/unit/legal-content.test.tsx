@@ -84,6 +84,6 @@ describe("Confidentialité", () => {
       expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0);
     }
     expect(screen.getByText(/CNIL/)).toBeTruthy();
-    expect(screen.getAllByRole("link", { name: /bonjour@coquelicot-lr\.fr/ }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /contact@cafe-coquelicot\.fr/ }).length).toBeGreaterThan(0);
   });
 });

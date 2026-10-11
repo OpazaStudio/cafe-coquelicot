@@ -139,7 +139,7 @@ describe("JSON-LD", () => {
     expect(ld.url).toBe(SITE);
     expect(ld.logo).toBe(`${SITE}/icon.svg`);
     expect(ld.address).toMatchObject({
-      streetAddress: "12 rue du Gabut",
+      streetAddress: "3 rue du Beurre",
       postalCode: "17000",
       addressLocality: "La Rochelle",
       addressCountry: "FR",

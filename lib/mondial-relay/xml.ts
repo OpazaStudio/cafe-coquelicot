@@ -47,7 +47,7 @@ export function buildShipmentXml(
     <Shipment>
       <OrderNo>${esc(input.orderNumber)}</OrderNo>
       <ParcelCount>1</ParcelCount>
-      <CollectionMode Mode="CCC"/>
+      <CollectionMode Mode="REL"/>
       <DeliveryMode Mode="24R" Location="FR-${esc(r.id)}"/>
       <Parcels>
         <Parcel>

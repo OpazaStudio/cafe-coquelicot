@@ -56,7 +56,7 @@ export async function sendContactMessage(
     const minutes = Math.max(1, Math.ceil(gate.retryAfterMs / 60_000));
     return {
       status: "error",
-      message: `Trop de messages envoyés. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""} ou écrivez-nous directement à bonjour@coquelicot-lr.fr.`,
+      message: `Trop de messages envoyés. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""} ou écrivez-nous directement à contact@cafe-coquelicot.fr.`,
     };
   }
 

@@ -3,12 +3,12 @@ import type { MondialRelayConfig, SenderAddress } from "./types";
 // Expéditeur (boutique) — statique. À ajuster avec l'adresse réelle.
 const SENDER: SenderAddress = {
   name: "Coquelicot",
-  street: "rue du Gabut",
-  houseNo: "12",
+  street: "rue du Beurre",
+  houseNo: "3",
   postalCode: "17000",
   city: "La Rochelle",
-  phone: "+33000000000",
-  email: "bonjour@coquelicot-lr.fr",
+  phone: "+33667102275",
+  email: "contact@cafe-coquelicot.fr",
 };
 
 export const DEFAULT_PARCEL_WEIGHT_GR = 1000;

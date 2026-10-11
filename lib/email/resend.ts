@@ -5,7 +5,7 @@
 import { Resend } from "resend";
 
 // Destinataire par défaut (boîte de la boutique), surchargé par CONTACT_TO.
-const DEFAULT_TO = "bonjour@coquelicot-lr.fr";
+const DEFAULT_TO = "contact@cafe-coquelicot.fr";
 // Sans domaine vérifié (dev/sandbox), Resend n'autorise que cette adresse
 // d'expéditeur — à remplacer par une adresse du domaine vérifié en prod
 // via CONTACT_FROM (ex. "Café Coquelicot <contact@cafe-coquelicot.fr>").
