@@ -35,6 +35,7 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
     [images, color],
   );
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [galleryReady, setGalleryReady] = useState(false);
   const active = views.find((v) => v.id === activeId) ?? views[0] ?? null;
   const activeIndex = Math.max(0, views.findIndex((v) => v.id === active?.id));
 
@@ -136,6 +137,8 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
               {images.map((v) => {
                 const isActive = active?.id === v.id;
                 const shown = views.some((s) => s.id === v.id);
+                const isLead = v.id === views[0]?.id;
+                const markReady = isLead ? () => setGalleryReady(true) : undefined;
                 return (
                   <span
                     key={v.id}
@@ -143,13 +146,17 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
                     style={v.bgColor ? { background: v.bgColor } : undefined}
                     aria-hidden={!isActive}
                   >
-                    <Image
-                      src={productImageUrl(v.path)}
-                      alt={v.alt || name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 600px"
-                      priority={v.id === views[0]?.id}
-                    />
+                    {(galleryReady || isLead || isActive) && (
+                      <Image
+                        src={productImageUrl(v.path)}
+                        alt={v.alt || name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        priority={isLead}
+                        onLoad={markReady}
+                        onError={markReady}
+                      />
+                    )}
                   </span>
                 );
               })}

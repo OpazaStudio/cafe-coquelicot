@@ -229,7 +229,7 @@
   - function productJsonLd: (input) => JsonLd
   - function organizationJsonLd: (siteUrl, s) => JsonLd
   - function breadcrumbJsonLd: (siteUrl, items) => JsonLd
-  - _...8 more_
+  - _...9 more_
 - `lib/settings-fields.ts`
   - function fieldMaxLength: (field) => number
   - function fieldsForGroups: (groups) => SettingField[]

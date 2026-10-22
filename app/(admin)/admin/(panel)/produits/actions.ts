@@ -340,6 +340,7 @@ async function uniqueSlug(name: string, excludeId?: string): Promise<string> {
 function revalidateShop() {
   revalidatePath("/");
   revalidatePath("/boutique");
+  revalidatePath("/boutique/[slug]", "page");
   revalidatePath("/admin/produits");
 }
 

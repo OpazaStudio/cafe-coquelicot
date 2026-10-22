@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 // Le catalogue vit en base : rendu à la demande, jamais figé au build.
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function Home() {
   const [products, settings, content, chrome] = await Promise.all([

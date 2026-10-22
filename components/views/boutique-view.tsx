@@ -27,14 +27,14 @@ export function BoutiqueView({
       <main id="contenu" tabIndex={-1}>
         <section data-section data-bg="linen" className="boutique-hero">
           <div className="container">
-            <nav className="boutique-crumb reveal" aria-label="Fil d'Ariane">
+            <nav className="boutique-crumb rise" aria-label="Fil d'Ariane">
               <Link href="/">accueil</Link>
               <span aria-hidden>/</span>
               <span>boutique</span>
             </nav>
             <div className="boutique-hero__inner">
-              <h1 className="display boutique-hero__title reveal">{c.hero.title}</h1>
-              <div className="boutique-hero__intro reveal">
+              <h1 className="display boutique-hero__title rise">{c.hero.title}</h1>
+              <div className="boutique-hero__intro rise">
                 <p className="eyebrow">{c.hero.eyebrow}</p>
                 <p className="body body--lg">
                   <Lines text={c.hero.intro} />

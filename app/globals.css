@@ -1600,6 +1600,19 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   .product-card__add { opacity: 1; transform: none; }
 }
 
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
 /* ── Reveal animation ────────────────────────────────────────── */
 /* Hidden state only when JS can reveal it again (and motion is ok) —
    server-rendered content stays visible without JS / reduced motion. */

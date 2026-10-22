@@ -16,6 +16,7 @@
 - `MONDIAL_RELAY_API_URL` (has default) — .env.local
 - `MONDIAL_RELAY_CUSTOMER_ID` (has default) — .env.local
 - `NETLIFY` **required** — app/api/e2e/orders/route.ts
+- `NEXT_PHASE` **required** — lib/db/client.ts
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (has default) — .env.local
 - `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` (has default) — .env.local
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local

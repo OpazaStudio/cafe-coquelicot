@@ -9,7 +9,7 @@ import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
 import { ConsentDefaultScript } from "@/components/consent/consent-default-script";
 import { CookieBanner } from "@/components/consent/cookie-banner";
 import { BgTweakGate } from "@/components/bg-tweak/gate";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/seo";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_TITLE_TEMPLATE } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/stripe";
 
 // Tangerine (fichiers fournis dans /fonts) — didone à fort contraste, plus large
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
     default: SITE_TITLE,
-    template: "%s : Café Coquelicot - Fleuriste",
+    template: SITE_TITLE_TEMPLATE,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,

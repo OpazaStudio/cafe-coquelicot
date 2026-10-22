@@ -12,7 +12,11 @@ import { getSiteUrl } from "@/lib/stripe";
 import { getPageContent } from "@/lib/content/server";
 
 // Catalogue en base : rendu à la demande, jamais figé au build.
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export function generateStaticParams(): { slug: string }[] {
+  return [];
+}
 
 const oneLine = (text: string) => text.replace(/\s*\n+\s*/g, " ").trim();
 
@@ -22,7 +26,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) {
-    return { title: "Produit introuvable : Café Coquelicot - Fleuriste" };
+    return { title: "Produit introuvable" };
   }
   const image = product.imagePath ? productImageUrl(product.imagePath) : undefined;
   const description = oneLine(product.desc);

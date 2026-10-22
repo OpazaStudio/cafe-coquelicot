@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 114 components | 48 lib files | 30 env vars | 6 middleware | 54% test coverage
-> **Token savings:** this file is ~8,500 tokens. Without it, AI exploration would cost ~69,600 tokens. **Saves ~61,000 tokens per conversation.**
-> **Last scanned:** 2026-10-11 17:50 — re-run after significant changes
+> 3 routes | 10 models | 114 components | 48 lib files | 31 env vars | 6 middleware | 54% test coverage
+> **Token savings:** this file is ~8,500 tokens. Without it, AI exploration would cost ~69,700 tokens. **Saves ~61,100 tokens per conversation.**
+> **Last scanned:** 2026-10-22 08:37 — re-run after significant changes
 
 ---
 
@@ -482,7 +482,7 @@
   - function productJsonLd: (input) => JsonLd
   - function organizationJsonLd: (siteUrl, s) => JsonLd
   - function breadcrumbJsonLd: (siteUrl, items) => JsonLd
-  - _...8 more_
+  - _...9 more_
 - `lib/settings-fields.ts`
   - function fieldMaxLength: (field) => number
   - function fieldsForGroups: (groups) => SettingField[]
@@ -532,6 +532,7 @@
 - `MONDIAL_RELAY_API_URL` (has default) — .env.local
 - `MONDIAL_RELAY_CUSTOMER_ID` (has default) — .env.local
 - `NETLIFY` **required** — app/api/e2e/orders/route.ts
+- `NEXT_PHASE` **required** — lib/db/client.ts
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (has default) — .env.local
 - `NEXT_PUBLIC_MONDIAL_RELAY_BRAND` (has default) — .env.local
 - `NEXT_PUBLIC_SITE_URL` (has default) — .env.local

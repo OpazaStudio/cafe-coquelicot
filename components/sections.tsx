@@ -47,7 +47,7 @@ export function Hero({ bg, content }: SectionProps & { content: HomeContent["her
   return (
     <section id="hero" data-section data-bg={bg} className="hero">
       <div className="hero__inner">
-        <div className={`hero__media reveal${hasPhoto ? " hero__media--photo" : ""}`}>
+        <div className={`hero__media rise${hasPhoto ? " hero__media--photo" : ""}`}>
           <ContentImage
             image={content.image}
             fallback={
@@ -64,14 +64,14 @@ export function Hero({ bg, content }: SectionProps & { content: HomeContent["her
           />
         </div>
         <div className="hero__text">
-          <h1 className="hero__display reveal">
+          <h1 className="hero__display rise">
             <Lines text={content.title} />
             <span className="script">{content.script}</span>
           </h1>
-          <p className="body body--lg hero__sub reveal">
+          <p className="body body--lg hero__sub rise">
             <Lines text={content.sub} />
           </p>
-          <div className="hero__cta reveal">
+          <div className="hero__cta rise">
             <Link href={content.primary.href} className="btn btn--filled">
               {content.primary.label} <ArrowRight />
             </Link>

@@ -6,7 +6,7 @@
 
 ## Scale
 
-3 API routes · 10 database models · 114 UI components · 48 library files · 6 middleware layers · 30 environment variables
+3 API routes · 10 database models · 114 UI components · 48 library files · 6 middleware layers · 31 environment variables
 
 ## Subsystems
 
@@ -36,10 +36,11 @@ Changes to these files have the widest blast radius across the codebase:
 - `CI` — `playwright.config.ts`
 - `E2E_TEST_HOOKS` — `app/api/e2e/orders/route.ts`
 - `NETLIFY` — `app/api/e2e/orders/route.ts`
+- `NEXT_PHASE` — `lib/db/client.ts`
 - `NODE_ENV` — `app/contact/actions.ts`
 - `PGLITE_DATA_DIR` — `lib/db/client.ts`
 - `RENDER` — `app/api/e2e/orders/route.ts`
 - `VERCEL` — `app/api/e2e/orders/route.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-10-11_
+_Back to [index.md](./index.md) · Generated 2026-10-22_

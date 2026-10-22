@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Le catalogue vit en base : rendu à la demande, jamais figé au build.
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function BoutiquePage() {
   const [catalogue, content, chrome] = await Promise.all([

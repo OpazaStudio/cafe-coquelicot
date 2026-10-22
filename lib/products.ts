@@ -175,11 +175,20 @@ export const getActiveVases = cache(
     (await getActiveProducts()).filter((p) => p.category === "vase"),
 );
 
+const HOME_SLOTS = 8;
+
 // Sélection de la home, dans l'ordre de HOME_PICKS.
 export const getHomeProducts = cache(async (): Promise<ShopProduct[]> => {
   const all = await getActiveProducts();
   const bySlug = new Map(all.map((p) => [p.slug, p]));
-  return HOME_PICKS.flatMap((slug) => bySlug.get(slug) ?? []);
+  const picked = HOME_PICKS.flatMap((slug) => bySlug.get(slug) ?? []);
+  const taken = new Set(picked.map((p) => p.slug));
+  const rest = all.filter((p) => !taken.has(p.slug));
+  const fill = [
+    ...rest.filter((p) => p.category !== "vase"),
+    ...rest.filter((p) => p.category === "vase"),
+  ];
+  return [...picked, ...fill].slice(0, HOME_SLOTS);
 });
 
 // Page produit (vitrine) : produits actifs uniquement — un produit masqué

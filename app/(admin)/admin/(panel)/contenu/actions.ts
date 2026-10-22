@@ -48,6 +48,7 @@ export async function savePageContent(_prev: ContentState, formData: FormData): 
   }
 
   for (const path of def.revalidate) revalidatePath(path);
+  if (page === "site") revalidatePath("/boutique/[slug]", "page");
   revalidatePath(adminHref(page));
   return { ok: true };
 }

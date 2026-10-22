@@ -22,6 +22,15 @@ async function createDb(): Promise<Db> {
     return drizzlePostgres(client, { schema });
   }
 
+  if (
+    process.env.NEXT_PHASE === "phase-production-build" &&
+    !process.env.PGLITE_DATA_DIR
+  ) {
+    throw new Error(
+      "[db] DATABASE_URL absente pendant `next build` : le prerender ISR figerait le catalogue de démonstration dans le HTML de production.",
+    );
+  }
+
   // Fallback local : PGlite (Postgres embarqué), migré et seedé automatiquement.
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle: drizzlePglite } = await import("drizzle-orm/pglite");

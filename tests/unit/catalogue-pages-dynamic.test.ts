@@ -30,16 +30,26 @@ const readsCatalogue = vitrinePages(APP_DIR).filter((file) =>
   /from\s+"@\/lib\/products"/.test(readFileSync(file, "utf8")),
 );
 
+const relatives = readsCatalogue.map((f) => path.relative(process.cwd(), f));
+
 describe("pages vitrine lisant le catalogue", () => {
   it("en trouve au moins une (garde contre un filtre qui ne matche plus)", () => {
     expect(readsCatalogue.length).toBeGreaterThan(0);
   });
 
-  it.each(readsCatalogue.map((f) => path.relative(process.cwd(), f)))(
-    "%s déclare dynamic = force-dynamic",
+  it.each(relatives)("%s déclare force-dynamic ou un revalidate littéral", (relative) => {
+    const source = readFileSync(path.join(process.cwd(), relative), "utf8");
+    expect(source).toMatch(
+      /export const (dynamic = "force-dynamic"|revalidate = \d+);/,
+    );
+  });
+
+  it.each(relatives.filter((r) => /\[\w+\]/.test(r)))(
+    "%s ne prérend aucun slug au build",
     (relative) => {
       const source = readFileSync(path.join(process.cwd(), relative), "utf8");
-      expect(source).toMatch(/export const dynamic = "force-dynamic";/);
+      expect(source).toMatch(/generateStaticParams/);
+      expect(source).toMatch(/return \[\];/);
     },
   );
 });

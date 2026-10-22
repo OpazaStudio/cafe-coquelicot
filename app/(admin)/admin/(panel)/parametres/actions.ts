@@ -19,6 +19,8 @@ export async function updateSettings(
   await saveSettings(await getDb(), parsed.data);
   for (const path of LEGAL_PATHS) revalidatePath(path);
   revalidatePath("/");
+  revalidatePath("/boutique");
+  revalidatePath("/boutique/[slug]", "page");
   revalidatePath("/admin/parametres");
   revalidatePath("/checkout");
   revalidatePath("/panier");

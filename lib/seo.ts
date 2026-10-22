@@ -4,9 +4,10 @@ import type { ShippingFees } from "@/lib/order-status";
 import type { Settings } from "@/lib/settings";
 
 export const SITE_NAME = "Café Coquelicot";
-export const SITE_TITLE = "Café Coquelicot - Fleuriste";
+export const SITE_TITLE = "Café Coquelicot — Fleuriste à La Rochelle, fleurs séchées";
+export const SITE_TITLE_TEMPLATE = "%s — Café Coquelicot, fleuriste à La Rochelle";
 export const SITE_DESCRIPTION =
-  "Atelier de fleurs fraîches & séchées. Bouquets de saison, mariages, événementiel, abonnements et ateliers floraux.";
+  "Fleurs séchées et fraîches faites main à La Rochelle. Bouquets, compositions, mariages et événementiel. Boutique en ligne, livraison partout en France.";
 
 export const LEGAL_PATHS = [
   "/mentions-legales",
