@@ -94,6 +94,7 @@
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **Logo** — props: className — `components/logo.tsx`
 - **MobileMenu** [client] — props: nav — `components/mobile-menu.tsx`
+- **ProductBadge** — props: soldOut, badge — `components/product-badge.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`

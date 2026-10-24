@@ -435,6 +435,13 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   opacity: 0.55;
   cursor: not-allowed;
 }
+.btn--filled.is-sold-out,
+.btn--filled.is-sold-out:hover {
+  background: var(--fg);
+  color: var(--bg);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .btn__arrow {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -566,6 +573,21 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   font-weight: 500;
   border: 1px solid currentColor;
 }
+.product-card__badge--sold-out {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.product-card.is-sold-out .product-card__media svg {
+  opacity: 0.35;
+}
+.product-card.is-sold-out .product-media {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+.product-card.is-sold-out .product-card__price {
+  opacity: 0.6;
+}
 .product-card__name {
   font-family: var(--font-display);
   font-size: 34px;
@@ -615,6 +637,16 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   background: var(--burgundy);
   border-color: var(--burgundy);
   color: var(--linen);
+}
+.variant-option.is-sold-out,
+.variant-option.is-sold-out:hover {
+  border-color: var(--line);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.variant-option.is-sold-out.is-active,
+.variant-option.is-sold-out.is-active:hover {
+  border-color: var(--burgundy);
 }
 
 /* Page produit (/boutique/[slug]) — deux colonnes. */
@@ -2084,6 +2116,10 @@ button.product-card__add {
 }
 .vase-suggest__add {
   align-self: start;
+}
+.vase-suggest__card.is-sold-out .vase-suggest__media,
+.vase-suggest__card.is-sold-out .vase-suggest__price {
+  opacity: 0.55;
 }
 
 /* ── Bandeau consentement cookies (RGPD/CNIL) ────────────────── */

@@ -55,7 +55,8 @@ describe("JSON-LD", () => {
     description: "Fleurs de saison.",
     priceCents: 4850,
     imageUrls: [] as string[],
-    sizes: [] as { label: string; priceCents: number }[],
+    sizes: [] as { label: string; priceCents: number; soldOut: boolean }[],
+    soldOut: false,
     category: "seche" as const,
     shippingFees: DEFAULT_SHIPPING_FEES,
   };
@@ -100,14 +101,69 @@ describe("JSON-LD", () => {
     const ld = productJsonLd({
       ...base,
       sizes: [
-        { label: "Petit format", priceCents: 1600 },
-        { label: "Grand format", priceCents: 2900 },
+        { label: "Petit format", priceCents: 1600, soldOut: false },
+        { label: "Grand format", priceCents: 2900, soldOut: false },
       ],
     });
     expect(ld.offers).toEqual([
       expect.objectContaining({ "@type": "Offer", name: "Petit format", price: "16.00" }),
       expect.objectContaining({ "@type": "Offer", name: "Grand format", price: "29.00" }),
     ]);
+  });
+
+  it("productJsonLd dérive availability par offre", () => {
+    const ld = productJsonLd({
+      ...base,
+      sizes: [
+        { label: "Petit format", priceCents: 1600, soldOut: true },
+        { label: "Grand format", priceCents: 2900, soldOut: false },
+      ],
+    });
+    expect(ld.offers).toEqual([
+      expect.objectContaining({
+        name: "Petit format",
+        availability: "https://schema.org/OutOfStock",
+      }),
+      expect.objectContaining({
+        name: "Grand format",
+        availability: "https://schema.org/InStock",
+      }),
+    ]);
+  });
+
+  it("productJsonLd marque OutOfStock toutes les offres d'un produit entièrement épuisé", () => {
+    const ld = productJsonLd({
+      ...base,
+      soldOut: true,
+      sizes: [
+        { label: "Petit format", priceCents: 1600, soldOut: true },
+        { label: "Grand format", priceCents: 2900, soldOut: true },
+      ],
+    });
+    const offers = ld.offers as { availability: string }[];
+    expect(offers.map((o) => o.availability)).toEqual([
+      "https://schema.org/OutOfStock",
+      "https://schema.org/OutOfStock",
+    ]);
+  });
+
+  it("productJsonLd dérive availability d'un produit nu depuis son état épuisé", () => {
+    expect(productJsonLd({ ...base, soldOut: true }).offers).toMatchObject({
+      availability: "https://schema.org/OutOfStock",
+    });
+    expect(productJsonLd({ ...base, soldOut: false }).offers).toMatchObject({
+      availability: "https://schema.org/InStock",
+    });
+  });
+
+  it("productJsonLd n'expose ni identifiant de taille ni drapeau interne", () => {
+    const ld = productJsonLd({
+      ...base,
+      sizes: [{ label: "Petit format", priceCents: 1600, soldOut: true }],
+    });
+    const [offer] = ld.offers as Record<string, unknown>[];
+    expect(offer).not.toHaveProperty("id");
+    expect(offer).not.toHaveProperty("soldOut");
   });
 
   it("productJsonLd liste toutes les photos et refuse le retour des fleurs fraîches", () => {

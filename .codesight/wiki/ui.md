@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
 
-**114 components** (react)
+**115 components** (react)
 
 ## Client Components
 
@@ -113,6 +113,7 @@
 - **LivraisonRetoursContent** — props: settings — `components/legal/livraison-retours.tsx`
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **Logo** — props: className — `components/logo.tsx`
+- **ProductBadge** — props: soldOut, badge — `components/product-badge.tsx`
 - **RichText** — props: doc, fallback, className — `components/rich-text.tsx`
 - **SiteHeader** — props: nav — `components/sections.tsx`
 - **Hero** — props: bg, content — `components/sections.tsx`

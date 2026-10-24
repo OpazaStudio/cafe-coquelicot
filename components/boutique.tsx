@@ -12,6 +12,7 @@ import type { ProductCategory } from "@/lib/db/schema";
 import type { ShopProduct } from "@/lib/products";
 import type { BoutiqueContent } from "@/lib/content/pages/boutique";
 import { ProductFigure } from "./illustrations";
+import { ProductBadge } from "./product-badge";
 import { Lines } from "./content/text";
 
 const FILTERS: { key: ProductCategory | "tout"; label: string }[] = [
@@ -73,11 +74,14 @@ export function BoutiqueShop({ catalogue, copy }: { catalogue: ShopProduct[]; co
 // Carte présentationnelle : un lien vers la page produit, où se fait toute la
 // sélection (taille/coloris/quantité) et l'ajout au panier.
 function ProductCard(product: ShopProduct) {
-  const { slug, name, badge, price, variant, category, imagePath, imageBgColor } = product;
+  const { slug, name, badge, price, variant, category, imagePath, imageBgColor, soldOut } = product;
   return (
-    <Link href={`/boutique/${slug}`} className="product-card">
+    <Link
+      href={`/boutique/${slug}`}
+      className={`product-card${soldOut ? " is-sold-out" : ""}`}
+    >
       <div className="product-card__media">
-        {badge && <span className="product-card__badge">{badge}</span>}
+        <ProductBadge soldOut={soldOut} badge={badge} />
         <ProductFigure
           category={category}
           variant={variant}

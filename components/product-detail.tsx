@@ -13,12 +13,15 @@ import { formatEuros } from "@/lib/money";
 import { productImageUrl } from "@/lib/product-image";
 import { productFrameStyle } from "@/lib/product-frame";
 import { ProductFigure, ArrowRight } from "./illustrations";
+import { ProductBadge } from "./product-badge";
 import { RichText } from "./rich-text";
 
 export function ProductDetail({ product }: { product: ShopProduct }) {
   const { name, desc, descRich, badge, sizes, colors, images, imageFrame } = product;
   const { add } = useCart();
-  const [size, setSize] = useState<ShopSize | null>(sizes[0] ?? null);
+  const [size, setSize] = useState<ShopSize | null>(
+    sizes.find((s) => !s.soldOut) ?? sizes[0] ?? null,
+  );
   const [color, setColor] = useState<ShopColor | null>(colors[0] ?? null);
   const [qty, setQty] = useState(1);
   // `added` : libellé transitoire « Ajouté ✓ » (repasse à false sur minuteur).
@@ -82,6 +85,7 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   }
 
   function pickSize(s: ShopSize) {
+    if (s.soldOut) return;
     setSize(s);
     const linked = pickFor(s.id, color?.id ?? null, "size");
     if (linked) setActiveId(linked.id);
@@ -101,8 +105,10 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   // Le coloris change l'illustration au trait ; la taille porte le prix.
   const illustration = color?.illustrationVariant ?? product.variant;
   const priceCents = size?.priceCents ?? product.priceCents;
+  const unavailable = size ? size.soldOut : product.soldOut;
 
   function handleAdd() {
+    if (unavailable) return;
     add(
       {
         slug: product.slug,
@@ -131,7 +137,7 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
           data-frame={imageFrame}
           style={productFrameStyle(imageFrame)}
         >
-          {badge && <span className="product-card__badge">{badge}</span>}
+          <ProductBadge soldOut={product.soldOut} badge={badge} />
           {stacked ? (
             <span className="product-photos" ref={scrollerRef} onScroll={handleScroll}>
               {images.map((v) => {
@@ -226,11 +232,13 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
                 <button
                   key={s.id}
                   type="button"
-                  className={`variant-option${size?.id === s.id ? " is-active" : ""}`}
+                  className={`variant-option${size?.id === s.id ? " is-active" : ""}${s.soldOut ? " is-sold-out" : ""}`}
                   aria-pressed={size?.id === s.id}
+                  aria-disabled={s.soldOut || undefined}
                   onClick={() => pickSize(s)}
                 >
                   {s.label} · {formatEuros(s.priceCents)}
+                  {s.soldOut && " · Épuisé"}
                 </button>
               ))}
             </div>
@@ -291,11 +299,18 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
           </span>
           <button
             type="button"
-            className="btn btn--filled"
+            className={`btn btn--filled${unavailable ? " is-sold-out" : ""}`}
             onClick={handleAdd}
-            aria-label={`Ajouter ${name} au panier`}
+            aria-disabled={unavailable || undefined}
+            aria-label={unavailable ? `${name}, épuisé` : `Ajouter ${name} au panier`}
           >
-            {added ? <>Ajouté ✓</> : <>Ajouter au panier <ArrowRight /></>}
+            {unavailable ? (
+              <>Épuisé</>
+            ) : added ? (
+              <>Ajouté ✓</>
+            ) : (
+              <>Ajouter au panier <ArrowRight /></>
+            )}
           </button>
         </div>
         {hasAdded && (

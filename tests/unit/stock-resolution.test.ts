@@ -1,8 +1,11 @@
 // @vitest-environment node
+import { randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import {
+  productColors,
+  productImages,
   productSizes,
   products,
   type ProductRow,
@@ -260,33 +263,57 @@ describe("soldOut dérivé", () => {
   });
 
   it("n'expose jamais le compteur", async () => {
-    await addProduct({
+    const id = await addProduct({
       stockQty: 7351,
       sizes: [
         { label: "Petit", priceCents: 3000, stockQty: 4217 },
         { label: "Grand", priceCents: 5000, stockQty: 6089 },
       ],
     });
+    const [petit] = await db
+      .select({ id: productSizes.id })
+      .from(productSizes)
+      .where(eq(productSizes.productId, id));
+    const [naturel] = await db
+      .insert(productColors)
+      .values({ productId: id, label: "Naturel" })
+      .returning({ id: productColors.id });
+    await db.update(products).set({ imagePath: `${randomUUID()}.webp` }).where(eq(products.id, id));
+    await db.insert(productImages).values([
+      {
+        productId: id,
+        sizeId: petit.id,
+        colorId: naturel.id,
+        path: `${randomUUID()}.webp`,
+        bgColor: "#f4efe6",
+        alt: "Le petit",
+        sortOrder: 0,
+      },
+      { productId: id, path: `${randomUUID()}.webp`, sortOrder: 1 },
+    ]);
     const p = await shopProduct();
+    expect(p.images).toHaveLength(2);
+    expect(p.images[0].sizeId).toBe(petit.id);
+    expect(p.images[0].colorId).toBe(naturel.id);
     expect(JSON.stringify(p)).not.toMatch(/stockQty|stock_qty/);
 
     const keys: string[] = [];
     const numbers: number[] = [];
     const strings: string[] = [];
-    const opaqueKeys = new Set(["id", "sizeId", "colorId", "path"]);
-    const walk = (value: unknown, key?: string) => {
+    const uuid = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
+    const walk = (value: unknown) => {
       if (typeof value === "number") numbers.push(value);
-      else if (typeof value === "string") {
-        if (!key || !opaqueKeys.has(key)) strings.push(value);
-      } else if (Array.isArray(value)) value.forEach((v) => walk(v, key));
+      else if (typeof value === "string") strings.push(value.replace(uuid, ""));
+      else if (Array.isArray(value)) value.forEach((v) => walk(v));
       else if (value && typeof value === "object") {
         for (const [k, v] of Object.entries(value)) {
           keys.push(k);
-          walk(v, k);
+          walk(v);
         }
       }
     };
     walk(JSON.parse(JSON.stringify(p)));
+    expect(strings).toContain(".webp");
     expect(keys.filter((k) => /stock|qty|quantity|remaining|left/i.test(k))).toEqual([]);
     expect(numbers).not.toContain(7351);
     expect(numbers).not.toContain(4217);

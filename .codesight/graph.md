@@ -17,11 +17,11 @@
 - `components/legal/legal-value.tsx` — imported by **4** files
 - `components/legal/legal-page.tsx` — imported by **4** files
 - `lib/content/registry.ts` — imported by **4** files
+- `components/product-badge.tsx` — imported by **3** files
 - `lib/uuid.ts` — imported by **3** files
 - `lib/mondial-relay/types.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/contenu/actions.ts` — imported by **2** files
-- `app/(admin)/admin/(panel)/produits/image-upload.tsx` — imported by **2** files
 
 ## Import Map (who imports what)
 

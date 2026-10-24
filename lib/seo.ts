@@ -98,7 +98,8 @@ export type ProductJsonLdInput = {
   description: string;
   priceCents: number;
   imageUrls: string[];
-  sizes: { label: string; priceCents: number }[];
+  sizes: { label: string; priceCents: number; soldOut: boolean }[];
+  soldOut: boolean;
   category: ProductCategory;
   shippingFees: ShippingFees;
 };
@@ -107,13 +108,15 @@ export function productJsonLd(input: ProductJsonLdInput): JsonLd {
   const url = `${input.siteUrl}/boutique/${input.slug}`;
   const shipping = shippingDetails(input.shippingFees);
   const returns = returnPolicy(input.category);
-  const offer = (priceCents: number, name?: string): JsonLd => ({
+  const offer = (priceCents: number, soldOut: boolean, name?: string): JsonLd => ({
     "@type": "Offer",
     ...(name ? { name } : {}),
     url,
     price: euros(priceCents),
     priceCurrency: "EUR",
-    availability: "https://schema.org/InStock",
+    availability: soldOut
+      ? "https://schema.org/OutOfStock"
+      : "https://schema.org/InStock",
     itemCondition: "https://schema.org/NewCondition",
     shippingDetails: shipping,
     hasMerchantReturnPolicy: returns,
@@ -128,8 +131,8 @@ export function productJsonLd(input: ProductJsonLdInput): JsonLd {
     ...(input.imageUrls.length ? { image: input.imageUrls } : {}),
     brand: { "@type": "Brand", name: SITE_NAME },
     offers: input.sizes.length
-      ? input.sizes.map((s) => offer(s.priceCents, s.label))
-      : offer(input.priceCents),
+      ? input.sizes.map((s) => offer(s.priceCents, s.soldOut, s.label))
+      : offer(input.priceCents, input.soldOut),
   };
 }
 

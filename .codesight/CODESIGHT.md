@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 114 components | 55 lib files | 31 env vars | 6 middleware | 62% test coverage
-> **Token savings:** this file is ~8,800 tokens. Without it, AI exploration would cost ~71,500 tokens. **Saves ~62,700 tokens per conversation.**
-> **Last scanned:** 2026-10-24 21:32 — re-run after significant changes
+> 3 routes | 10 models | 115 components | 55 lib files | 31 env vars | 6 middleware | 62% test coverage
+> **Token savings:** this file is ~8,800 tokens. Without it, AI exploration would cost ~71,800 tokens. **Saves ~63,000 tokens per conversation.**
+> **Last scanned:** 2026-10-24 22:04 — re-run after significant changes
 
 ---
 
@@ -233,6 +233,7 @@
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **Logo** — props: className — `components/logo.tsx`
 - **MobileMenu** [client] — props: nav — `components/mobile-menu.tsx`
+- **ProductBadge** — props: soldOut, badge — `components/product-badge.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
@@ -614,11 +615,11 @@
 - `components/legal/legal-value.tsx` — imported by **4** files
 - `components/legal/legal-page.tsx` — imported by **4** files
 - `lib/content/registry.ts` — imported by **4** files
+- `components/product-badge.tsx` — imported by **3** files
 - `lib/uuid.ts` — imported by **3** files
 - `lib/mondial-relay/types.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/contenu/actions.ts` — imported by **2** files
-- `app/(admin)/admin/(panel)/produits/image-upload.tsx` — imported by **2** files
 
 ## Import Map (who imports what)
 
@@ -638,7 +639,7 @@
 # Test Coverage
 
 > **62%** of routes and models are covered by tests
-> 97 test files found
+> 98 test files found
 
 ## Covered Routes
 

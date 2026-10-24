@@ -23,7 +23,10 @@ export function VaseSuggestions({ vases, copy }: { vases: ShopProduct[]; copy: P
       <p className="vase-suggest__lead">{copy.lead}</p>
       <ul className="vase-suggest__grid">
         {vases.map((v) => (
-          <li key={v.slug} className="vase-suggest__card">
+          <li
+            key={v.slug}
+            className={`vase-suggest__card${v.soldOut ? " is-sold-out" : ""}`}
+          >
             <div className="vase-suggest__media">
               <ProductFigure
                 category={v.category}
@@ -39,13 +42,15 @@ export function VaseSuggestions({ vases, copy }: { vases: ShopProduct[]; copy: P
             </div>
             <button
               type="button"
-              className="btn btn--filled vase-suggest__add"
-              onClick={() =>
-                add({ slug: v.slug, name: v.name, priceCents: v.priceCents })
-              }
-              aria-label={`Ajouter ${v.name} au panier`}
+              className={`btn btn--filled vase-suggest__add${v.soldOut ? " is-sold-out" : ""}`}
+              onClick={() => {
+                if (v.soldOut) return;
+                add({ slug: v.slug, name: v.name, priceCents: v.priceCents });
+              }}
+              aria-disabled={v.soldOut || undefined}
+              aria-label={v.soldOut ? `${v.name}, épuisé` : `Ajouter ${v.name} au panier`}
             >
-              Ajouter <ArrowRight />
+              {v.soldOut ? <>Épuisé</> : <>Ajouter <ArrowRight /></>}
             </button>
           </li>
         ))}
