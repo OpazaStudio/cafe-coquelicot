@@ -12,7 +12,7 @@
 
 - **[Payments](./payments.md)** — 1 routes — touches: auth, payment
 - **[Admin](./admin.md)** — 1 routes — touches: auth, payment, upload
-- **[Route](./route.md)** — 1 routes — touches: auth, db
+- **[Route](./route.md)** — 1 routes — touches: auth, db, payment
 
 **Database:** drizzle, 10 models — see [database.md](./database.md)
 

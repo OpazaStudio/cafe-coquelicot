@@ -4,14 +4,14 @@
 
 > 3 routes | 10 models | 114 components | 55 lib files | 31 env vars | 6 middleware | 62% test coverage
 > **Token savings:** this file is ~8,800 tokens. Without it, AI exploration would cost ~71,500 tokens. **Saves ~62,700 tokens per conversation.**
-> **Last scanned:** 2026-10-24 18:51 — re-run after significant changes
+> **Last scanned:** 2026-10-24 19:50 — re-run after significant changes
 
 ---
 
 # Routes
 
 - `POST` `/api/admin/product-image` → out: { error } [auth, payment, upload]
-- `POST` `/api/e2e/orders` → out: { error } [auth, db] ✓
+- `POST` `/api/e2e/orders` → out: { error } [auth, db, payment] ✓
 - `POST` `/api/stripe/webhook` [auth, payment]
 
 ---
