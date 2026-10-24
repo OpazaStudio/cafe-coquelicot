@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**51 library files** across 35 modules
+**53 library files** across 36 modules
 
 ## Content (5 files)
 
@@ -44,6 +44,11 @@
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession, getCurrentUser
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, Session, SESSION_COOKIE, SESSION_DURATION_MS
 
+## Checkout (2 files)
+
+- `lib/checkout/abandon.ts` — abandonPendingOrder
+- `lib/checkout/errors.ts` — CheckoutError
+
 ## Bg-tweak (1 files)
 
 - `lib/bg-tweak/state.ts` — isHex, isBgName, isSectionKey, decodeState, encodeState, contrastRatio, …
@@ -51,10 +56,6 @@
 ## Cart (1 files)
 
 - `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
-
-## Checkout (1 files)
-
-- `lib/checkout/abandon.ts` — abandonPendingOrder
 
 ## Contact-submissions.ts (1 files)
 
@@ -143,6 +144,10 @@
 ## Stats.ts (1 files)
 
 - `lib/stats.ts` — getKpis, getRevenueByDay, getTopProducts, getRecentOrders, Kpis, DayPoint, …
+
+## Stock (1 files)
+
+- `lib/stock/reserve.ts` — reserveStock, StockReservation
 
 ## Storage.ts (1 files)
 

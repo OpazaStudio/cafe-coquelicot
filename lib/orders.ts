@@ -1,6 +1,7 @@
 // Cycle de vie des commandes. Toutes les écritures passent par ici
 // (action checkout, webhook Stripe, page de confirmation, admin).
 import { and, asc, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { CheckoutError } from "./checkout/errors";
 import type { Db, Tx } from "./db/client";
 import {
   orderItems,
@@ -32,11 +33,12 @@ import {
   DONE_RETENTION_MS,
   type PrepStatus,
 } from "./prep-status";
+import { resolveStockKey } from "./products";
+import { reserveStock } from "./stock/reserve";
 import { isUuid } from "./uuid";
 
 export { MONDIAL_RELAY_FEE_CENTS, type Fulfillment };
-
-export class CheckoutError extends Error {}
+export { CheckoutError };
 
 export class OrderStatusConflictError extends Error {}
 
@@ -56,6 +58,7 @@ type ResolvedLine = {
   colorId: string | null;
   sizeLabel: string | null;
   colorLabel: string | null;
+  stockSizeId: string | null;
 };
 
 export type CheckoutCustomerInput = {
@@ -186,7 +189,18 @@ export async function createPendingOrder(
       throw new CheckoutError(`Ce produit n'a pas de coloris (${p.name}).`);
     }
 
-    return { product: p, qty: item.qty, priceCents, sizeId, colorId, sizeLabel, colorLabel };
+    const stockKey = resolveStockKey(p, sizes, sizeId);
+
+    return {
+      product: p,
+      qty: item.qty,
+      priceCents,
+      sizeId,
+      colorId,
+      sizeLabel,
+      colorLabel,
+      stockSizeId: stockKey.table === "product_sizes" ? stockKey.id : null,
+    };
   });
 
   const subtotalCents = resolved.reduce((sum, l) => sum + l.priceCents * l.qty, 0);
@@ -198,6 +212,18 @@ export async function createPendingOrder(
   const cardFeeCents = cardMessage ? CARD_FEE_CENTS : 0;
 
   return db.transaction(async (tx) => {
+    const reservations = await reserveStock(
+      tx,
+      resolved.map((l) => ({
+        productId: l.product.id,
+        sizeId: l.stockSizeId,
+        qty: l.qty,
+        productName: l.product.name,
+        sizeLabel: l.sizeLabel,
+      })),
+    );
+    const reserved = new Map(reservations.map((r) => [r.orderItemIndex, r]));
+
     const [order] = await tx
       .insert(orders)
       .values({
@@ -234,7 +260,7 @@ export async function createPendingOrder(
       })
       .returning();
 
-    const values: NewOrderItemRow[] = resolved.map((l) => ({
+    const values: NewOrderItemRow[] = resolved.map((l, index) => ({
       orderId: order.id,
       productId: l.product.id,
       nameSnapshot: l.product.name,
@@ -244,6 +270,9 @@ export async function createPendingOrder(
       colorId: l.colorId,
       sizeLabelSnapshot: l.sizeLabel,
       colorLabelSnapshot: l.colorLabel,
+      stockReservedQty: reserved.get(index)?.reservedQty ?? 0,
+      stockReservedSizeId: reserved.get(index)?.sizeId ?? null,
+      stockReservedProductId: reserved.get(index)?.productId ?? null,
     }));
     const insertedItems = await tx.insert(orderItems).values(values).returning();
 

@@ -39,7 +39,7 @@ vi.mock("@/lib/stripe-session", async (importOriginal) => {
 import { startCheckout } from "@/app/checkout/actions";
 import { abandonPendingOrder } from "@/lib/checkout/abandon";
 import { getDb } from "@/lib/db/client";
-import { orders } from "@/lib/db/schema";
+import { orders, products } from "@/lib/db/schema";
 import {
   CheckoutError,
   attachStripeSession,
@@ -189,6 +189,40 @@ describe("startCheckout : compensation de la commande en attente", () => {
     expect(mocks.sessionsCreate).not.toHaveBeenCalled();
   });
 
+  it("renvoie le refus de stock au client, sans commande ni appel à Stripe", async () => {
+    const db = await getDb();
+    const slug = "bouquet-stock-refuse";
+    const [limite] = await db
+      .insert(products)
+      .values({
+        slug,
+        name: "bouquet limité",
+        description: "Édition limitée.",
+        priceCents: 4000,
+        category: "frais",
+        stockQty: 1,
+      })
+      .returning({ id: products.id });
+    const email = uniqueEmail("stock-refuse");
+
+    const res = await startCheckout(undefined, formDataFor(email, [{ slug, qty: 2 }]));
+
+    expect(res).toEqual({
+      error:
+        "Stock insuffisant pour bouquet limité (2 demandés). " +
+        "Réduisez la quantité ou retirez-le du panier.",
+    });
+    expect(mocks.sessionsCreate).not.toHaveBeenCalled();
+    expect(mocks.redirect).not.toHaveBeenCalled();
+    expect(expireSessionForCancel).not.toHaveBeenCalled();
+    expect(await statusOfOrderFor(email)).toBeUndefined();
+    const [row] = await db
+      .select({ stockQty: products.stockQty })
+      .from(products)
+      .where(eq(products.id, limite.id));
+    expect(row.stockQty).toBe(1);
+  });
+
   it("laisse la commande pending quand Stripe est injoignable à la compensation", async () => {
     const email = uniqueEmail("injoignable");
     mocks.sessionsCreate.mockRejectedValue(new Error("stripe down"));
@@ -317,6 +351,23 @@ describe("startCheckout : session déjà rattachée quand l'initialisation écho
       });
     },
   );
+});
+
+describe("startCheckout : expiration de la session Stripe", () => {
+  it("pose expires_at à 35 minutes, au-dessus du plancher Stripe de 30", async () => {
+    const email = uniqueEmail("expires-at");
+    sessionCreated("cs_test_expires_at");
+
+    const before = Math.floor(Date.now() / 1000);
+    await expect(startCheckout(undefined, formDataFor(email))).rejects.toThrow("NEXT_REDIRECT");
+    const after = Math.floor(Date.now() / 1000);
+
+    const { expires_at: expiresAt } = mocks.sessionsCreate.mock.calls[0][0] as {
+      expires_at?: number;
+    };
+    expect(expiresAt).toBeGreaterThanOrEqual(before + 35 * 60);
+    expect(expiresAt).toBeLessThanOrEqual(after + 35 * 60);
+  });
 });
 
 describe("abandonPendingOrder", () => {

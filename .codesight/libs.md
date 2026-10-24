@@ -46,6 +46,7 @@
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
 - `lib/checkout/abandon.ts` — function abandonPendingOrder: (db, orderId) => Promise<void>
+- `lib/checkout/errors.ts` — class CheckoutError
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -173,7 +174,7 @@
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
   - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
-  - _...15 more_
+  - _...14 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -253,6 +254,7 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
 - `lib/storage.ts`
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<

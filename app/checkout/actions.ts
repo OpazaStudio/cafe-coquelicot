@@ -29,6 +29,8 @@ const ItemsSchema = z
 
 export type CheckoutState = { error: string } | undefined;
 
+const CHECKOUT_SESSION_TTL_SECONDS = 35 * 60;
+
 export async function startCheckout(
   _prev: CheckoutState,
   formData: FormData,
@@ -58,9 +60,11 @@ export async function startCheckout(
     );
     created = { db, orderId: order.id };
 
+    const expiresAt = Math.floor(Date.now() / 1000) + CHECKOUT_SESSION_TTL_SECONDS;
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       locale: "fr",
+      expires_at: expiresAt,
       customer_email: order.customerEmail,
       client_reference_id: order.id,
       metadata: { orderId: order.id, orderNumber: order.number },

@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 114 components | 51 lib files | 31 env vars | 6 middleware | 62% test coverage
-> **Token savings:** this file is ~8,700 tokens. Without it, AI exploration would cost ~70,500 tokens. **Saves ~61,700 tokens per conversation.**
-> **Last scanned:** 2026-10-24 16:55 — re-run after significant changes
+> 3 routes | 10 models | 114 components | 53 lib files | 31 env vars | 6 middleware | 62% test coverage
+> **Token savings:** this file is ~8,800 tokens. Without it, AI exploration would cost ~71,000 tokens. **Saves ~62,200 tokens per conversation.**
+> **Last scanned:** 2026-10-24 17:54 — re-run after significant changes
 
 ---
 
@@ -304,6 +304,7 @@
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
 - `lib/checkout/abandon.ts` — function abandonPendingOrder: (db, orderId) => Promise<void>
+- `lib/checkout/errors.ts` — class CheckoutError
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -431,7 +432,7 @@
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
   - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
-  - _...15 more_
+  - _...14 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -511,6 +512,7 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
 - `lib/storage.ts`
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<
@@ -596,7 +598,7 @@
 ## Most Imported Files (change these carefully)
 
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
-- `tests/helpers/db.ts` — imported by **14** files
+- `tests/helpers/db.ts` — imported by **15** files
 - `tests/e2e/helpers.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
@@ -619,7 +621,7 @@
 ## Import Map (who imports what)
 
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +13 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +9 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +10 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +8 more
 - `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
@@ -634,7 +636,7 @@
 # Test Coverage
 
 > **62%** of routes and models are covered by tests
-> 94 test files found
+> 95 test files found
 
 ## Covered Routes
 
