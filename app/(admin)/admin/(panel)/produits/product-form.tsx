@@ -30,6 +30,8 @@ type Props = {
   sizes?: ProductSizeRow[];
   colors?: ProductColorRow[];
   images?: ProductImageRow[];
+  pendingBySizeId?: Map<string, number>;
+  pendingProductQty?: number;
   submitLabel: string;
 };
 
@@ -42,6 +44,8 @@ type SizeDraft = {
   label: string;
   price: string;
   active: boolean;
+  stockQty: string;
+  stockQtyInitial?: string;
 };
 type ColorDraft = {
   key: string;
@@ -53,6 +57,14 @@ type ColorDraft = {
 
 function centsToPrice(cents: number): string {
   return (cents / 100).toFixed(2).replace(".", ",").replace(/,00$/, "");
+}
+
+function stockToDraft(qty: number | null | undefined): string {
+  return qty == null ? "" : String(qty);
+}
+
+function heldLabel(units: number): string {
+  return `+ ${units} retenue${units > 1 ? "s" : ""} par des commandes en attente de paiement`;
 }
 
 function FieldErrors({ errors }: { errors?: string[] }) {
@@ -73,6 +85,8 @@ export function ProductForm({
   sizes: initialSizes,
   colors: initialColors,
   images: initialImages,
+  pendingBySizeId,
+  pendingProductQty,
   submitLabel,
 }: Props) {
   const [state, formAction, pending] = useActionState<ProductFormState, FormData>(
@@ -135,8 +149,12 @@ export function ProductForm({
       label: s.label,
       price: centsToPrice(s.priceCents),
       active: s.active,
+      stockQty: stockToDraft(s.stockQty),
+      stockQtyInitial: stockToDraft(s.stockQty),
     })),
   );
+  const [stockQty, setStockQty] = useState(() => stockToDraft(product?.stockQty));
+  const stockQtyInitial = stockToDraft(product?.stockQty);
   const [colors, setColors] = useState<ColorDraft[]>(
     (initialColors ?? []).map((c) => ({
       key: c.id,
@@ -150,7 +168,14 @@ export function ProductForm({
   const defaultPrice =
     product != null ? centsToPrice(product.priceCents) : "";
 
-  function updateSize(i: number, patch: Partial<SizeDraft>) {
+  function heldBySize(id?: string): number {
+    return (id && pendingBySizeId?.get(id)) || 0;
+  }
+
+  function updateSize(
+    i: number,
+    patch: Partial<Omit<SizeDraft, "key" | "id" | "stockQtyInitial">>,
+  ) {
     setSizes((list) => list.map((s, j) => (j === i ? { ...s, ...patch } : s)));
   }
   function updateColor(i: number, patch: Partial<ColorDraft>) {
@@ -254,6 +279,29 @@ export function ProductForm({
         </label>
       </div>
 
+      {sizes.length === 0 && (
+        <label className="flex w-48 flex-col gap-1.5">
+          <span className="text-sm font-medium text-stone-700">
+            Disponible à la vente
+          </span>
+          <input
+            name="stockQty"
+            aria-label="Stock du produit"
+            value={stockQty}
+            type="text"
+            inputMode="numeric"
+            onChange={(e) => setStockQty(e.target.value)}
+            className={inputCls}
+            placeholder="Illimité"
+          />
+          <input type="hidden" name="stockQtyInitial" value={stockQtyInitial} />
+          {(pendingProductQty ?? 0) > 0 && (
+            <span className="text-xs text-muted">{heldLabel(pendingProductQty ?? 0)}</span>
+          )}
+          <FieldErrors errors={state?.errors?.stockQty} />
+        </label>
+      )}
+
       {/* ── Tailles (la taille porte le prix) ─────────────────────── */}
       <fieldset className="flex flex-col gap-3 rounded-xl border border-line p-4">
         <legend className="px-1 text-sm font-semibold text-stone-700">
@@ -263,8 +311,12 @@ export function ProductForm({
           </span>
         </legend>
         {sizes.map((s, i) => (
-          <div key={s.key} className="flex items-end gap-2" data-testid={`size-row-${i}`}>
-            <label className="flex flex-1 flex-col gap-1">
+          <div
+            key={s.key}
+            className="flex flex-wrap items-end gap-2"
+            data-testid={`size-row-${i}`}
+          >
+            <label className="flex min-w-32 flex-1 flex-col gap-1">
               <span className="text-xs text-muted">Libellé</span>
               <input
                 aria-label={`Libellé taille ${i + 1}`}
@@ -284,6 +336,21 @@ export function ProductForm({
                 className={inputCls}
                 placeholder="48"
               />
+            </label>
+            <label className="flex w-36 flex-col gap-1">
+              <span className="text-xs text-muted">Disponible à la vente</span>
+              <input
+                aria-label={`Stock taille ${i + 1}`}
+                value={s.stockQty}
+                type="text"
+                inputMode="numeric"
+                onChange={(e) => updateSize(i, { stockQty: e.target.value })}
+                className={inputCls}
+                placeholder="Illimité"
+              />
+              {heldBySize(s.id) > 0 && (
+                <span className="text-xs text-muted">{heldLabel(heldBySize(s.id))}</span>
+              )}
             </label>
             <label className="flex items-center gap-1.5 pb-2.5 text-xs text-muted">
               <input
@@ -309,7 +376,7 @@ export function ProductForm({
           onClick={() =>
             setSizes((l) => [
               ...l,
-              { key: nextKey(), label: "", price: "", active: true },
+              { key: nextKey(), label: "", price: "", active: true, stockQty: "" },
             ])
           }
           className="self-start rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"

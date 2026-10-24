@@ -2,12 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql, type AnyColumn, type SQL } from "drizzle-orm";
 import * as z from "zod";
 import { verifySession } from "@/lib/auth/dal";
-import { getDb, type Tx } from "@/lib/db/client";
+import { getDb, type Db, type Tx } from "@/lib/db/client";
 import {
-  productCategory,
   productColors,
   productImages,
   productSizes,
@@ -18,7 +17,9 @@ import {
 } from "@/lib/db/schema";
 import { parsePriceToCents } from "@/lib/money";
 import { IMAGE_PATH_RE } from "@/lib/product-image";
-import { PRODUCT_FRAME_IDS } from "@/lib/product-frame";
+import { pendingHoldsBySizeId, type PendingHold } from "@/lib/products";
+import { readForm } from "./form-schema";
+import { compareStockKeys, type StockKeyTable } from "@/lib/stock/key-order";
 import {
   RichDocSchema,
   isRichDocEmpty,
@@ -37,41 +38,38 @@ const optionalHexColor = z.preprocess(
     .nullable(),
 );
 
-const ProductSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { error: "Le nom est requis." })
-    .max(80, { error: "80 caractères maximum." }),
-  price: z
-    .string()
-    .trim()
-    .regex(/^\d+([.,]\d{1,2})?$/, {
-      error: "Prix invalide — ex : 48 ou 48,50.",
-    }),
-  category: z.enum(productCategory.enumValues, {
-    error: "Catégorie invalide.",
-  }),
-  badge: z.string().trim().max(20, { error: "20 caractères maximum." }),
-  illustrationVariant: z.coerce
-    .number()
-    .int()
-    .min(0)
-    .max(5, { error: "Variante entre 0 et 5." }),
-  imageFrame: z.enum(PRODUCT_FRAME_IDS, { error: "Format de cadre invalide." }),
-  active: z.boolean(),
-});
+const STOCK_INVALID =
+  "stock invalide — un nombre entier jusqu'à 9999, ou vide pour illimité.";
+const STOCK_INITIAL_MISSING =
+  "stock initial manquant — rechargez la page avant d'enregistrer.";
+const StockValueSchema = z
+  .string({ error: STOCK_INVALID })
+  .trim()
+  .regex(/^\d{0,4}$/, { error: STOCK_INVALID })
+  .optional();
 
 // Variantes sérialisées en JSON par le formulaire client.
-const SizeSchema = z.object({
-  id: z.uuid().optional(),
-  key: z.string().trim().min(1).max(64),
-  label: z.string().trim().min(1, { error: "Libellé de taille requis." }).max(40),
-  price: z.string().trim().regex(/^\d+([.,]\d{1,2})?$/, {
-    error: "Prix de taille invalide.",
-  }),
-  active: z.boolean(),
-});
+const SizeSchema = z
+  .object({
+    id: z.uuid().optional(),
+    key: z.string().trim().min(1).max(64),
+    label: z.string().trim().min(1, { error: "Libellé de taille requis." }).max(40),
+    price: z.string().trim().regex(/^\d+([.,]\d{1,2})?$/, {
+      error: "Prix de taille invalide.",
+    }),
+    active: z.boolean(),
+    stockQty: StockValueSchema,
+    stockQtyInitial: StockValueSchema,
+  })
+  .superRefine((size, ctx) => {
+    if (size.id && size.stockQty !== undefined && size.stockQtyInitial === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["stockQtyInitial"],
+        message: STOCK_INITIAL_MISSING,
+      });
+    }
+  });
 const ColorSchema = z.object({
   id: z.uuid().optional(),
   key: z.string().trim().min(1).max(64),
@@ -108,16 +106,29 @@ export type ProductFormState =
   | { errors: Partial<Record<string, string[]>>; message?: string }
   | undefined;
 
-function readForm(formData: FormData) {
-  return ProductSchema.safeParse({
-    name: formData.get("name"),
-    price: formData.get("price"),
-    category: formData.get("category"),
-    badge: formData.get("badge") ?? "",
-    illustrationVariant: formData.get("illustrationVariant"),
-    imageFrame: formData.get("imageFrame") ?? "1:1",
-    active: formData.get("active") === "on",
+function productStockSchema(existing: boolean) {
+  return z
+    .object({ stockQty: StockValueSchema, stockQtyInitial: StockValueSchema })
+    .superRefine((stock, ctx) => {
+      if (existing && stock.stockQty !== undefined && stock.stockQtyInitial === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["stockQtyInitial"],
+          message: STOCK_INITIAL_MISSING,
+        });
+      }
+    });
+}
+
+function readProductStock(formData: FormData, existing: boolean) {
+  return productStockSchema(existing).safeParse({
+    stockQty: formData.get("stockQty") ?? undefined,
+    stockQtyInitial: formData.get("stockQtyInitial") ?? undefined,
   });
+}
+
+function productStockMessage(issue: FormIssue): string {
+  return `Stock du produit : ${issue?.message ?? STOCK_INVALID}`;
 }
 
 type DescriptionResult =
@@ -143,6 +154,32 @@ function readDescription(formData: FormData): DescriptionResult {
   return { rich, plain };
 }
 
+type FormIssue = z.core.$ZodIssue | undefined;
+const STOCK_FIELDS = new Set(["stockQty", "stockQtyInitial"]);
+
+function sizeLabelAt(raw: unknown, index: number): string {
+  const entry = Array.isArray(raw) ? raw[index] : undefined;
+  const label = (entry as { label?: unknown } | undefined)?.label;
+  return typeof label === "string" ? label.trim() : "";
+}
+
+function sizeIssueMessage(raw: unknown, issue: FormIssue): string {
+  const message = issue?.message ?? "Tailles invalides.";
+  const index = issue?.path[0];
+  if (typeof index !== "number" || !STOCK_FIELDS.has(String(issue?.path[1]))) {
+    return message;
+  }
+  const label = sizeLabelAt(raw, index);
+  return label
+    ? `Taille « ${label} » : ${message}`
+    : `Taille ${index + 1} : ${message}`;
+}
+
+type ProductSizeValues = Omit<
+  NewProductSizeRow,
+  "id" | "stockQty" | "createdAt"
+>;
+
 type SizeInput = z.infer<typeof SizeSchema>;
 type ColorInput = z.infer<typeof ColorSchema>;
 type ImageInput = z.infer<typeof ImageSchema>;
@@ -162,7 +199,7 @@ function readVariants(formData: FormData): Variants | ProductFormState {
   }
   const s = SizesSchema.safeParse(rawSizes);
   if (!s.success) {
-    return { errors: { sizes: [s.error.issues[0]?.message ?? "Tailles invalides."] } };
+    return { errors: { sizes: [sizeIssueMessage(rawSizes, s.error.issues[0])] } };
   }
   const c = ColorsSchema.safeParse(rawColors);
   if (!c.success) {
@@ -200,23 +237,41 @@ async function syncChildren(
   // l'ordre de soumission est préservé.
   const sizeIdByKey = new Map<string, string>();
   const newSizes: NewProductSizeRow[] = [];
-  for (const [i, s] of sizes.entries()) {
+  const submittedSizes = [...sizes.entries()];
+  for (const [, s] of submittedSizes) {
+    if (s.id) sizeIdByKey.set(s.key, s.id);
+  }
+  const lockOrdered = submittedSizes
+    .flatMap(([i, s]) => (s.id ? [{ index: i, size: s, id: s.id }] : []))
+    .sort((a, b) =>
+      compareStockKeys(
+        { table: "product_sizes", id: a.id },
+        { table: "product_sizes", id: b.id },
+      ),
+    );
+  for (const { index: i, size: s, id } of lockOrdered) {
     const values = {
       productId,
       label: s.label,
       priceCents: parsePriceToCents(s.price),
       sortOrder: i,
       active: s.active,
-    };
-    if (s.id) {
-      sizeIdByKey.set(s.key, s.id);
-      await tx
-        .update(productSizes)
-        .set(values)
-        .where(and(eq(productSizes.id, s.id), eq(productSizes.productId, productId)));
-    } else {
-      newSizes.push(values);
-    }
+    } satisfies ProductSizeValues;
+    await tx
+      .update(productSizes)
+      .set(values)
+      .where(and(eq(productSizes.id, id), eq(productSizes.productId, productId)));
+  }
+  for (const [i, s] of submittedSizes) {
+    if (s.id) continue;
+    newSizes.push({
+      productId,
+      label: s.label,
+      priceCents: parsePriceToCents(s.price),
+      sortOrder: i,
+      active: s.active,
+      stockQty: stockNumber(s.stockQty) ?? null,
+    });
   }
   if (newSizes.length) {
     const inserted = await tx
@@ -315,6 +370,145 @@ async function syncChildren(
   return staleImagePaths;
 }
 
+type StockDelta = {
+  table: StockKeyTable;
+  id: string;
+  productId: string;
+  entry: number | null;
+  initial: number | null | undefined;
+};
+
+function stockNumber(value: string | undefined): number | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === "") return null;
+  return Number(value);
+}
+
+function stockDeltaFor(
+  table: StockKeyTable,
+  id: string,
+  productId: string,
+  entry: string | undefined,
+  initial: string | undefined,
+): StockDelta | null {
+  const next = stockNumber(entry);
+  if (next === undefined) return null;
+  const before = stockNumber(initial);
+  if (next === before) return null;
+  return { table, id, productId, entry: next, initial: before };
+}
+
+function absoluteStock(delta: StockDelta): number | null {
+  return delta.entry;
+}
+
+function nextStockQty(column: AnyColumn, delta: StockDelta): SQL | number | null {
+  if (delta.entry === null || delta.initial == null) return absoluteStock(delta);
+  const shift = delta.entry - delta.initial;
+  return sql`CASE WHEN ${column} IS NULL THEN ${absoluteStock(delta)} ELSE GREATEST(0, ${column} + ${shift}) END`;
+}
+
+async function applyStockDeltas(tx: Tx, deltas: StockDelta[]): Promise<void> {
+  for (const delta of [...deltas].sort(compareStockKeys)) {
+    if (delta.table === "product_sizes") {
+      await tx
+        .update(productSizes)
+        .set({ stockQty: nextStockQty(productSizes.stockQty, delta) })
+        .where(
+          and(
+            eq(productSizes.id, delta.id),
+            eq(productSizes.productId, delta.productId),
+          ),
+        );
+    } else {
+      await tx
+        .update(products)
+        .set({ stockQty: nextStockQty(products.stockQty, delta) })
+        .where(eq(products.id, delta.id));
+    }
+  }
+}
+
+type ExistingSize = {
+  id: string;
+  label: string;
+  active: boolean;
+  stockQty: number | null;
+};
+
+function pendingHoldMessage(label: string, count: number, target: string): string {
+  const many = count > 1;
+  return (
+    `Taille « ${label} » : ${count} commande${many ? "s" : ""} en attente de paiement ` +
+    `${many ? "retiennent" : "retient"} encore son stock — impossible de ${target}. ` +
+    `Attendez ${many ? "leur" : "son"} expiration ou annulez-${many ? "les" : "la"}.`
+  );
+}
+
+async function firstPendingHold(
+  db: Db,
+  sizes: { id: string; label: string }[],
+  target: string,
+): Promise<string | null> {
+  const holds = await pendingHoldsBySizeId(
+    db,
+    sizes.map((s) => s.id),
+  );
+  for (const size of sizes) {
+    const hold = holds.get(size.id);
+    if (hold && hold.orders > 0) {
+      return pendingHoldMessage(size.label, hold.orders, target);
+    }
+  }
+  return null;
+}
+
+function refuseSizeChanges(
+  submitted: SizeInput[],
+  existing: ExistingSize[],
+  holds: Map<string, PendingHold>,
+  productEntry: string | undefined,
+): string | null {
+  const kept = new Set(submitted.flatMap((s) => (s.id ? [s.id] : [])));
+  for (const size of existing) {
+    if (kept.has(size.id)) continue;
+    const hold = holds.get(size.id);
+    if (hold && hold.orders > 0) {
+      return pendingHoldMessage(size.label, hold.orders, "la supprimer");
+    }
+  }
+
+  if (!existing.some((s) => s.active)) return null;
+  if (submitted.some((s) => s.active)) return null;
+  if (submitted.length === 0 && typeof stockNumber(productEntry) === "number") {
+    return null;
+  }
+  const losing = existing.flatMap((size) => {
+    if (!size.active) return [];
+    const entry = submitted.find((s) => s.id === size.id);
+    if (entry === undefined) return [{ size, removed: true, stockQty: size.stockQty }];
+    if (entry.active) return [];
+    const next = stockNumber(entry.stockQty);
+    return [
+      { size, removed: false, stockQty: next === undefined ? size.stockQty : next },
+    ];
+  });
+  const finite = losing.find((l) => l.stockQty !== null);
+  if (!finite) return null;
+  if (finite.removed) {
+    return (
+      `Taille « ${finite.size.label} » : retirer la dernière taille active d'un produit ` +
+      `à stock limité le remettrait en vente illimitée. Renseignez « Disponible à la ` +
+      `vente » sur le produit, ou gardez une taille active.`
+    );
+  }
+  return (
+    `Taille « ${finite.size.label} » : impossible de désactiver la dernière taille active ` +
+    `d'un produit à stock limité — le produit repasserait en vente illimitée. ` +
+    `Gardez une taille active, ou passez son stock à « Illimité » (champ vide) d'abord.`
+  );
+}
+
 function coverOf(images: ImageInput[]) {
   return {
     imagePath: images[0]?.path ?? null,
@@ -358,6 +552,10 @@ export async function createProduct(
   const variants = readVariants(formData);
   if (variants && "errors" in variants) return variants;
   const v = variants as Variants;
+  const stock = readProductStock(formData, false);
+  if (!stock.success) {
+    return { errors: { stockQty: [productStockMessage(stock.error.issues[0])] } };
+  }
 
   const db = await getDb();
   const { price, badge, ...rest } = parsed.data;
@@ -373,6 +571,8 @@ export async function createProduct(
         descriptionRich: description.rich,
         priceCents: parsePriceToCents(price),
         badge: badge === "" ? null : badge,
+        stockQty:
+          v.sizes.length === 0 ? (stockNumber(stock.data.stockQty) ?? null) : null,
       })
       .returning({ id: products.id });
     await syncChildren(tx, created.id, v);
@@ -396,9 +596,56 @@ export async function updateProduct(
   const variants = readVariants(formData);
   if (variants && "errors" in variants) return variants;
   const v = variants as Variants;
+  const stock = readProductStock(formData, true);
+  if (!stock.success) {
+    return { errors: { stockQty: [productStockMessage(stock.error.issues[0])] } };
+  }
 
   const db = await getDb();
   const { price, badge, ...rest } = parsed.data;
+  const existingSizes = await db
+    .select({
+      id: productSizes.id,
+      label: productSizes.label,
+      active: productSizes.active,
+      stockQty: productSizes.stockQty,
+    })
+    .from(productSizes)
+    .where(eq(productSizes.productId, id))
+    .orderBy(asc(productSizes.sortOrder));
+  const holds = await pendingHoldsBySizeId(
+    db,
+    existingSizes.map((s) => s.id),
+  );
+  const refusal = refuseSizeChanges(
+    v.sizes,
+    existingSizes,
+    holds,
+    stock.data.stockQty,
+  );
+  if (refusal) return { errors: { sizes: [refusal] } };
+  const deltas = v.sizes.flatMap((s) => {
+    const delta = s.id
+      ? stockDeltaFor(
+          "product_sizes",
+          s.id,
+          id,
+          s.stockQty,
+          s.stockQtyInitial,
+        )
+      : null;
+    return delta ? [delta] : [];
+  });
+  if (v.sizes.length === 0) {
+    const delta = stockDeltaFor(
+      "products",
+      id,
+      id,
+      stock.data.stockQty,
+      stock.data.stockQtyInitial,
+    );
+    if (delta) deltas.push(delta);
+  }
   // I2 : l'ancienne couverture est lue AVANT la transaction (simple lecture,
   // pas un appel Storage) et purgée seulement après le commit. Elle a
   // normalement son pendant dans product_images, mais pas si la migration
@@ -431,6 +678,7 @@ export async function updateProduct(
       return;
     }
     stalePaths = await syncChildren(tx, id, v);
+    await applyStockDeltas(tx, deltas);
   });
   if (!found) {
     return { errors: {}, message: "Produit introuvable." };
@@ -464,6 +712,13 @@ export async function setProductActive(
 export async function deleteProduct(id: string): Promise<void> {
   await verifySession();
   const db = await getDb();
+  const sizeRows = await db
+    .select({ id: productSizes.id, label: productSizes.label })
+    .from(productSizes)
+    .where(eq(productSizes.productId, id))
+    .orderBy(asc(productSizes.sortOrder));
+  const held = await firstPendingHold(db, sizeRows, "supprimer le produit");
+  if (held) throw new Error(held);
   // I3 : collecte les chemins Storage (photos + coloris) avant la
   // suppression — les lignes filles disparaissent en cascade (FK), on ne
   // pourrait plus les lire après.

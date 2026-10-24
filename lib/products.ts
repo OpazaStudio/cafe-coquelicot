@@ -1,7 +1,9 @@
 import { cache } from "react";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, gt, inArray } from "drizzle-orm";
 import { getDb, type Db } from "./db/client";
 import {
+  orderItems,
+  orders,
   productColors,
   productImages,
   productSizes,
@@ -268,6 +270,65 @@ export async function getProductRow(id: string): Promise<ProductRow | null> {
   return rows[0] ?? null;
 }
 
+export type PendingHold = { units: number; orders: number };
+
+export async function pendingHoldsBySizeId(
+  db: Db,
+  sizeIds: string[],
+): Promise<Map<string, PendingHold>> {
+  const held = new Map<string, PendingHold>();
+  if (sizeIds.length === 0) return held;
+  const rows = await db
+    .select({
+      sizeId: orderItems.stockReservedSizeId,
+      orderId: orderItems.orderId,
+      qty: orderItems.stockReservedQty,
+    })
+    .from(orderItems)
+    .innerJoin(orders, eq(orders.id, orderItems.orderId))
+    .where(
+      and(
+        eq(orders.status, "pending"),
+        gt(orderItems.stockReservedQty, 0),
+        inArray(orderItems.stockReservedSizeId, sizeIds),
+      ),
+    );
+  const units = new Map<string, number>();
+  const orderIds = new Map<string, Set<string>>();
+  for (const row of rows) {
+    if (!row.sizeId) continue;
+    units.set(row.sizeId, (units.get(row.sizeId) ?? 0) + row.qty);
+    const seen = orderIds.get(row.sizeId) ?? new Set<string>();
+    seen.add(row.orderId);
+    orderIds.set(row.sizeId, seen);
+  }
+  for (const [sizeId, qty] of units) {
+    held.set(sizeId, { units: qty, orders: orderIds.get(sizeId)?.size ?? 0 });
+  }
+  return held;
+}
+
+export async function pendingHoldForProduct(
+  db: Db,
+  productId: string,
+): Promise<PendingHold> {
+  const rows = await db
+    .select({ orderId: orderItems.orderId, qty: orderItems.stockReservedQty })
+    .from(orderItems)
+    .innerJoin(orders, eq(orders.id, orderItems.orderId))
+    .where(
+      and(
+        eq(orders.status, "pending"),
+        gt(orderItems.stockReservedQty, 0),
+        eq(orderItems.stockReservedProductId, productId),
+      ),
+    );
+  return {
+    units: rows.reduce((total, row) => total + row.qty, 0),
+    orders: new Set(rows.map((row) => row.orderId)).size,
+  };
+}
+
 // Produit + TOUTES ses variantes (actives ou non), triées — pour l'édition admin.
 export async function getProductWithVariants(
   db: Db,
@@ -277,6 +338,8 @@ export async function getProductWithVariants(
   sizes: ProductSizeRow[];
   colors: ProductColorRow[];
   images: ProductImageRow[];
+  pendingBySizeId: Map<string, number>;
+  pendingProductQty: number;
 } | null> {
   if (!isUuid(id)) return null;
   const [product] = await db
@@ -300,12 +363,42 @@ export async function getProductWithVariants(
     .from(productImages)
     .where(eq(productImages.productId, id))
     .orderBy(asc(productImages.sortOrder));
-  return { product, sizes, colors, images };
+  const holds = await pendingHoldsBySizeId(
+    db,
+    sizes.map((s) => s.id),
+  );
+  const pendingBySizeId = new Map(
+    [...holds].map(([sizeId, hold]) => [sizeId, hold.units]),
+  );
+  const pendingProductQty = (await pendingHoldForProduct(db, id)).units;
+  return { product, sizes, colors, images, pendingBySizeId, pendingProductQty };
+}
+
+function stockSummary(
+  row: ProductRow,
+  activeSizes: ProductSizeRow[],
+): { soldOut: boolean; remaining: number | null } {
+  if (activeSizes.length === 0) {
+    return { soldOut: row.stockQty === 0, remaining: row.stockQty };
+  }
+  return {
+    soldOut: activeSizes.every((s) => s.stockQty === 0),
+    remaining: activeSizes.some((s) => s.stockQty === null)
+      ? null
+      : activeSizes.reduce((total, s) => total + (s.stockQty ?? 0), 0),
+  };
 }
 
 // Liste admin avec récap variantes (tailles/coloris ACTIFS) et prix « dès ».
 export async function listProductsForAdmin(db: Db): Promise<
-  { row: ProductRow; sizeCount: number; colorCount: number; fromCents: number }[]
+  {
+    row: ProductRow;
+    sizeCount: number;
+    colorCount: number;
+    fromCents: number;
+    soldOut: boolean;
+    remaining: number | null;
+  }[]
 > {
   const rows = (
     await db.select().from(products).orderBy(asc(products.createdAt))
@@ -320,7 +413,13 @@ export async function listProductsForAdmin(db: Db): Promise<
     const fromCents = s.length
       ? Math.min(...s.map((x) => x.priceCents))
       : row.priceCents;
-    return { row, sizeCount: s.length, colorCount: c.length, fromCents };
+    return {
+      row,
+      sizeCount: s.length,
+      colorCount: c.length,
+      fromCents,
+      ...stockSummary(row, s),
+    };
   });
 }
 

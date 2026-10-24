@@ -2,6 +2,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import type { readForm } from "@/app/(admin)/admin/(panel)/produits/form-schema";
 import type { setOrderStatusIfUnchanged } from "@/lib/orders";
 
 const ROOT = process.cwd();
@@ -272,6 +273,7 @@ const stockQtyWriters = STOCK_UPDATES.filter((write) =>
 const STOCK_QTY_WRITERS = [
   { file: RESERVE, fn: "reserveStock" },
   { file: RELEASE, fn: "releaseOrderStock" },
+  { file: ADMIN_PRODUCTS, fn: "applyStockDeltas" },
 ];
 
 describe("invariant : seuls les écrivains déclarés touchent products.stock_qty", () => {
@@ -338,6 +340,16 @@ describe("invariant : seuls les écrivains déclarés touchent products.stock_qt
       ["alpha", true],
       ["beta", false],
     ]);
+  });
+
+  it("ne laisse pas stockQty entrer dans le schéma de readForm", () => {
+    type Data = Extract<Awaited<ReturnType<typeof readForm>>, { success: true }>["data"];
+    type Known = Data["name"];
+    // @ts-expect-error `stockQty` doit rester hors du retour de readForm : il arriverait sinon dans `.set({ ...rest })` de updateProduct, écriture absolue que l'invariant de source ci-dessus ne détecte pas, et qui écraserait les réservations en cours
+    type Refused = Data["stockQty"];
+    const known: Known[] = [];
+    const refused: Refused[] = [];
+    expect([known, refused]).toEqual([[], []]);
   });
 
   it("n'autorise que les écrivains de stock déclarés à décrémenter ou créditer stockQty", () => {

@@ -28,7 +28,7 @@
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
-- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, pendingBySizeId, pendingProductQty, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RichEditor** [client] — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`

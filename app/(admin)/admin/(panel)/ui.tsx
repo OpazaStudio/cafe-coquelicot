@@ -56,11 +56,15 @@ export function Pill({
   tone,
   children,
 }: {
-  tone: "positive" | "neutral";
+  tone: "positive" | "neutral" | "danger";
   children: ReactNode;
 }) {
   const cls =
-    tone === "positive" ? "bg-green-100 text-green-800" : "bg-fill text-ink";
+    tone === "positive"
+      ? "bg-green-100 text-green-800"
+      : tone === "danger"
+        ? "bg-danger-bg text-danger"
+        : "bg-fill text-ink";
   return (
     <span className={`${pillBase} ${cls}`}>
       {children}

@@ -4,7 +4,7 @@
 
 > 3 routes | 10 models | 114 components | 55 lib files | 31 env vars | 6 middleware | 62% test coverage
 > **Token savings:** this file is ~8,800 tokens. Without it, AI exploration would cost ~71,500 tokens. **Saves ~62,700 tokens per conversation.**
-> **Last scanned:** 2026-10-24 19:50 — re-run after significant changes
+> **Last scanned:** 2026-10-24 21:32 — re-run after significant changes
 
 ---
 
@@ -167,7 +167,7 @@
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
-- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, pendingBySizeId, pendingProductQty, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RichEditor** [client] — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
@@ -464,7 +464,7 @@
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - _...12 more_
+  - _...15 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -600,7 +600,7 @@
 ## Most Imported Files (change these carefully)
 
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
-- `tests/helpers/db.ts` — imported by **16** files
+- `tests/helpers/db.ts` — imported by **17** files
 - `tests/e2e/helpers.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
@@ -623,7 +623,7 @@
 ## Import Map (who imports what)
 
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +13 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +11 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +12 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +8 more
 - `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
@@ -638,7 +638,7 @@
 # Test Coverage
 
 > **62%** of routes and models are covered by tests
-> 96 test files found
+> 97 test files found
 
 ## Covered Routes
 

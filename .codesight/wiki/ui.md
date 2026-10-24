@@ -19,7 +19,7 @@
 - **PreviewFrame** — props: src, onLoad, ref — `app/(admin)/admin/(panel)/contenu/preview-frame.tsx`
 - **ImageGallery** — props: images, sizes, colors, onChange, nextKey, frame, onFrameChange — `app/(admin)/admin/(panel)/produits/image-gallery.tsx`
 - **ImageUpload** — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
-- **ProductForm** — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** — props: action, product, initialSizes, initialColors, initialImages, pendingBySizeId, pendingProductQty, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RichEditor** — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
 - **RevenueChartImpl** — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`

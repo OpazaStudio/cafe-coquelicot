@@ -206,7 +206,7 @@
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - _...12 more_
+  - _...15 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
