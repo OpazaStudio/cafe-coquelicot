@@ -172,7 +172,11 @@ describe("startCheckout : compensation de la commande en attente", () => {
 
     expect(res?.error).toBeTruthy();
     expect(await statusOfOrderFor(email)).toBe("pending");
-    expect(errorSpy).toHaveBeenCalledWith(COMPENSATION_IMPOSSIBLE, expect.any(Error));
+    expect(errorSpy).toHaveBeenCalledWith(
+      COMPENSATION_IMPOSSIBLE,
+      expect.objectContaining({ orderId: expect.any(String) }),
+      expect.any(Error),
+    );
   });
 
   it("ne compense pas quand le panier est refusé avant toute commande", async () => {

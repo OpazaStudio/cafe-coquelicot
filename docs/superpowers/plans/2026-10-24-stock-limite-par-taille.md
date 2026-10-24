@@ -457,11 +457,17 @@ Cookie `httpOnly` posé dans `startCheckout` avec l'id de la commande, durée al
 
 `/panier` et `/checkout` sont `force-dynamic` et lisent ce cookie. Les trois pages ISR ne le lisent **jamais**.
 
-- [ ] **Step 5: Wire the cart and checkout views**
+- [ ] **Step 5: Cap `qty` to the available stock in `startCheckout`**
+
+Signalé HIGH par la revue de sécurité automatique comme déni d'inventaire non authentifié. `cartAvailability` calcule déjà exactement ce plafond : l'appliquer côté serveur dans `startCheckout`, avant `createPendingOrder`, borne ce qu'un seul appel peut retenir. `ItemsSchema` autorise aujourd'hui `qty` jusqu'à 99 et 50 lignes, soit un compteur vidé en un appel. Test : une demande de 99 sur une taille à 3 est refusée avec le message exact, aucune commande créée, compteur inchangé.
+
+Le limiteur par IP reste écarté, voir « Ce que ce plan ne fait pas ».
+
+- [ ] **Step 6: Wire the cart and checkout views**
 
 Appel une fois le panier `ready`. Lignes marquées « Épuisé » ou « plus que N », `+` plafonné, CTA désactivé, bouton Retirer dans le récap du checkout. La course restante subsiste : le message de `startCheckout` reste l'oracle.
 
-- [ ] **Step 6: Run tests**
+- [ ] **Step 7: Run tests**
 
 Run: `npx vitest run tests/unit/cart-availability.test.ts tests/unit/start-checkout.test.ts`
 Expected: PASS.
@@ -597,8 +603,12 @@ Lancer `npm run typecheck` **avant** tout run e2e : `next build` ignore les diag
 
 ## Ce que ce plan ne fait pas
 
-- **Pas de limiteur sur `startCheckout`.** `startCheckout` n'a aucun limiteur et une Server Action est appelable directement : un script peut mettre tout le stock fini à zéro et le maintenir en réarmant toutes les 35 minutes. Les moyens disponibles (limiteur en mémoire, donc par instance ; cookie ignorable par un script) ne ferment pas vraiment ce scénario, et une protection durable demanderait un store partagé, donc une table, donc une migration. **Risque résiduel accepté** — boutique de fleuriste, pas vente en série limitée.
-- **Pas de balayage paresseux.** Avec `expires_at` à 35 minutes, une commande fantôme bloque le bouquet 35 minutes au pire, et le webhook `expired` la rattrape. Le balayage ne servirait qu'au cas où aucune session Stripe n'existe, déjà couvert par la compensation de la phase 0.
+- **Pas de limiteur par IP sur `startCheckout`** — mais le plafond de `qty`, lui, est **revenu dans le périmètre** (tâche 7, étape 5) après que la revue de sécurité automatique a classé le déni d'inventaire en HIGH. Le plafond est quasi gratuit et strictement correct : `cartAvailability` calcule déjà la valeur, et sans lui un seul appel peut vider un compteur (`ItemsSchema` autorise `qty` jusqu'à 99 sur 50 lignes).
+
+  Le **limiteur** reste écarté, et c'est un arbitrage assumé, pas un oubli. `lib/rate-limit.ts` ne sait faire que du comptage **en mémoire, par instance serverless** : sur Vercel, un attaquant tombe mécaniquement sur plusieurs instances et le compteur ne converge jamais. Le cookie de réservation (tâche 7) s'ignore depuis un script. Une protection qui tienne demande un store partagé, donc une table, donc une migration — hors de cette phase. **Risque résiduel accepté et à remonter à l'utilisateur** : un script peut maintenir le catalogue limité à « épuisé » en réarmant toutes les 35 minutes, sans une seule vente. Le plafond de `qty` élève le coût de l'attaque sans la rendre impossible.
+- **Pas de balayage paresseux — mais ma justification initiale était fausse**, et l'implémenteur de la tâche 3 l'a démontée. J'avais écrit que le webhook `expired` rattrape les commandes fantômes. Il ne le fait pas sur un chemin : `abandonPendingOrder` appelé avec le verdict `no_session` agit sur une commande à laquelle **aucune session Stripe n'a jamais été attachée**, donc aucun `checkout.session.expired` ne viendra jamais. Si le crédit échoue dans cette transaction, elle revient à `pending` avec le stock retenu, et **rien ne réessaiera**. Même état final si Stripe épuise ses tentatives après un 500.
+
+  La fenêtre est étroite — il faut une erreur de base pendant la libération — mais l'état est permanent et silencieux, ce qui est exactement l'anti-objectif n°2. **Mitigation retenue plutôt que le balayage** : sur ce chemin, journaliser bruyamment avec l'id de commande et les clés retenues, pour qu'un humain puisse recréditer à la main. Le balayage reste hors périmètre parce qu'il ouvre le piège « annuler une commande dont la session est encore payable », que la phase 0 a fermé au prix fort.
 - **Pas de surface `/admin` pour `paid_on_cancelled`.** Aucun verdict de `reconcilePaidSession` n'écrit le stock ; ce cas reste à résolution humaine par l'alerte e-mail.
 - **Pas de remboursement Stripe.** Non-objectif de la spec, inchangé.
 - **Pas de correction de l'inversion d'ordre de verrous** `updateOrderStatus` / `setItemPreparedQty` (40P01), préexistante et désormais observée : à reprendre si elle se manifeste.

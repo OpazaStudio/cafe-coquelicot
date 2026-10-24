@@ -254,6 +254,8 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/stock/key-order.ts` — function compareStockKeys: (a, b) => number, type StockKeyTable
+- `lib/stock/release.ts` — function releaseOrderStock: (tx, orderId) => Promise<void>
 - `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
 - `lib/storage.ts`
   - function storageConfigured: () => boolean

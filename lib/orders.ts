@@ -34,6 +34,7 @@ import {
   type PrepStatus,
 } from "./prep-status";
 import { resolveStockKey } from "./products";
+import { releaseOrderStock } from "./stock/release";
 import { reserveStock } from "./stock/reserve";
 import { isUuid } from "./uuid";
 
@@ -410,31 +411,38 @@ export async function cancelOrderBySession(
   stripeSessionId: string,
   fallbackOrderId?: string | null,
 ): Promise<OrderRow | null> {
-  const cancelled = await db
-    .update(orders)
-    .set({ status: "cancelled" })
-    .where(
-      and(
-        eq(orders.stripeSessionId, stripeSessionId),
-        eq(orders.status, "pending"),
-      ),
-    )
-    .returning();
-  if (cancelled[0]) return cancelled[0];
+  return db.transaction(async (tx) => {
+    const cancelled = await tx
+      .update(orders)
+      .set({ status: "cancelled" })
+      .where(
+        and(
+          eq(orders.stripeSessionId, stripeSessionId),
+          eq(orders.status, "pending"),
+        ),
+      )
+      .returning();
+    if (cancelled[0]) {
+      await releaseOrderStock(tx, cancelled[0].id);
+      return cancelled[0];
+    }
 
-  if (!isUuid(fallbackOrderId)) return null;
-  const repaired = await db
-    .update(orders)
-    .set({ status: "cancelled", stripeSessionId })
-    .where(
-      and(
-        eq(orders.id, fallbackOrderId),
-        eq(orders.status, "pending"),
-        isNull(orders.stripeSessionId),
-      ),
-    )
-    .returning();
-  return repaired[0] ?? null;
+    if (!isUuid(fallbackOrderId)) return null;
+    const repaired = await tx
+      .update(orders)
+      .set({ status: "cancelled", stripeSessionId })
+      .where(
+        and(
+          eq(orders.id, fallbackOrderId),
+          eq(orders.status, "pending"),
+          isNull(orders.stripeSessionId),
+        ),
+      )
+      .returning();
+    if (!repaired[0]) return null;
+    await releaseOrderStock(tx, repaired[0].id);
+    return repaired[0];
+  });
 }
 
 export async function getOrderBySessionId(
@@ -574,6 +582,9 @@ export async function updateOrderStatus(
       throw new OrderStatusConflictError(
         "La commande a changé de statut, rechargez la page.",
       );
+    }
+    if (order.status === "pending" && to === "cancelled") {
+      await releaseOrderStock(tx, orderId);
     }
     if (finishesPrep) {
       await tx

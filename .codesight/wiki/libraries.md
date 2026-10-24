@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**53 library files** across 36 modules
+**55 library files** across 36 modules
 
 ## Content (5 files)
 
@@ -33,6 +33,12 @@
 - `lib/db/admin-users.ts` — normalizeEmail, findAdminByEmail, findAdminById, setAdminPassword, seedAdminUser, MIN_PASSWORD_LENGTH
 - `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
+
+## Stock (3 files)
+
+- `lib/stock/key-order.ts` — compareStockKeys, StockKeyTable
+- `lib/stock/reserve.ts` — reserveStock, StockReservation
+- `lib/stock/release.ts` — releaseOrderStock
 
 ## Analytics (2 files)
 
@@ -144,10 +150,6 @@
 ## Stats.ts (1 files)
 
 - `lib/stats.ts` — getKpis, getRevenueByDay, getTopProducts, getRecentOrders, Kpis, DayPoint, …
-
-## Stock (1 files)
-
-- `lib/stock/reserve.ts` — reserveStock, StockReservation
 
 ## Storage.ts (1 files)
 

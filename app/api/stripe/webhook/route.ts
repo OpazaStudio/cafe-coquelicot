@@ -83,11 +83,23 @@ export async function POST(request: Request) {
     }
     case "checkout.session.expired":
     case "checkout.session.async_payment_failed": {
-      await cancelOrderBySession(
-        db,
-        event.data.object.id,
-        event.data.object.metadata?.orderId,
-      );
+      try {
+        await cancelOrderBySession(
+          db,
+          event.data.object.id,
+          event.data.object.metadata?.orderId,
+        );
+      } catch (err) {
+        console.error(
+          "[commande] annulation impossible, aucune modification appliquée (statut et stock inchangés)",
+          {
+            stripeSessionId: event.data.object.id,
+            orderId: event.data.object.metadata?.orderId,
+          },
+          err,
+        );
+        return new Response("Annulation impossible", { status: 500 });
+      }
       break;
     }
     default:

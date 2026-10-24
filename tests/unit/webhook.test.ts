@@ -26,10 +26,14 @@ vi.mock("@/lib/email/resend", () => ({
         }
       : null,
 }));
+vi.mock("@/lib/stock/release", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/stock/release")>();
+  return { ...actual, releaseOrderStock: vi.fn(actual.releaseOrderStock) };
+});
 
 import { POST } from "@/app/api/stripe/webhook/route";
 import { getDb } from "@/lib/db/client";
-import { orders } from "@/lib/db/schema";
+import { orderItems, orders, products } from "@/lib/db/schema";
 import { formatEuros } from "@/lib/money";
 import {
   attachStripeSession,
@@ -37,6 +41,7 @@ import {
   getOrderBySessionId,
   updateOrderStatus,
 } from "@/lib/orders";
+import { releaseOrderStock } from "@/lib/stock/release";
 
 const stripe = new Stripe("sk_test_dummy_key_for_signatures");
 const secret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -215,6 +220,66 @@ describe("POST /api/stripe/webhook", () => {
     const after = await getOrderBySessionId(db, "cs_test_wh_exp_orphan");
     expect(after?.order.id).toBe(order.id);
     expect(after?.order.status).toBe("cancelled");
+  });
+
+  it("répond 500 et laisse la commande pending quand la libération du stock échoue", async () => {
+    const db = await getDb();
+    const [limite] = await db
+      .insert(products)
+      .values({
+        slug: "limite-webhook",
+        name: "bouquet limite webhook",
+        description: "Édition limitée.",
+        priceCents: 4000,
+        category: "frais",
+        stockQty: 2,
+      })
+      .returning({ id: products.id });
+    const { order } = await createPendingOrder(
+      db,
+      { name: "Camille", email: "camille@exemple.fr", fulfillment: "retrait" },
+      [{ slug: "limite-webhook", qty: 1 }],
+    );
+    await attachStripeSession(db, order.id, "cs_test_wh_exp_release_ko");
+    const payload = JSON.stringify({
+      id: "evt_test_5",
+      object: "event",
+      type: "checkout.session.expired",
+      data: { object: { id: "cs_test_wh_exp_release_ko", object: "checkout.session" } },
+    });
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+
+    vi.mocked(releaseOrderStock).mockClear();
+    vi.mocked(releaseOrderStock).mockRejectedValueOnce(new Error("crédit impossible"));
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    let res: Response;
+    try {
+      res = await post(payload, signature);
+      expect(errors).toHaveBeenCalledWith(
+        "[commande] annulation impossible, aucune modification appliquée (statut et stock inchangés)",
+        expect.objectContaining({ stripeSessionId: "cs_test_wh_exp_release_ko" }),
+        expect.objectContaining({ message: "crédit impossible" }),
+      );
+    } finally {
+      errors.mockRestore();
+    }
+
+    expect(res.status).toBe(500);
+    expect(await res.text()).toBe("Annulation impossible");
+    expect(vi.mocked(releaseOrderStock)).toHaveBeenCalledTimes(1);
+
+    const after = await getOrderBySessionId(db, "cs_test_wh_exp_release_ko");
+    expect(after?.order.status).toBe("pending");
+    const [stock] = await db
+      .select({ stockQty: products.stockQty })
+      .from(products)
+      .where(eq(products.id, limite.id));
+    expect(stock.stockQty).toBe(1);
+    const [item] = await db
+      .select({ stockReservedQty: orderItems.stockReservedQty })
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
+    expect(item.stockReservedQty).toBe(1);
   });
 
   it("traite une commande mondial_relay sans env MR (skip étiquette)", async () => {

@@ -3,6 +3,7 @@ import { CheckoutError } from "@/lib/checkout/errors";
 import type { Tx } from "@/lib/db/client";
 import { productSizes, products } from "@/lib/db/schema";
 import { composeItemName } from "@/lib/item-label";
+import { compareStockKeys, type StockKeyTable } from "@/lib/stock/key-order";
 
 export type StockReservation = {
   orderItemIndex: number;
@@ -12,7 +13,7 @@ export type StockReservation = {
 };
 
 type StockKey = {
-  table: "product_sizes" | "products";
+  table: StockKeyTable;
   id: string;
   productId: string;
   qty: number;
@@ -52,11 +53,7 @@ export async function reserveStock(
     });
   });
 
-  const ordered = [...keys.values()].sort((a, b) => {
-    if (a.table !== b.table) return a.table < b.table ? -1 : 1;
-    if (a.id !== b.id) return a.id < b.id ? -1 : 1;
-    return 0;
-  });
+  const ordered = [...keys.values()].sort(compareStockKeys);
 
   const reservations: StockReservation[] = [];
   for (const key of ordered) {
