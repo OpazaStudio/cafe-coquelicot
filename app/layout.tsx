@@ -72,9 +72,6 @@ export default function RootLayout({
       className={`${tangerine.variable} ${caveat.variable} ${dmSans.variable}`}
     >
       <body>
-        <a href="#contenu" className="skip-link">
-          Aller au contenu
-        </a>
         {GA_MEASUREMENT_ID && <ConsentDefaultScript />}
         <div className="grain" />
         <Effects />
