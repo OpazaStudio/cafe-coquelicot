@@ -102,7 +102,7 @@
 
 ## Products.ts (1 files)
 
-- `lib/products.ts` — queryActiveProducts, queryActiveVases, queryProductBySlug, getAllProductRows, getProductRow, getProductWithVariants, …
+- `lib/products.ts` — resolveStockKey, queryActiveProducts, queryActiveVases, queryProductBySlug, getAllProductRows, getProductRow, …
 
 ## Proxy.ts (1 files)
 

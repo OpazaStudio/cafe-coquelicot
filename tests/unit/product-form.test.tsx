@@ -20,6 +20,7 @@ const base: ProductRow = {
   imageBgColor: null,
   imageFrame: "1:1",
   active: true,
+  stockQty: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -87,7 +88,7 @@ describe("ProductForm", () => {
         action={async () => undefined}
         product={base}
         sizes={[
-          { id: "11111111-1111-1111-1111-111111111111", productId: "p1", label: "Petit", priceCents: 2900, sortOrder: 0, active: true, createdAt: new Date() },
+          { id: "11111111-1111-1111-1111-111111111111", productId: "p1", label: "Petit", priceCents: 2900, sortOrder: 0, active: true, stockQty: null, createdAt: new Date() },
         ]}
         images={[
           { id: "22222222-2222-2222-2222-222222222222", productId: "p1", sizeId: "11111111-1111-1111-1111-111111111111", colorId: null, path: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.webp", bgColor: null, alt: "De face", sortOrder: 0, createdAt: new Date() },

@@ -15,6 +15,7 @@
 - imageBgColor: text
 - imageFrame: text (default, required)
 - active: boolean (default, required)
+- stockQty: integer
 
 ### product_sizes
 - id: uuid (pk)
@@ -23,6 +24,7 @@
 - priceCents: integer (required)
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
+- stockQty: integer
 - _relations_: productId -> products.id
 
 ### product_colors
@@ -87,6 +89,9 @@
 - colorId: uuid (fk)
 - sizeLabelSnapshot: text
 - colorLabelSnapshot: text
+- stockReservedQty: integer (default, required)
+- stockReservedSizeId: uuid (fk)
+- stockReservedProductId: uuid (fk)
 - _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ### admin_users

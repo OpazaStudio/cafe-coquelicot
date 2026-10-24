@@ -199,13 +199,13 @@
   - const BUCKET
   - _...3 more_
 - `lib/products.ts`
+  - function resolveStockKey: (product, activeSizes, sizeId) => void
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - function getProductWithVariants: (db, id) => Promise<
-  - _...11 more_
+  - _...12 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult

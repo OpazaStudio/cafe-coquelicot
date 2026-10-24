@@ -18,7 +18,12 @@ import { formatFromPrice } from "./money";
 import { normalizeProductFrame, type ProductFrameId } from "./product-frame";
 import { isUuid } from "./uuid";
 
-export type ShopSize = { id: string; label: string; priceCents: number };
+export type ShopSize = {
+  id: string;
+  label: string;
+  priceCents: number;
+  soldOut: boolean;
+};
 export type ShopImage = {
   id: string;
   path: string;
@@ -52,7 +57,25 @@ export type ShopProduct = {
   category: ProductCategory;
   sizes: ShopSize[]; // [] si le produit n'a pas de taille
   colors: ShopColor[]; // [] si le produit n'a pas de coloris
+  soldOut: boolean;
 };
+
+export function resolveStockKey(
+  product: ProductRow,
+  activeSizes: ProductSizeRow[],
+  sizeId: string | null,
+): { table: "product_sizes" | "products"; id: string; stockQty: number | null } {
+  if (activeSizes.length === 0) {
+    return { table: "products", id: product.id, stockQty: product.stockQty };
+  }
+  const size = sizeId
+    ? activeSizes.find((s) => s.id === sizeId && s.productId === product.id)
+    : undefined;
+  if (!size) {
+    throw new Error(`Taille introuvable parmi les tailles actives de ${product.slug}.`);
+  }
+  return { table: "product_sizes", id: size.id, stockQty: size.stockQty };
+}
 
 function assemble(
   row: ProductRow,
@@ -60,8 +83,16 @@ function assemble(
   colors: ProductColorRow[],
   images: ProductImageRow[],
 ): ShopProduct {
-  const minCents = sizes.length
-    ? Math.min(...sizes.map((s) => s.priceCents))
+  const shopSizes: ShopSize[] = sizes.map((s) => ({
+    id: s.id,
+    label: s.label,
+    priceCents: s.priceCents,
+    soldOut: s.stockQty === 0,
+  }));
+  const available = shopSizes.filter((s) => !s.soldOut);
+  const priced = available.length > 0 ? available : shopSizes;
+  const minCents = priced.length
+    ? Math.min(...priced.map((s) => s.priceCents))
     : row.priceCents;
   return {
     id: row.id,
@@ -85,12 +116,13 @@ function assemble(
     })),
     badge: row.badge,
     category: row.category,
-    sizes: sizes.map((s) => ({ id: s.id, label: s.label, priceCents: s.priceCents })),
+    sizes: shopSizes,
     colors: colors.map((c) => ({
       id: c.id,
       label: c.label,
       illustrationVariant: c.illustrationVariant,
     })),
+    soldOut: shopSizes.length > 0 ? available.length === 0 : row.stockQty === 0,
   };
 }
 

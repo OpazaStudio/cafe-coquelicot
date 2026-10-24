@@ -1,6 +1,8 @@
 import type { RichDoc } from "../rich-text/schema";
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   integer,
   jsonb,
@@ -40,44 +42,64 @@ export const prepStatusEnum = pgEnum("prep_status", [
   "done",
 ]);
 
-export const products = pgTable("products", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  slug: text("slug").notNull().unique(),
-  name: text("name").notNull(),
-  tag: text("tag"),
-  description: text("description").notNull(),
-  descriptionRich: jsonb("description_rich").$type<RichDoc>(),
-  priceCents: integer("price_cents").notNull(),
-  category: productCategory("category").notNull(),
-  badge: text("badge"),
-  illustrationVariant: integer("illustration_variant").notNull().default(0),
-  imagePath: text("image_path"),
-  imageBgColor: text("image_bg_color"),
-  imageFrame: text("image_frame").notNull().default("1:1"),
-  active: boolean("active").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: text("slug").notNull().unique(),
+    name: text("name").notNull(),
+    tag: text("tag"),
+    description: text("description").notNull(),
+    descriptionRich: jsonb("description_rich").$type<RichDoc>(),
+    priceCents: integer("price_cents").notNull(),
+    category: productCategory("category").notNull(),
+    badge: text("badge"),
+    illustrationVariant: integer("illustration_variant").notNull().default(0),
+    imagePath: text("image_path"),
+    imageBgColor: text("image_bg_color"),
+    imageFrame: text("image_frame").notNull().default("1:1"),
+    active: boolean("active").notNull().default(true),
+    stockQty: integer("stock_qty"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      "products_stock_qty_nonneg",
+      sql`${t.stockQty} IS NULL OR ${t.stockQty} >= 0`,
+    ),
+  ],
+);
 
 // Tailles d'un produit : la dimension *vendable et tarifée* (chaque taille a
 // son prix). Optionnel — un produit sans taille est vendu au prix de base.
-export const productSizes = pgTable("product_sizes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  productId: uuid("product_id")
-    .notNull()
-    .references(() => products.id, { onDelete: "cascade" }),
-  label: text("label").notNull(),
-  priceCents: integer("price_cents").notNull(),
-  sortOrder: integer("sort_order").notNull().default(0),
-  active: boolean("active").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const productSizes = pgTable(
+  "product_sizes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    priceCents: integer("price_cents").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+    stockQty: integer("stock_qty"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      "product_sizes_stock_qty_nonneg",
+      sql`${t.stockQty} IS NULL OR ${t.stockQty} >= 0`,
+    ),
+  ],
+);
 
 // Coloris d'un produit : attribut *cosmétique* (même prix) qui change
 // l'illustration au trait et doit être enregistré sur la commande.
@@ -177,6 +199,9 @@ export const orderItems = pgTable("order_items", {
   }),
   sizeLabelSnapshot: text("size_label_snapshot"),
   colorLabelSnapshot: text("color_label_snapshot"),
+  stockReservedQty: integer("stock_reserved_qty").notNull().default(0),
+  stockReservedSizeId: uuid("stock_reserved_size_id"),
+  stockReservedProductId: uuid("stock_reserved_product_id"),
 });
 
 // Comptes du back-office. `password_changed_at` sert à invalider les sessions

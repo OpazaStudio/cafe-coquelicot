@@ -20,13 +20,14 @@ const solana: ShopProduct = {
   badge: null,
   category: "seche",
   sizes: [
-    { id: "s-p", label: "Petit", priceCents: 2900 },
-    { id: "s-g", label: "Grand", priceCents: 4200 },
+    { id: "s-p", label: "Petit", priceCents: 2900, soldOut: false },
+    { id: "s-g", label: "Grand", priceCents: 4200, soldOut: false },
   ],
   colors: [
     { id: "c-n", label: "Naturel", illustrationVariant: 2 },
     { id: "c-b", label: "Blanc", illustrationVariant: 4 },
   ],
+  soldOut: false,
 };
 
 function renderDetail(p: ShopProduct) {

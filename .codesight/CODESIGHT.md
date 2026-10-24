@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 114 components | 51 lib files | 31 env vars | 6 middleware | 54% test coverage
-> **Token savings:** this file is ~8,700 tokens. Without it, AI exploration would cost ~70,500 tokens. **Saves ~61,800 tokens per conversation.**
-> **Last scanned:** 2026-10-24 15:11 — re-run after significant changes
+> 3 routes | 10 models | 114 components | 51 lib files | 31 env vars | 6 middleware | 62% test coverage
+> **Token savings:** this file is ~8,700 tokens. Without it, AI exploration would cost ~70,500 tokens. **Saves ~61,700 tokens per conversation.**
+> **Last scanned:** 2026-10-24 16:55 — re-run after significant changes
 
 ---
 
@@ -33,6 +33,7 @@
 - imageBgColor: text
 - imageFrame: text (default, required)
 - active: boolean (default, required)
+- stockQty: integer
 
 ### product_sizes
 - id: uuid (pk)
@@ -41,6 +42,7 @@
 - priceCents: integer (required)
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
+- stockQty: integer
 - _relations_: productId -> products.id
 
 ### product_colors
@@ -105,6 +107,9 @@
 - colorId: uuid (fk)
 - sizeLabelSnapshot: text
 - colorLabelSnapshot: text
+- stockReservedQty: integer (default, required)
+- stockReservedSizeId: uuid (fk)
+- stockReservedProductId: uuid (fk)
 - _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ### admin_users
@@ -452,13 +457,13 @@
   - const BUCKET
   - _...3 more_
 - `lib/products.ts`
+  - function resolveStockKey: (product, activeSizes, sizeId) => void
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - function getProductWithVariants: (db, id) => Promise<
-  - _...11 more_
+  - _...12 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -591,8 +596,8 @@
 ## Most Imported Files (change these carefully)
 
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
+- `tests/helpers/db.ts` — imported by **14** files
 - `tests/e2e/helpers.ts` — imported by **13** files
-- `tests/helpers/db.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
 - `lib/db/client.ts` — imported by **7** files
@@ -614,8 +619,8 @@
 ## Import Map (who imports what)
 
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +13 more
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +9 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +8 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +8 more
 - `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `lib/db/client.ts` ← `lib/contact-submissions.ts`, `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts` +2 more
@@ -628,8 +633,8 @@
 
 # Test Coverage
 
-> **54%** of routes and models are covered by tests
-> 93 test files found
+> **62%** of routes and models are covered by tests
+> 94 test files found
 
 ## Covered Routes
 
@@ -638,6 +643,7 @@
 ## Covered Models
 
 - products
+- product_sizes
 - orders
 - admin_users
 - settings
