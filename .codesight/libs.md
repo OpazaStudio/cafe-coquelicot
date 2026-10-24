@@ -45,6 +45,7 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/checkout/abandon.ts` — function abandonPendingOrder: (db, orderId) => Promise<void>
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -104,7 +105,7 @@
   - type ContactParse
   - type EmailContent
   - _...2 more_
-- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>
+- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>, function alertPaidOnCancelledOrder: (order) => Promise<void>
 - `lib/email/order.ts`
   - function buildOrderAckEmail: (order, items, templates, context) => EmailContent
   - function buildOrderShopEmail: (order, items, templates, context) => EmailContent
@@ -164,14 +165,15 @@
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
   - function canTransition: (from, to, fulfillment) => boolean
   - _...11 more_
+- `lib/orders/paid-side-effects.ts` — function applyPaidSideEffects: (db, orderId) => Promise<void>
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items, fees) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
-  - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
-  - function getOrderBySessionId: (db, stripeSessionId) => Promise<
-  - _...11 more_
+  - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
+  - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
+  - _...15 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -255,6 +257,7 @@
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<
   - function deleteImage: (path) => Promise<void>
+- `lib/stripe-session.ts` — function expireSessionForCancel: (stripeSessionId) => Promise<SessionGuard>, type SessionGuard
 - `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
 - `lib/uuid.ts` — function isUuid: (value) => value is string
 - `proxy.ts` — function proxy: (request) => void, const config

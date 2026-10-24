@@ -1,14 +1,41 @@
 // @vitest-environment node
 // Teste la route POST /api/stripe/webhook avec de vraies signatures
 // (stripe.webhooks.generateTestHeaderString) — aucun appel réseau.
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import Stripe from "stripe";
+import { eq } from "drizzle-orm";
+
+type SentMail = {
+  to: string[];
+  bcc: string[];
+  subject: string;
+  text: string;
+};
+
+let mailerEnabled = false;
+const send = vi.fn<(mail: SentMail) => Promise<{ error: null }>>(async () => ({ error: null }));
+
+vi.mock("@/lib/email/resend", () => ({
+  getMailer: () =>
+    mailerEnabled
+      ? {
+          resend: { emails: { send } },
+          to: "boutique@test.local",
+          from: "Test <no@test.local>",
+          bcc: ["copie@test.local"],
+        }
+      : null,
+}));
+
 import { POST } from "@/app/api/stripe/webhook/route";
 import { getDb } from "@/lib/db/client";
+import { orders } from "@/lib/db/schema";
+import { formatEuros } from "@/lib/money";
 import {
   attachStripeSession,
   createPendingOrder,
   getOrderBySessionId,
+  updateOrderStatus,
 } from "@/lib/orders";
 
 const stripe = new Stripe("sk_test_dummy_key_for_signatures");
@@ -159,6 +186,37 @@ describe("POST /api/stripe/webhook", () => {
     expect(after?.order.status).toBe("cancelled");
   });
 
+  it("annule via metadata.orderId sur checkout.session.expired quand stripeSessionId n'a pas été attaché", async () => {
+    const db = await getDb();
+    const { order } = await createPendingOrder(
+      db,
+      { name: "Camille", email: "camille@exemple.fr", fulfillment: "retrait" },
+      [{ slug: "rivage", qty: 1 }],
+    );
+    const payload = JSON.stringify({
+      id: "evt_test_4",
+      object: "event",
+      type: "checkout.session.expired",
+      data: {
+        object: {
+          id: "cs_test_wh_exp_orphan",
+          object: "checkout.session",
+          metadata: { orderId: order.id },
+        },
+      },
+    });
+    const signature = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret,
+    });
+
+    expect((await post(payload, signature)).status).toBe(200);
+
+    const after = await getOrderBySessionId(db, "cs_test_wh_exp_orphan");
+    expect(after?.order.id).toBe(order.id);
+    expect(after?.order.status).toBe("cancelled");
+  });
+
   it("traite une commande mondial_relay sans env MR (skip étiquette)", async () => {
     const db = await getDb();
     const { order } = await createPendingOrder(db, {
@@ -173,6 +231,71 @@ describe("POST /api/stripe/webhook", () => {
     const after = await getOrderBySessionId(db, "cs_test_wh_mr");
     expect(after?.order.status).toBe("paid");
     expect(after?.order.relayShipmentNumber).toBeNull(); // pas d'env MR → skip
+  });
+
+  it("alerte la boutique sans rien écrire quand Stripe encaisse sur une commande annulée", async () => {
+    const db = await getDb();
+    const order = await makePendingOrder("cs_test_wh_cancelled");
+    await db.update(orders).set({ status: "cancelled" }).where(eq(orders.id, order.id));
+
+    mailerEnabled = true;
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const payload = checkoutCompletedPayload("cs_test_wh_cancelled");
+      const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+      expect((await post(payload, signature)).status).toBe(200);
+
+      const after = await getOrderBySessionId(db, "cs_test_wh_cancelled");
+      expect(after?.order.status).toBe("cancelled");
+      expect(after?.order.stripePaymentIntent).toBeNull();
+
+      const journal = errors.mock.calls.map((args) => JSON.stringify(args)).join(" ");
+      expect(journal).toContain("cs_test_wh_cancelled");
+      expect(journal).toContain("pi_test_webhook");
+      expect(journal).toContain(order.number);
+
+      expect(send).toHaveBeenCalledTimes(1);
+      const mail = send.mock.calls[0][0];
+      expect(mail.to).toEqual(["boutique@test.local"]);
+      expect(mail.bcc).toEqual(["copie@test.local"]);
+      expect(mail.subject).toBe(`Commande annulée mais payée — ${order.number}`);
+      expect(mail.text).toContain(order.number);
+      expect(mail.text).toContain("camille@exemple.fr");
+      expect(mail.text).toContain(formatEuros(order.totalCents));
+      expect(mail.text).toContain("Stripe");
+    } finally {
+      errors.mockRestore();
+      mailerEnabled = false;
+      send.mockClear();
+    }
+  });
+
+  it("n'alerte pas sur une commande encaissée puis annulée par la boutique", async () => {
+    const db = await getDb();
+    const order = await makePendingOrder("cs_test_wh_refund");
+    const payload = checkoutCompletedPayload("cs_test_wh_refund");
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+    expect((await post(payload, signature)).status).toBe(200);
+    await updateOrderStatus(db, order.id, "cancelled");
+
+    mailerEnabled = true;
+    send.mockClear();
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect((await post(payload, signature)).status).toBe(200);
+
+      const after = await getOrderBySessionId(db, "cs_test_wh_refund");
+      expect(after?.order.status).toBe("cancelled");
+      expect(after?.order.stripePaymentIntent).toBe("pi_test_webhook");
+
+      expect(send).not.toHaveBeenCalled();
+      const journal = errors.mock.calls.map((args) => JSON.stringify(args)).join(" ");
+      expect(journal).not.toContain("paiement encaissé sur une commande annulée");
+    } finally {
+      errors.mockRestore();
+      mailerEnabled = false;
+      send.mockClear();
+    }
   });
 
   it("répond 200 aux événements ignorés (signés)", async () => {

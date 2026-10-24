@@ -1,7 +1,7 @@
 // Cycle de vie des commandes. Toutes les écritures passent par ici
 // (action checkout, webhook Stripe, page de confirmation, admin).
 import { and, asc, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
-import type { Db } from "./db/client";
+import type { Db, Tx } from "./db/client";
 import {
   orderItems,
   orders,
@@ -37,6 +37,8 @@ import { isUuid } from "./uuid";
 export { MONDIAL_RELAY_FEE_CENTS, type Fulfillment };
 
 export class CheckoutError extends Error {}
+
+export class OrderStatusConflictError extends Error {}
 
 export type CheckoutItemInput = {
   slug: string;
@@ -254,10 +256,14 @@ export async function attachStripeSession(
   orderId: string,
   stripeSessionId: string,
 ): Promise<void> {
-  await db
+  const attached = await db
     .update(orders)
     .set({ stripeSessionId })
-    .where(eq(orders.id, orderId));
+    .where(and(eq(orders.id, orderId), eq(orders.status, "pending")))
+    .returning();
+  if (!attached[0]) {
+    throw new Error("La commande n'est plus en attente de paiement.");
+  }
 }
 
 /**
@@ -308,12 +314,74 @@ export async function markOrderPaidBySession(
   return repaired[0] ?? null;
 }
 
+export type PaidReconciliation =
+  | { outcome: "paid"; order: OrderRow }
+  | { outcome: "replay"; order: OrderRow }
+  | { outcome: "paid_on_cancelled"; order: OrderRow }
+  | { outcome: "unknown" };
+
+const ALREADY_PAID_STATUSES: readonly OrderStatus[] = [
+  "paid",
+  "preparing",
+  "shipped",
+  "picked_up",
+];
+
+async function findOrderForPaidSession(
+  db: Db,
+  stripeSessionId: string,
+  fallbackOrderId?: string | null,
+): Promise<OrderRow | null> {
+  const bySession = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.stripeSessionId, stripeSessionId))
+    .limit(1);
+  if (bySession[0]) return bySession[0];
+
+  if (!isUuid(fallbackOrderId)) return null;
+  const byFallback = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.id, fallbackOrderId), isNull(orders.stripeSessionId)))
+    .limit(1);
+  return byFallback[0] ?? null;
+}
+
+export async function reconcilePaidSession(
+  db: Db,
+  stripeSessionId: string,
+  stripePaymentIntent?: string | null,
+  fallbackOrderId?: string | null,
+): Promise<PaidReconciliation> {
+  const paid = await markOrderPaidBySession(
+    db,
+    stripeSessionId,
+    stripePaymentIntent,
+    fallbackOrderId,
+  );
+  if (paid) return { outcome: "paid", order: paid };
+
+  const existing = await findOrderForPaidSession(db, stripeSessionId, fallbackOrderId);
+  if (!existing) return { outcome: "unknown" };
+  if (ALREADY_PAID_STATUSES.includes(existing.status)) {
+    return { outcome: "replay", order: existing };
+  }
+  if (existing.status === "cancelled") {
+    return existing.stripePaymentIntent === null
+      ? { outcome: "paid_on_cancelled", order: existing }
+      : { outcome: "replay", order: existing };
+  }
+  return { outcome: "unknown" };
+}
+
 /** Checkout abandonné (session Stripe expirée) : pending → cancelled. */
 export async function cancelOrderBySession(
   db: Db,
   stripeSessionId: string,
-): Promise<void> {
-  await db
+  fallbackOrderId?: string | null,
+): Promise<OrderRow | null> {
+  const cancelled = await db
     .update(orders)
     .set({ status: "cancelled" })
     .where(
@@ -321,7 +389,23 @@ export async function cancelOrderBySession(
         eq(orders.stripeSessionId, stripeSessionId),
         eq(orders.status, "pending"),
       ),
-    );
+    )
+    .returning();
+  if (cancelled[0]) return cancelled[0];
+
+  if (!isUuid(fallbackOrderId)) return null;
+  const repaired = await db
+    .update(orders)
+    .set({ status: "cancelled", stripeSessionId })
+    .where(
+      and(
+        eq(orders.id, fallbackOrderId),
+        eq(orders.status, "pending"),
+        isNull(orders.stripeSessionId),
+      ),
+    )
+    .returning();
+  return repaired[0] ?? null;
 }
 
 export async function getOrderBySessionId(
@@ -410,38 +494,58 @@ export async function listBoardOrders(
   return rows.map((order) => ({ order, items: byOrder.get(order.id) ?? [] }));
 }
 
+export async function setOrderStatusIfUnchanged(
+  db: Db | Tx,
+  orderId: string,
+  from: OrderStatus,
+  to: OrderStatus,
+  extra: Partial<Pick<OrderRow, "prepStatus" | "prepDoneAt">> = {},
+): Promise<OrderRow | null> {
+  const rows = await db
+    .update(orders)
+    .set({ status: to, ...extra })
+    .where(and(eq(orders.id, orderId), eq(orders.status, from)))
+    .returning();
+  return rows[0] ?? null;
+}
+
 export async function updateOrderStatus(
   db: Db,
   orderId: string,
   to: OrderStatus,
 ): Promise<OrderRow> {
-  const found = await db
-    .select()
-    .from(orders)
-    .where(eq(orders.id, orderId))
-    .limit(1);
-  const order = found[0];
-  if (!order) throw new Error("Commande introuvable.");
-  if (!canTransition(order.status, to, order.fulfillment)) {
-    throw new Error(
-      `Transition impossible : ${order.status} → ${to}.`,
-    );
-  }
-  // La préparation est forcément finie quand la commande part ou est
-  // retirée : carte en « Terminée » (date posée une seule fois) et toutes
-  // les cases cochées — même si la carte y avait été déplacée à la main.
-  const finishesPrep = to === "shipped" || to === "picked_up";
   return db.transaction(async (tx) => {
-    const [updated] = await tx
-      .update(orders)
-      .set({
-        status: to,
-        ...(finishesPrep && order.prepStatus !== "done"
-          ? { prepStatus: "done" as const, prepDoneAt: new Date() }
-          : {}),
-      })
+    const found = await tx
+      .select()
+      .from(orders)
       .where(eq(orders.id, orderId))
-      .returning();
+      .for("update")
+      .limit(1);
+    const order = found[0];
+    if (!order) throw new Error("Commande introuvable.");
+    if (!canTransition(order.status, to, order.fulfillment)) {
+      throw new Error(
+        `Transition impossible : ${order.status} → ${to}.`,
+      );
+    }
+    // La préparation est forcément finie quand la commande part ou est
+    // retirée : carte en « Terminée » (date posée une seule fois) et toutes
+    // les cases cochées — même si la carte y avait été déplacée à la main.
+    const finishesPrep = to === "shipped" || to === "picked_up";
+    const updated = await setOrderStatusIfUnchanged(
+      tx,
+      orderId,
+      order.status,
+      to,
+      finishesPrep && order.prepStatus !== "done"
+        ? { prepStatus: "done", prepDoneAt: new Date() }
+        : {},
+    );
+    if (!updated) {
+      throw new OrderStatusConflictError(
+        "La commande a changé de statut, rechargez la page.",
+      );
+    }
     if (finishesPrep) {
       await tx
         .update(orderItems)

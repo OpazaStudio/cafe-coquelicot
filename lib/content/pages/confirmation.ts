@@ -26,6 +26,24 @@ export const CONFIRMATION_DEF = definePage({
         text: f.textarea({ label: "Texte", rows: 2, max: 300, hint: "{{numero}} = numéro de commande." }),
       },
     },
+    needsReview: {
+      title: "Paiement encaissé sur une commande annulée",
+      hint: "Affiché au client quand Stripe a encaissé une commande annulée : la boutique est alertée par e-mail.",
+      fields: {
+        title: f.text({ label: "Titre", required: true, max: 80 }),
+        script: f.text({ label: "Partie manuscrite", max: 80 }),
+        body: f.textarea({ label: "Texte", rows: 3, max: 300, hint: "{{numero}} = numéro de commande, {{contact}} = e-mail de contact (Paramètres)." }),
+      },
+    },
+    cancelled: {
+      title: "Commande annulée",
+      hint: "Affiché au client quand la commande a été annulée, y compris après un paiement. Cette page n'est atteignable qu'après un paiement Stripe : ne rien affirmer sur le débit.",
+      fields: {
+        title: f.text({ label: "Titre", required: true, max: 80 }),
+        script: f.text({ label: "Partie manuscrite", max: 80 }),
+        body: f.textarea({ label: "Texte", rows: 3, max: 300, hint: "{{numero}} = numéro de commande, {{contact}} = e-mail de contact (Paramètres)." }),
+      },
+    },
     notFound: {
       title: "Commande introuvable",
       fields: {
@@ -59,6 +77,16 @@ export const DEFAULT_CONFIRMATION: ConfirmationContent = {
     title: "un instant",
     script: "paiement en cours…",
     text: "Le paiement de la commande {{numero}} est en cours de validation. Rechargez cette page dans un instant.",
+  },
+  needsReview: {
+    title: "Votre paiement nous est bien parvenu",
+    script: "on vérifie tout",
+    body: "La commande {{numero}} demande une vérification manuelle de notre part. L'atelier revient vers vous sous 24 h pour la confirmer. Besoin de nous joindre avant ? Écrivez-nous : {{contact}}.",
+  },
+  cancelled: {
+    title: "Cette commande a été annulée",
+    script: "nous restons joignables",
+    body: "La commande {{numero}} a été annulée. Si cette annulation vous surprend ou si vous avez été débité·e, écrivez-nous : {{contact}}.",
   },
   notFound: {
     title: "hmm…",

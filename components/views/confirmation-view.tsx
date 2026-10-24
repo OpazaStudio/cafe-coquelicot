@@ -34,6 +34,8 @@ export type ConfirmationState =
       fulfillment: string;
       items: ConfirmationItem[];
     }
+  | { kind: "needsReview"; number: string }
+  | { kind: "cancelled"; number: string }
   | { kind: "pending"; number: string }
   | { kind: "notFound" };
 
@@ -60,6 +62,38 @@ export function ConfirmationView({
           <div className="container">
             {state.kind === "paid" ? (
               <Paid content={c.paid} state={state} vars={vars} />
+            ) : state.kind === "needsReview" ? (
+              <>
+                <ClearCart />
+                <h1 className="display cart-page__title">
+                  {c.needsReview.title}
+                  <span className="script">{c.needsReview.script}</span>
+                </h1>
+                <p className="body body--lg">
+                  <Lines
+                    text={fillTemplate(c.needsReview.body, {
+                      numero: state.number,
+                      contact: vars.contact,
+                    })}
+                  />
+                </p>
+              </>
+            ) : state.kind === "cancelled" ? (
+              <>
+                <ClearCart />
+                <h1 className="display cart-page__title">
+                  {c.cancelled.title}
+                  <span className="script">{c.cancelled.script}</span>
+                </h1>
+                <p className="body body--lg">
+                  <Lines
+                    text={fillTemplate(c.cancelled.body, {
+                      numero: state.number,
+                      contact: vars.contact,
+                    })}
+                  />
+                </p>
+              </>
             ) : state.kind === "pending" ? (
               <>
                 <h1 className="display cart-page__title">

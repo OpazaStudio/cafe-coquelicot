@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**48 library files** across 32 modules
+**51 library files** across 35 modules
 
 ## Content (5 files)
 
@@ -18,7 +18,7 @@
 - `lib/email/contact.ts` — parseContactForm, buildShopEmail, buildAckEmail, ContactInput, ContactParse, EmailContent, …
 - `lib/email/order.ts` — buildOrderAckEmail, buildOrderShopEmail, OrderEmailOrder, OrderEmailItem, OrderEmailContext, EmailContent
 - `lib/email/resend.ts` — parseBcc, getMailer, ContactMailer
-- `lib/email/notify-order.ts` — notifyOrderPaid
+- `lib/email/notify-order.ts` — notifyOrderPaid, alertPaidOnCancelledOrder
 
 ## Mondial-relay (5 files)
 
@@ -52,6 +52,10 @@
 
 - `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
 
+## Checkout (1 files)
+
+- `lib/checkout/abandon.ts` — abandonPendingOrder
+
 ## Contact-submissions.ts (1 files)
 
 - `lib/contact-submissions.ts` — saveContactSubmission, markSubmissionEmailSent, listContactSubmissions, setSubmissionRead, deleteContactSubmission, ContactSubmissionInput
@@ -76,9 +80,13 @@
 
 - `lib/order-status.ts` — parseFeeInput, formatFeeInput, shippingFeeFor, isShippingCountry, statusTransitions, canTransition, …
 
+## Orders (1 files)
+
+- `lib/orders/paid-side-effects.ts` — applyPaidSideEffects
+
 ## Orders.ts (1 files)
 
-- `lib/orders.ts` — generateOrderNumber, createPendingOrder, attachStripeSession, markOrderPaidBySession, cancelOrderBySession, getOrderBySessionId, …
+- `lib/orders.ts` — generateOrderNumber, createPendingOrder, attachStripeSession, markOrderPaidBySession, reconcilePaidSession, cancelOrderBySession, …
 
 ## Prep-status.ts (1 files)
 
@@ -139,6 +147,10 @@
 ## Storage.ts (1 files)
 
 - `lib/storage.ts` — storageConfigured, uploadImage, deleteImage
+
+## Stripe-session.ts (1 files)
+
+- `lib/stripe-session.ts` — expireSessionForCancel, SessionGuard
 
 ## Stripe.ts (1 files)
 

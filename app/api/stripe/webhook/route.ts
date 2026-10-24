@@ -3,12 +3,12 @@
 // (idempotent) pour le dev local sans `stripe listen`.
 import type Stripe from "stripe";
 import { getDb } from "@/lib/db/client";
-import { notifyOrderPaid } from "@/lib/email/notify-order";
-import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";
+import { alertPaidOnCancelledOrder } from "@/lib/email/notify-order";
 import {
   cancelOrderBySession,
-  markOrderPaidBySession,
+  reconcilePaidSession,
 } from "@/lib/orders";
+import { applyPaidSideEffects } from "@/lib/orders/paid-side-effects";
 import { getStripe } from "@/lib/stripe";
 
 function paymentIntentId(
@@ -45,30 +45,49 @@ export async function POST(request: Request) {
     case "checkout.session.async_payment_succeeded": {
       const session = event.data.object;
       if (session.payment_status === "paid") {
-        const order = await markOrderPaidBySession(
+        const stripePaymentIntent = paymentIntentId(session.payment_intent);
+        const verdict = await reconcilePaidSession(
           db,
           session.id,
-          paymentIntentId(session.payment_intent),
+          stripePaymentIntent,
           session.metadata?.orderId,
         );
-        if (order) {
-          try {
-            await ensureRelayShipment(db, order.id);
-          } catch (err) {
-            console.error("[mondial-relay] étiquette non générée (webhook)", err);
-          }
-          try {
-            await notifyOrderPaid(db, order.id);
-          } catch (err) {
-            console.error("[commande] e-mails non envoyés (webhook)", err);
-          }
+        switch (verdict.outcome) {
+          case "paid":
+            await applyPaidSideEffects(db, verdict.order.id);
+            break;
+          case "replay":
+            break;
+          case "paid_on_cancelled":
+            console.error("[commande] paiement encaissé sur une commande annulée", {
+              number: verdict.order.number,
+              orderId: verdict.order.id,
+              stripeSessionId: session.id,
+              stripePaymentIntent,
+            });
+            try {
+              await alertPaidOnCancelledOrder(verdict.order);
+            } catch (err) {
+              console.error("[commande] alerte commande annulée payée non envoyée", err);
+            }
+            break;
+          case "unknown":
+            console.error("[commande] paiement sans commande réconciliable", {
+              stripeSessionId: session.id,
+              stripePaymentIntent,
+            });
+            break;
         }
       }
       break;
     }
     case "checkout.session.expired":
     case "checkout.session.async_payment_failed": {
-      await cancelOrderBySession(db, event.data.object.id);
+      await cancelOrderBySession(
+        db,
+        event.data.object.id,
+        event.data.object.metadata?.orderId,
+      );
       break;
     }
     default:

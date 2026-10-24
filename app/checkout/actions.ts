@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import * as z from "zod";
-import { getDb } from "@/lib/db/client";
+import { abandonPendingOrder } from "@/lib/checkout/abandon";
+import { getDb, type Db } from "@/lib/db/client";
 import {
   attachStripeSession,
   createPendingOrder,
@@ -45,6 +46,7 @@ export async function startCheckout(
   }
 
   let checkoutUrl: string;
+  let created: { db: Db; orderId: string } | undefined;
   try {
     const db = await getDb();
     const fees = shippingFeesFromSettings(await getSettings());
@@ -54,6 +56,7 @@ export async function startCheckout(
       items,
       fees,
     );
+    created = { db, orderId: order.id };
 
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
@@ -109,11 +112,13 @@ export async function startCheckout(
     });
 
     if (!session.url) {
+      await abandonPendingOrder(db, order.id);
       return { error: "Stripe n'a pas renvoyé d'URL de paiement. Réessayez." };
     }
     await attachStripeSession(db, order.id, session.id);
     checkoutUrl = session.url;
   } catch (err) {
+    if (created) await abandonPendingOrder(created.db, created.orderId);
     if (err instanceof CheckoutError) {
       return { error: err.message };
     }

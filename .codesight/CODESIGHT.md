@@ -2,9 +2,9 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 114 components | 48 lib files | 31 env vars | 6 middleware | 54% test coverage
-> **Token savings:** this file is ~8,500 tokens. Without it, AI exploration would cost ~69,700 tokens. **Saves ~61,100 tokens per conversation.**
-> **Last scanned:** 2026-10-22 08:37 — re-run after significant changes
+> 3 routes | 10 models | 114 components | 51 lib files | 31 env vars | 6 middleware | 54% test coverage
+> **Token savings:** this file is ~8,700 tokens. Without it, AI exploration would cost ~70,500 tokens. **Saves ~61,800 tokens per conversation.**
+> **Last scanned:** 2026-10-24 13:06 — re-run after significant changes
 
 ---
 
@@ -298,6 +298,7 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/checkout/abandon.ts` — function abandonPendingOrder: (db, orderId) => Promise<void>
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -357,7 +358,7 @@
   - type ContactParse
   - type EmailContent
   - _...2 more_
-- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>
+- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>, function alertPaidOnCancelledOrder: (order) => Promise<void>
 - `lib/email/order.ts`
   - function buildOrderAckEmail: (order, items, templates, context) => EmailContent
   - function buildOrderShopEmail: (order, items, templates, context) => EmailContent
@@ -417,14 +418,15 @@
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
   - function canTransition: (from, to, fulfillment) => boolean
   - _...11 more_
+- `lib/orders/paid-side-effects.ts` — function applyPaidSideEffects: (db, orderId) => Promise<void>
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items, fees) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
-  - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
-  - function getOrderBySessionId: (db, stripeSessionId) => Promise<
-  - _...11 more_
+  - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
+  - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
+  - _...15 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -508,6 +510,7 @@
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<
   - function deleteImage: (path) => Promise<void>
+- `lib/stripe-session.ts` — function expireSessionForCancel: (stripeSessionId) => Promise<SessionGuard>, type SessionGuard
 - `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
 - `lib/uuid.ts` — function isUuid: (value) => value is string
 - `proxy.ts` — function proxy: (request) => void, const config
@@ -626,7 +629,7 @@
 # Test Coverage
 
 > **54%** of routes and models are covered by tests
-> 88 test files found
+> 93 test files found
 
 ## Covered Routes
 
