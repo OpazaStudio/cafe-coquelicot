@@ -29,6 +29,10 @@ Et un effet couplé : tant que cette permission manque, un vrai paiement Stripe 
 
 Le journal de migrations Supabase a été réparé le 2026-10-24 (10 lignes pour 16 migrations). `0016_confused_gauntlet.sql` ajoute les colonnes de stock et de réservation. À appliquer avant tout déploiement de cette branche.
 
+**Le déploiement de prévisualisation de la PR #1 a échoué, et c'est probablement ce point.** Mécanisme : `/` et `/boutique` portent `revalidate = 3600` sans API dynamique, donc Next les prérend au build, et leurs requêtes sélectionnent désormais `stock_qty` (`lib/products.ts:92`, `:127`). Si le build tourne contre une base où `0016` n'est pas appliquée, il échoue sur une colonne manquante. Les fiches produit, elles, ne sont pas concernées : `generateStaticParams` y rend volontairement `[]`.
+
+**Non confirmé** : la lecture du log de déploiement exige une authentification Vercel. À vérifier dans le tableau de bord Vercel, et à retester en relançant le déploiement après la migration. Si l'erreur est autre chose, le mécanisme ci-dessus reste à surveiller au premier déploiement réel.
+
 ### 1.3 Abonnement du webhook aux événements d'expiration
 
 Le code traite `checkout.session.expired` et `checkout.session.async_payment_failed`. Si l'endpoint Stripe n'y est pas abonné, **aucune réservation abandonnée ne sera jamais libérée** : le stock se videra sans une seule vente.
