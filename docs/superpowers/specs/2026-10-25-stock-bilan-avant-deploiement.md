@@ -75,6 +75,25 @@ Ce qui reste à savoir, en revanche : cette couverture tient au volume actuel, p
 
 ---
 
+### 1.3 bis — Le piège qui a réellement mordu : le webhook sur le domaine nu rend 308
+
+**Constaté le 2026-10-26, après un premier essai réel en production.** La destination avait été créée sur `https://cafe-coquelicot.fr/api/stripe/webhook`, c'est-à-dire le **domaine nu**. Or celui-ci redirige en **308 Permanent Redirect** vers `https://www.cafe-coquelicot.fr/...`, et **Stripe ne suit pas les redirections** : chaque livraison échoue et il réessaie indéfiniment sur la même URL, qui redirigera toujours.
+
+Mesuré directement :
+
+```
+POST https://cafe-coquelicot.fr/api/stripe/webhook      → 308, location: https://www.cafe-coquelicot.fr/...
+POST https://www.cafe-coquelicot.fr/api/stripe/webhook  → 400 (« Signature absente », réponse correcte à une requête non signée)
+```
+
+**L'URL canonique est donc `https://www.cafe-coquelicot.fr/api/stripe/webhook`**, avec le `www`.
+
+Ce que cela a coûté : une réservation est restée bloquée plus de deux heures sans qu'aucun signal n'apparaisse — ni erreur à l'écran, ni mail, ni rien dans les journaux du site, puisque la requête n'y arrivait jamais. C'est exactement le mode de panne silencieux annoncé, et il n'était visible que dans le journal de livraison de Stripe.
+
+**À retenir pour toute future destination** : vérifier l'URL avec un simple `curl -I` avant de l'enregistrer. Un 308 ou un 301 sur un endpoint de webhook est une panne, pas un détail.
+
+---
+
 ### 1.4 Hors stock, mais le dépôt est public : une adresse personnelle est en dur dans le code
 
 Préexistant à cette branche et déjà publié, donc à traiter pour lui-même. `lib/email/resend.ts:13` porte `const DEFAULT_BCC = ["celine.brahic@outlook.com"]`, et l'adresse apparaît aussi dans `.env.example` et dans `tests/unit/resend-bcc.test.ts`. Sur un dépôt public, c'est une donnée personnelle offerte aux moissonneurs d'adresses.
