@@ -15,6 +15,7 @@ import {
   updateOrderStatus,
 } from "@/lib/orders";
 import { applyPaidSideEffects } from "@/lib/orders/paid-side-effects";
+import { revalidateAvailability } from "@/lib/stock/revalidate";
 import { expireSessionForCancel } from "@/lib/stripe-session";
 
 const InputSchema = z.object({
@@ -113,6 +114,9 @@ export async function changeOrderStatus(
       }
     }
     await updateOrderStatus(db, parsed.data.orderId, parsed.data.to);
+    if (parsed.data.to === "cancelled") {
+      await revalidateAvailability([parsed.data.orderId], db);
+    }
   } catch (err) {
     revalidateOrderViews(orderId);
     return { error: err instanceof Error ? err.message : "Erreur inconnue." };

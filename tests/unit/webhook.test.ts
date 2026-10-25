@@ -15,6 +15,9 @@ type SentMail = {
 let mailerEnabled = false;
 const send = vi.fn<(mail: SentMail) => Promise<{ error: null }>>(async () => ({ error: null }));
 
+const revalidatePath = vi.fn();
+
+vi.mock("next/cache", () => ({ revalidatePath: (...args: unknown[]) => revalidatePath(...args) }));
 vi.mock("@/lib/email/resend", () => ({
   getMailer: () =>
     mailerEnabled
@@ -361,6 +364,60 @@ describe("POST /api/stripe/webhook", () => {
       mailerEnabled = false;
       send.mockClear();
     }
+  });
+
+  it("revalide la boutique quand l'expiration libère du stock", async () => {
+    await makePendingOrder("cs_test_wh_exp_revalide");
+    const payload = JSON.stringify({
+      id: "evt_test_6",
+      object: "event",
+      type: "checkout.session.expired",
+      data: { object: { id: "cs_test_wh_exp_revalide", object: "checkout.session" } },
+    });
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+    revalidatePath.mockClear();
+
+    expect((await post(payload, signature)).status).toBe(200);
+
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/boutique");
+    expect(revalidatePath).toHaveBeenCalledWith("/boutique/rivage");
+    expect(revalidatePath).not.toHaveBeenCalledWith("/boutique/[slug]", "page");
+
+    revalidatePath.mockClear();
+    expect((await post(payload, signature)).status).toBe(200);
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("répond 200 même si la revalidation du cache échoue", async () => {
+    await makePendingOrder("cs_test_wh_exp_revalide_ko");
+    const payload = JSON.stringify({
+      id: "evt_test_7",
+      object: "event",
+      type: "checkout.session.expired",
+      data: { object: { id: "cs_test_wh_exp_revalide_ko", object: "checkout.session" } },
+    });
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+    revalidatePath.mockClear();
+    revalidatePath.mockImplementationOnce(() => {
+      throw new Error("hors contexte de requête");
+    });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect((await post(payload, signature)).status).toBe(200);
+      expect(errors).toHaveBeenCalledWith(
+        "[stock] revalidation du cache impossible",
+        expect.any(Object),
+        expect.any(Error),
+      );
+    } finally {
+      errors.mockRestore();
+      revalidatePath.mockReset();
+    }
+
+    const db = await getDb();
+    const after = await getOrderBySessionId(db, "cs_test_wh_exp_revalide_ko");
+    expect(after?.order.status).toBe("cancelled");
   });
 
   it("répond 200 aux événements ignorés (signés)", async () => {

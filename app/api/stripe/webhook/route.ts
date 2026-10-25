@@ -9,6 +9,7 @@ import {
   reconcilePaidSession,
 } from "@/lib/orders";
 import { applyPaidSideEffects } from "@/lib/orders/paid-side-effects";
+import { revalidateAvailability } from "@/lib/stock/revalidate";
 import { getStripe } from "@/lib/stripe";
 
 function paymentIntentId(
@@ -83,12 +84,14 @@ export async function POST(request: Request) {
     }
     case "checkout.session.expired":
     case "checkout.session.async_payment_failed": {
+      let cancelledOrderId: string | null = null;
       try {
-        await cancelOrderBySession(
+        const cancelled = await cancelOrderBySession(
           db,
           event.data.object.id,
           event.data.object.metadata?.orderId,
         );
+        cancelledOrderId = cancelled?.id ?? null;
       } catch (err) {
         console.error(
           "[commande] annulation impossible, aucune modification appliquée (statut et stock inchangés)",
@@ -99,6 +102,9 @@ export async function POST(request: Request) {
           err,
         );
         return new Response("Annulation impossible", { status: 500 });
+      }
+      if (cancelledOrderId !== null) {
+        await revalidateAvailability([cancelledOrderId], db);
       }
       break;
     }

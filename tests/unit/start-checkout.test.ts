@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 
 const mocks = vi.hoisted(() => ({
+  revalidatePath: vi.fn(),
   sessionsCreate: vi.fn(),
   sessionsExpire: vi.fn(),
   sessionsRetrieve: vi.fn(),
@@ -15,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   cookieOptions: new Map<string, Record<string, unknown>>(),
 }));
 
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("next/headers", () => ({
   cookies: async () => ({
     get: (name: string) => {

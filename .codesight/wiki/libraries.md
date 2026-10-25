@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**58 library files** across 36 modules
+**59 library files** across 36 modules
 
 ## Content (5 files)
 
@@ -28,11 +28,12 @@
 - `lib/mondial-relay/xml.ts` — buildShipmentXml, parseShipmentResponse
 - `lib/mondial-relay/ensure-shipment.ts` — ensureRelayShipment
 
-## Stock (4 files)
+## Stock (5 files)
 
 - `lib/stock/key-order.ts` — stockKeyToken, reservedStockKey, reservedStockKey, reservedStockKey, compareStockKeys, StockKeyTable, …
 - `lib/stock/availability.ts` — cartAvailabilityFor, CartLine, LineAvailability
 - `lib/stock/reserve.ts` — reserveStock, StockReservation
+- `lib/stock/revalidate.ts` — slugsOfOrder, revalidateAvailability
 - `lib/stock/release.ts` — releaseOrderStock
 
 ## Checkout (3 files)

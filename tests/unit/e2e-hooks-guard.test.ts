@@ -8,6 +8,11 @@
 // donc un E2E_TEST_HOOKS=1 ayant fuité dans un env group ne suffit jamais.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { and, eq, inArray } from "drizzle-orm";
+
+const revalidatePath = vi.fn();
+
+vi.mock("next/cache", () => ({ revalidatePath: (...args: unknown[]) => revalidatePath(...args) }));
+
 import { POST } from "@/app/api/e2e/orders/route";
 import { getDb } from "@/lib/db/client";
 import { orderItems, orders, productSizes, products } from "@/lib/db/schema";
@@ -217,6 +222,22 @@ describe("POST /api/e2e/orders — variantes et stock", () => {
         ),
     ).toEqual([]);
     expect((await sizeOf("lagune", "Grand")).stockQty).toBe(2);
+  });
+
+  it("revalide les pages en ISR, sans quoi aucune spec ne peut asserter l'affichage", async () => {
+    await setStock("lagune", "Grand", 2);
+    revalidatePath.mockClear();
+
+    const res = await post({
+      name: "Diane ISR",
+      items: [{ slug: "lagune", qty: 1, sizeLabel: "Grand" }],
+    });
+    expect(res.status, await res.clone().text()).toBe(200);
+
+    expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/boutique");
+    expect(revalidatePath).toHaveBeenCalledWith("/boutique/lagune");
+    expect(revalidatePath).not.toHaveBeenCalledWith("/boutique/[slug]", "page");
   });
 
   it("libère le stock quand le hook pose le statut cancelled", async () => {

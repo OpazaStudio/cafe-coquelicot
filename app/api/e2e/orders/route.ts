@@ -25,6 +25,7 @@ import {
   updateOrderStatus,
   type CheckoutItemInput,
 } from "@/lib/orders";
+import { revalidateAvailability } from "@/lib/stock/revalidate";
 
 function e2eHooksEnabled(): boolean {
   if (process.env.E2E_TEST_HOOKS !== "1") return false;
@@ -143,6 +144,8 @@ export async function POST(request: Request) {
     throw new Error("La commande e2e a changé de statut avant la pose de l'état.");
   }
   if (cancelled) await updateOrderStatus(db, order.id, "cancelled");
+
+  await revalidateAvailability([order.id], db);
 
   return NextResponse.json({ id: order.id, number: order.number });
 }

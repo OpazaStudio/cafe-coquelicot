@@ -307,6 +307,48 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     },
   );
 
+  it("revalide les pages du catalogue quand l'annulation libère du stock", async () => {
+    const { order } = await makeOrder({ withSession: false });
+    mocks.expireSessionForCancel.mockResolvedValue({ outcome: "no_session" });
+
+    const res = await changeOrderStatus(order.id, "cancelled");
+
+    expect(res).toBeUndefined();
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/boutique");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/boutique/rivage");
+    expect(mocks.revalidatePath).not.toHaveBeenCalledWith("/boutique/[slug]", "page");
+  });
+
+  it("annule quand même si la revalidation du catalogue lève", async () => {
+    const { order } = await makeOrder({ withSession: false });
+    mocks.expireSessionForCancel.mockResolvedValue({ outcome: "no_session" });
+    mocks.revalidatePath.mockImplementation((path: string) => {
+      if (path === "/") throw new Error("hors contexte de requête");
+    });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const res = await changeOrderStatus(order.id, "cancelled");
+
+      expect(res).toBeUndefined();
+      expect((await reload(order.id)).status).toBe("cancelled");
+      expectViewsRevalidated(order.id);
+    } finally {
+      errorSpy.mockRestore();
+      mocks.revalidatePath.mockReset();
+    }
+  });
+
+  it("ne revalide pas le catalogue pour une transition autre que l'annulation", async () => {
+    const { order } = await makeOrder();
+
+    const res = await changeOrderStatus(order.id, "paid");
+
+    expect(res).toBeUndefined();
+    expect(mocks.revalidatePath).not.toHaveBeenCalledWith("/boutique");
+    expect(mocks.revalidatePath).not.toHaveBeenCalledWith("/boutique/rivage");
+  });
+
   it("n'appelle pas Stripe pour une transition autre que l'annulation", async () => {
     const { order } = await makeOrder();
 

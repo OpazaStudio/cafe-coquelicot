@@ -282,6 +282,7 @@
   - _...1 more_
 - `lib/stock/release.ts` — function releaseOrderStock: (tx, orderId) => Promise<void>
 - `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
+- `lib/stock/revalidate.ts` — function slugsOfOrder: (db, orderId) => Promise<string[]>, function revalidateAvailability: (orderIds, known?) => Promise<void>
 - `lib/storage.ts`
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<

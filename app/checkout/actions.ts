@@ -17,6 +17,7 @@ import { SHIPPING_LINE_LABELS } from "@/lib/order-status";
 import { composeItemName } from "@/lib/item-label";
 import { getSettings, shippingFeesFromSettings } from "@/lib/settings";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
+import { revalidateAvailability } from "@/lib/stock/revalidate";
 import { InsufficientStockError } from "@/lib/checkout/errors";
 import type { AbandonHeldOutcome } from "@/lib/checkout/abandon";
 import { CheckoutSchema, rawCheckoutValues, toCustomerInput } from "./schema";
@@ -79,6 +80,9 @@ export async function startCheckout(
   }
 
   const previous = await abandonReservedOrder();
+  if (previous?.outcome === "released") {
+    await revalidateAvailability([previous.orderId]);
+  }
 
   let checkoutUrl: string;
   let created: { db: Db; orderId: string } | undefined;
@@ -150,13 +154,17 @@ export async function startCheckout(
 
     if (!session.url) {
       await abandonPendingOrder(db, order.id);
+      await revalidateAvailability([order.id], db);
       return { error: "Stripe n'a pas renvoyé d'URL de paiement. Réessayez." };
     }
     await attachStripeSession(db, order.id, session.id);
     await rememberReservedOrder(order.id, CHECKOUT_SESSION_TTL_SECONDS);
     checkoutUrl = session.url;
   } catch (err) {
-    if (created) await abandonPendingOrder(created.db, created.orderId);
+    if (created) {
+      await abandonPendingOrder(created.db, created.orderId);
+      await revalidateAvailability([created.orderId], created.db);
+    }
     if (
       err instanceof InsufficientStockError &&
       previous !== null &&
@@ -178,6 +186,8 @@ export async function startCheckout(
       error: "Le paiement n'a pas pu être initialisé. Réessayez dans un instant.",
     };
   }
+
+  if (created) await revalidateAvailability([created.orderId], created.db);
 
   redirect(checkoutUrl);
 }
