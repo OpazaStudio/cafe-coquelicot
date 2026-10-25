@@ -69,7 +69,9 @@ L'ordre des opérations :
 
 Entre les étapes 1 et 5, les événements échoueront — c'est sans gravité, Stripe les rejoue pendant plusieurs jours, donc ils seront rattrapés une fois le secret en place.
 
-*Hors stock, et plus urgent* : sans webhook, le passage d'une commande en « payée » ne tient aujourd'hui **que** par la page de confirmation, qui interroge Stripe, marque la commande et envoie les e-mails quand le client y arrive. Si un client paie puis ferme son onglet avant que cette page ne charge — fréquent sur mobile — la commande reste « en attente de paiement », sans étiquette Mondial Relay et **sans aucun e-mail, ni au client ni à la boutique**. À vérifier dans les commandes existantes : une commande en attente qui correspond à un paiement réussi côté Stripe est un cas déjà passé à travers.
+*Hors stock, et plus urgent* : sans webhook, le passage d'une commande en « payée » ne tient aujourd'hui **que** par la page de confirmation, qui interroge Stripe, marque la commande et envoie les e-mails quand le client y arrive. Si un client paie puis ferme son onglet avant que cette page ne charge — fréquent sur mobile — la commande reste « en attente de paiement », sans étiquette Mondial Relay et **sans aucun e-mail, ni au client ni à la boutique**. **Décision du 2026-10-25 : on ne vérifie pas les commandes passées.** Le volume est faible et chaque client a donné un retour direct, donc une commande payée dont personne n'aurait été prévenu se serait signalée d'elle-même. Inutile de rouvrir ce point rétrospectivement.
+
+Ce qui reste à savoir, en revanche : cette couverture tient au volume actuel, pas au code. Le jour où les commandes se multiplient, le retour direct de chaque client cesse d'être un filet. La création de la destination de webhook ferme ce trou en même temps que celui du stock — il n'y a donc pas de travail séparé à prévoir.
 
 ---
 
