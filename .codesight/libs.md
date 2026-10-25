@@ -188,7 +188,7 @@
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
   - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
   - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
-  - _...14 more_
+  - _...15 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -280,7 +280,7 @@
   - function compareStockKeys: (a, b) => number
   - type StockKeyTable
   - _...1 more_
-- `lib/stock/release.ts` — function releaseOrderStock: (tx, orderId) => Promise<void>
+- `lib/stock/release.ts` — function restockableUnits: (db, orderId) => Promise<number>, function releaseOrderStock: (tx, orderId) => Promise<number>
 - `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
 - `lib/stock/revalidate.ts` — function slugsOfOrder: (db, orderId) => Promise<string[]>, function revalidateAvailability: (orderIds, known?) => Promise<void>
 - `lib/storage.ts`

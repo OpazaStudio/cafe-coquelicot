@@ -21,9 +21,13 @@ import { expireSessionForCancel } from "@/lib/stripe-session";
 const InputSchema = z.object({
   orderId: z.uuid(),
   to: z.enum(orderStatus.enumValues),
+  restock: z.boolean(),
 });
 
-export type StatusActionState = { error: string } | undefined;
+export type StatusActionState =
+  | { error: string; ok?: never }
+  | { ok: string; error?: never }
+  | undefined;
 
 const ALREADY_PAID_MESSAGE =
   "Cette commande a déjà été payée chez Stripe ; elle a été passée en « Payée » au lieu d'être annulée.";
@@ -33,6 +37,12 @@ const AWAITING_ASYNC_MESSAGE =
   "Un paiement est en cours sur cette commande. Réessayez plus tard.";
 const UNREACHABLE_MESSAGE =
   "Stripe est injoignable : l'annulation n'a pas été appliquée.";
+
+function restockMessage(units: number): string {
+  return units === 1
+    ? "Commande annulée : 1 unité est remise en stock."
+    : `Commande annulée : ${units} unités sont remises en stock.`;
+}
 
 function revalidateOrderViews(orderId: string) {
   revalidatePath("/admin/commandes");
@@ -98,23 +108,32 @@ async function stripeCancellationRefusal(
 export async function changeOrderStatus(
   orderId: string,
   to: string,
+  restock = false,
 ): Promise<StatusActionState> {
   await verifySession();
-  const parsed = InputSchema.safeParse({ orderId, to });
+  const parsed = InputSchema.safeParse({ orderId, to, restock });
   if (!parsed.success) {
     return { error: "Requête invalide." };
   }
+  const cancelling = parsed.data.to === "cancelled";
+  let restocked = 0;
   try {
     const db = await getDb();
-    if (parsed.data.to === "cancelled") {
+    if (cancelling) {
       const refusal = await stripeCancellationRefusal(db, parsed.data.orderId);
       if (refusal) {
         revalidateOrderViews(orderId);
         return refusal;
       }
     }
-    await updateOrderStatus(db, parsed.data.orderId, parsed.data.to);
-    if (parsed.data.to === "cancelled") {
+    const changed = await updateOrderStatus(
+      db,
+      parsed.data.orderId,
+      parsed.data.to,
+      parsed.data.restock,
+    );
+    restocked = changed.restockedUnits;
+    if (cancelling) {
       await revalidateAvailability([parsed.data.orderId], db);
     }
   } catch (err) {
@@ -122,7 +141,7 @@ export async function changeOrderStatus(
     return { error: err instanceof Error ? err.message : "Erreur inconnue." };
   }
   revalidateOrderViews(orderId);
-  return undefined;
+  return restocked > 0 ? { ok: restockMessage(restocked) } : undefined;
 }
 
 const ItemPrepSchema = z.object({

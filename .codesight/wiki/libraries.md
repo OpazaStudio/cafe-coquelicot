@@ -32,9 +32,9 @@
 
 - `lib/stock/key-order.ts` — stockKeyToken, reservedStockKey, reservedStockKey, reservedStockKey, compareStockKeys, StockKeyTable, …
 - `lib/stock/availability.ts` — cartAvailabilityFor, CartLine, LineAvailability
+- `lib/stock/release.ts` — restockableUnits, releaseOrderStock
 - `lib/stock/reserve.ts` — reserveStock, StockReservation
 - `lib/stock/revalidate.ts` — slugsOfOrder, revalidateAvailability
-- `lib/stock/release.ts` — releaseOrderStock
 
 ## Checkout (3 files)
 

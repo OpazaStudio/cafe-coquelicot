@@ -9,7 +9,7 @@
 - **AdminNav** — `app/(admin)/admin/(panel)/admin-nav.tsx`
 - **AdminSidebar** — `app/(admin)/admin/(panel)/admin-sidebar.tsx`
 - **LabelButton** — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
-- **StatusActions** — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
+- **StatusActions** — props: orderId, status, fulfillment, canRestock — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** — props: orderId, trackingNumber, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **PasswordForm** — `app/(admin)/admin/(panel)/compte/password-form.tsx`

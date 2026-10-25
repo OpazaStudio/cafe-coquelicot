@@ -8,6 +8,7 @@ import {
   SHIPPING_COUNTRY_LABELS,
   isShippingCountry,
 } from "@/lib/order-status";
+import { restockableUnits } from "@/lib/stock/release";
 import { Panel } from "../../ui";
 import { StatusBadge } from "../status-badge";
 import { LabelButton } from "./label-button";
@@ -32,6 +33,7 @@ export default async function CommandeDetailPage({
   const data = await getOrderWithItems(db, id);
   if (!data) notFound();
   const { order, items } = data;
+  const canRestock = (await restockableUnits(db, order.id)) > 0;
 
   return (
     <>
@@ -97,6 +99,7 @@ export default async function CommandeDetailPage({
               orderId={order.id}
               status={order.status}
               fulfillment={order.fulfillment}
+              canRestock={canRestock}
             />
           </Panel>
         </div>

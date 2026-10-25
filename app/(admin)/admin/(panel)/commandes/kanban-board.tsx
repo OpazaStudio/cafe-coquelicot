@@ -7,7 +7,7 @@ import { formatEuros } from "@/lib/money";
 import { FULFILLMENT_LABELS } from "@/lib/order-status";
 import type { BoardOrder } from "@/lib/orders";
 import { PREP_LABELS, PREP_ORDER, type PrepStatus } from "@/lib/prep-status";
-import { changePrepStatus, setItemPrepared } from "./actions";
+import { changePrepStatus, setItemPrepared, type StatusActionState } from "./actions";
 import { StatusBadge } from "./status-badge";
 
 // DnD HTML5 natif : suffisant pour 4 colonnes fixes, zéro dépendance.
@@ -36,7 +36,7 @@ export function KanbanBoard({ orders }: { orders: BoardOrder[] }) {
       ),
   );
 
-  const run = (action: () => Promise<{ error: string } | undefined>) => {
+  const run = (action: () => Promise<StatusActionState>) => {
     setError(null);
     startTransition(async () => {
       const result = await action();

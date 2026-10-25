@@ -546,11 +546,14 @@ export async function setOrderStatusIfUnchanged(
   return rows[0] ?? null;
 }
 
+export type OrderStatusChange = OrderRow & { restockedUnits: number };
+
 export async function updateOrderStatus(
   db: Db,
   orderId: string,
   to: OrderStatus,
-): Promise<OrderRow> {
+  restock = false,
+): Promise<OrderStatusChange> {
   return db.transaction(async (tx) => {
     const found = await tx
       .select()
@@ -583,8 +586,11 @@ export async function updateOrderStatus(
         "La commande a changé de statut, rechargez la page.",
       );
     }
+    let restockedUnits = 0;
     if (order.status === "pending" && to === "cancelled") {
       await releaseOrderStock(tx, orderId);
+    } else if (restock && order.status === "paid" && to === "cancelled") {
+      restockedUnits = await releaseOrderStock(tx, orderId);
     }
     if (finishesPrep) {
       await tx
@@ -592,7 +598,7 @@ export async function updateOrderStatus(
         .set({ preparedQty: sql`${orderItems.qty}` })
         .where(eq(orderItems.orderId, orderId));
     }
-    return updated;
+    return { ...updated, restockedUnits };
   });
 }
 
