@@ -54,6 +54,23 @@ Le code traite `checkout.session.expired` et `checkout.session.async_payment_fai
 
 Et même si un compteur était posé trop tôt, le cas resterait rattrapable à la main : annuler la commande depuis le back-office libère le stock par un chemin qui ne dépend pas du webhook. Il faudrait seulement s'en apercevoir.
 
+**Constaté le 2026-10-25 : il n'existe AUCUNE destination de webhook dans Stripe.** Pas un abonnement incomplet — rien du tout. Deux conséquences.
+
+*Pour le stock* : il faut **créer** la destination, pas en modifier une. Donc son secret de signature est neuf, et il doit impérativement être recopié dans Vercel — l'étape qu'on oublie, et sans laquelle chaque événement reçoit un 400 ou un 500 sans que rien ne le signale côté boutique.
+
+L'ordre des opérations :
+
+1. créer la destination vers `https://<domaine>/api/stripe/webhook` ;
+2. y cocher les quatre événements `checkout.session.completed`, `expired`, `async_payment_succeeded`, `async_payment_failed` ;
+3. copier son **secret de signature** (il commence par `whsec_`) ;
+4. le poser dans Vercel comme `STRIPE_WEBHOOK_SECRET` pour l'environnement de production ;
+5. **redéployer**, une variable d'environnement ne prenant effet qu'au déploiement suivant ;
+6. envoyer un événement de test depuis la page de la destination : la réponse attendue est **200**.
+
+Entre les étapes 1 et 5, les événements échoueront — c'est sans gravité, Stripe les rejoue pendant plusieurs jours, donc ils seront rattrapés une fois le secret en place.
+
+*Hors stock, et plus urgent* : sans webhook, le passage d'une commande en « payée » ne tient aujourd'hui **que** par la page de confirmation, qui interroge Stripe, marque la commande et envoie les e-mails quand le client y arrive. Si un client paie puis ferme son onglet avant que cette page ne charge — fréquent sur mobile — la commande reste « en attente de paiement », sans étiquette Mondial Relay et **sans aucun e-mail, ni au client ni à la boutique**. À vérifier dans les commandes existantes : une commande en attente qui correspond à un paiement réussi côté Stripe est un cas déjà passé à travers.
+
 ---
 
 ### 1.4 Hors stock, mais le dépôt est public : une adresse personnelle est en dur dans le code
