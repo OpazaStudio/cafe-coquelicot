@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { products, productSizes } from "@/lib/db/schema";
+import { orderItems, orders, products, productSizes } from "@/lib/db/schema";
 import {
   getProductWithVariants,
   listProductsForAdmin,
@@ -79,6 +79,82 @@ describe("getProductWithVariants", () => {
     expect(
       await getProductWithVariants(db, "00000000-0000-4000-8000-000000000000"),
     ).toBeNull();
+  });
+
+  it("compte les unités retenues par les commandes pending, pas par les payées", async () => {
+    const id = await solanaId();
+    const sizes = await db
+      .select({ id: productSizes.id, label: productSizes.label })
+      .from(productSizes)
+      .where(eq(productSizes.productId, id));
+    const petit = sizes.find((s) => s.label === "Petit")!;
+    const moyen = sizes.find((s) => s.label === "Moyen")!;
+    for (const [i, hold] of [
+      { status: "pending" as const, sizeId: petit.id, qty: 1 },
+      { status: "pending" as const, sizeId: petit.id, qty: 2 },
+      { status: "paid" as const, sizeId: moyen.id, qty: 5 },
+    ].entries()) {
+      const [order] = await db
+        .insert(orders)
+        .values({
+          number: `CMD-900${i}`,
+          status: hold.status,
+          customerName: "Camille Martin",
+          customerEmail: "camille@exemple.fr",
+          fulfillment: "retrait",
+          subtotalCents: 1000,
+          totalCents: 1000,
+        })
+        .returning({ id: orders.id });
+      await db.insert(orderItems).values({
+        orderId: order.id,
+        nameSnapshot: "solana",
+        priceCentsSnapshot: 1000,
+        qty: hold.qty,
+        stockReservedQty: hold.qty,
+        stockReservedSizeId: hold.sizeId,
+      });
+    }
+
+    const data = await getProductWithVariants(db, id);
+    expect([...data!.pendingBySizeId]).toEqual([[petit.id, 3]]);
+    expect(data!.pendingProductQty).toBe(0);
+  });
+
+  it("compte aussi les unités retenues sur un produit nu", async () => {
+    const [rivage] = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.slug, "rivage"));
+    for (const hold of [
+      { status: "pending" as const, qty: 2 },
+      { status: "paid" as const, qty: 7 },
+    ]) {
+      const [order] = await db
+        .insert(orders)
+        .values({
+          number: `CMD-91${hold.qty}`,
+          status: hold.status,
+          customerName: "Camille Martin",
+          customerEmail: "camille@exemple.fr",
+          fulfillment: "retrait",
+          subtotalCents: 1000,
+          totalCents: 1000,
+        })
+        .returning({ id: orders.id });
+      await db.insert(orderItems).values({
+        orderId: order.id,
+        nameSnapshot: "rivage",
+        priceCentsSnapshot: 1000,
+        qty: hold.qty,
+        stockReservedQty: hold.qty,
+        stockReservedProductId: rivage.id,
+      });
+    }
+
+    const data = await getProductWithVariants(db, rivage.id);
+    expect(data!.pendingProductQty).toBe(2);
+    expect([...data!.pendingBySizeId]).toEqual([]);
   });
 });
 

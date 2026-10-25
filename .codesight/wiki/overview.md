@@ -6,27 +6,27 @@
 
 ## Scale
 
-3 API routes · 10 database models · 114 UI components · 48 library files · 6 middleware layers · 31 environment variables
+3 API routes · 10 database models · 115 UI components · 59 library files · 6 middleware layers · 31 environment variables
 
 ## Subsystems
 
 - **[Payments](./payments.md)** — 1 routes — touches: auth, payment
 - **[Admin](./admin.md)** — 1 routes — touches: auth, payment, upload
-- **[Route](./route.md)** — 1 routes — touches: auth, db
+- **[Route](./route.md)** — 1 routes — touches: auth, db, payment
 
 **Database:** drizzle, 10 models — see [database.md](./database.md)
 
-**UI:** 114 components (react) — see [ui.md](./ui.md)
+**UI:** 115 components (react) — see [ui.md](./ui.md)
 
-**Libraries:** 48 files — see [libraries.md](./libraries.md)
+**Libraries:** 59 files — see [libraries.md](./libraries.md)
 
 ## High-Impact Files
 
 Changes to these files have the widest blast radius across the codebase:
 
+- `tests/helpers/db.ts` — imported by **19** files
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
 - `tests/e2e/helpers.ts` — imported by **13** files
-- `tests/helpers/db.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
 - `lib/db/client.ts` — imported by **7** files
@@ -43,4 +43,4 @@ Changes to these files have the widest blast radius across the codebase:
 - `VERCEL` — `app/api/e2e/orders/route.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-10-22_
+_Back to [index.md](./index.md) · Generated 2026-10-25_

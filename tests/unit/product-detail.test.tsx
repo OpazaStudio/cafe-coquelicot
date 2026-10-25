@@ -1,8 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CartProvider } from "@/lib/cart/cart-context";
+import { trackAddToCart } from "@/lib/analytics/gtag";
 import { ProductDetail } from "@/components/product-detail";
 import type { ShopProduct } from "@/lib/products";
+
+vi.mock("@/lib/analytics/gtag", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/analytics/gtag")>()),
+  trackAddToCart: vi.fn(),
+}));
 
 const solana: ShopProduct = {
   id: "p1",
@@ -20,13 +26,14 @@ const solana: ShopProduct = {
   badge: null,
   category: "seche",
   sizes: [
-    { id: "s-p", label: "Petit", priceCents: 2900 },
-    { id: "s-g", label: "Grand", priceCents: 4200 },
+    { id: "s-p", label: "Petit", priceCents: 2900, soldOut: false },
+    { id: "s-g", label: "Grand", priceCents: 4200, soldOut: false },
   ],
   colors: [
     { id: "c-n", label: "Naturel", illustrationVariant: 2 },
     { id: "c-b", label: "Blanc", illustrationVariant: 4 },
   ],
+  soldOut: false,
 };
 
 function renderDetail(p: ShopProduct) {
@@ -37,7 +44,12 @@ function renderDetail(p: ShopProduct) {
   );
 }
 
-beforeEach(() => window.localStorage.clear());
+const CART_KEY = "coquelicot.cart.v1";
+
+beforeEach(() => {
+  window.localStorage.clear();
+  vi.mocked(trackAddToCart).mockClear();
+});
 
 describe("ProductDetail", () => {
   it("prix par défaut = 1ʳᵉ taille, réactif au changement de taille", () => {
@@ -257,5 +269,124 @@ describe("ProductDetail — description", () => {
   it("n'affiche plus de sous-titre", () => {
     const { container } = renderDetail(solana);
     expect(container.querySelector(".eyebrow")).toBeNull();
+  });
+});
+
+const partlySoldOut: ShopProduct = {
+  ...solana,
+  sizes: [
+    { id: "s-p", label: "Petit", priceCents: 2900, soldOut: true },
+    { id: "s-g", label: "Grand", priceCents: 4200, soldOut: false },
+  ],
+};
+
+const allSoldOut: ShopProduct = {
+  ...solana,
+  sizes: solana.sizes.map((s) => ({ ...s, soldOut: true })),
+  soldOut: true,
+};
+
+const bareSoldOut: ShopProduct = {
+  ...solana,
+  sizes: [],
+  colors: [],
+  soldOut: true,
+};
+
+async function cartReady() {
+  await waitFor(() => expect(window.localStorage.getItem(CART_KEY)).toBe("[]"));
+}
+
+function ctaButton(name: string) {
+  return screen.getByRole("button", { name });
+}
+
+describe("ProductDetail — stock épuisé", () => {
+  it("présélectionne la première taille disponible", () => {
+    renderDetail(partlySoldOut);
+    expect(screen.getByRole("button", { name: /^Grand/ }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: /^Petit/ }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByTestId("product-price").textContent).toBe("42€");
+  });
+
+  it("rend les tailles épuisées visibles mais inactives", () => {
+    renderDetail(partlySoldOut);
+    const petit = screen.getByRole("button", { name: /^Petit/ });
+    expect(petit.getAttribute("aria-disabled")).toBe("true");
+    expect(petit.hasAttribute("disabled")).toBe(false);
+    expect(petit.classList.contains("is-sold-out")).toBe(true);
+    expect(petit.textContent).toContain("Épuisé");
+    const grand = screen.getByRole("button", { name: /^Grand/ });
+    expect(grand.hasAttribute("aria-disabled")).toBe(false);
+    expect(grand.classList.contains("is-sold-out")).toBe(false);
+    expect(grand.textContent).not.toContain("Épuisé");
+  });
+
+  it("un clic sur une taille épuisée ne change ni la sélection ni le prix", () => {
+    renderDetail(partlySoldOut);
+    fireEvent.click(screen.getByRole("button", { name: /^Petit/ }));
+    expect(screen.getByRole("button", { name: /^Grand/ }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: /^Petit/ }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByTestId("product-price").textContent).toBe("42€");
+  });
+
+  it("ajoute la taille disponible après un clic sans effet sur la taille épuisée", async () => {
+    renderDetail(partlySoldOut);
+    await cartReady();
+    fireEvent.click(screen.getByRole("button", { name: /^Petit/ }));
+    fireEvent.click(ctaButton("Ajouter solana au panier"));
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(CART_KEY) ?? "[]");
+      expect(stored.map((i: { sizeId: string }) => i.sizeId)).toEqual(["s-g"]);
+    });
+    expect(trackAddToCart).toHaveBeenCalledTimes(1);
+  });
+
+  it("handleAdd ne fait rien sur une taille épuisée", async () => {
+    renderDetail(allSoldOut);
+    await cartReady();
+    fireEvent.click(ctaButton("solana, épuisé"));
+    expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(CART_KEY)).toBe("[]");
+    expect(screen.queryByRole("link", { name: /Voir le panier/ })).toBeNull();
+    expect(screen.getByRole("status").textContent).toBe("");
+    expect(screen.queryByText(/Ajouté/)).toBeNull();
+  });
+
+  it("handleAdd ne fait rien sur un produit nu épuisé", async () => {
+    renderDetail(bareSoldOut);
+    await cartReady();
+    fireEvent.click(ctaButton("solana, épuisé"));
+    expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(CART_KEY)).toBe("[]");
+    expect(screen.getByRole("status").textContent).toBe("");
+  });
+
+  it("le CTA passe à « Épuisé » quand tout est épuisé", () => {
+    renderDetail(allSoldOut);
+    const cta = ctaButton("solana, épuisé");
+    expect(cta.textContent).toBe("Épuisé");
+    expect(cta.getAttribute("aria-disabled")).toBe("true");
+    expect(cta.hasAttribute("disabled")).toBe(false);
+    expect(screen.queryByRole("button", { name: "Ajouter solana au panier" })).toBeNull();
+  });
+
+  it("le CTA reste « Ajouter au panier » tant qu'une taille est disponible", () => {
+    renderDetail(partlySoldOut);
+    const cta = ctaButton("Ajouter solana au panier");
+    expect(cta.textContent).toContain("Ajouter au panier");
+    expect(cta.hasAttribute("aria-disabled")).toBe(false);
+  });
+
+  it("« Épuisé » passe avant le badge admin sur le média", () => {
+    const { container } = renderDetail({ ...allSoldOut, badge: "Nouveau" });
+    const badges = [...container.querySelectorAll(".product-page__media .product-card__badge")];
+    expect(badges.map((b) => b.textContent)).toEqual(["Épuisé"]);
+  });
+
+  it("garde le badge admin tant que le produit n'est pas épuisé", () => {
+    const { container } = renderDetail({ ...partlySoldOut, badge: "Nouveau" });
+    const badges = [...container.querySelectorAll(".product-page__media .product-card__badge")];
+    expect(badges.map((b) => b.textContent)).toEqual(["Nouveau"]);
   });
 });

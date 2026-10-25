@@ -14,7 +14,8 @@ export default async function EditProduitPage({
   const { id } = await params;
   const data = await getProductWithVariants(await getDb(), id);
   if (!data) notFound();
-  const { product, sizes, colors, images } = data;
+  const { product, sizes, colors, images, pendingBySizeId, pendingProductQty } =
+    data;
 
   return (
     <>
@@ -36,6 +37,8 @@ export default async function EditProduitPage({
           sizes={sizes}
           colors={colors}
           images={images}
+          pendingBySizeId={pendingBySizeId}
+          pendingProductQty={pendingProductQty}
           submitLabel="Enregistrer"
         />
       </div>

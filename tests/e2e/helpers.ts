@@ -14,6 +14,14 @@ export async function adminLogin(page: Page): Promise<void> {
   ).toBeVisible();
 }
 
+export async function neutralizeRelayWidget(page: Page): Promise<void> {
+  for (const cdn of ["https://ajax.googleapis.com/**", "**/parcelshop-picker/**"]) {
+    await page.route(cdn, (route) =>
+      route.fulfill({ contentType: "application/javascript", body: "" }),
+    );
+  }
+}
+
 // Ajout depuis la grille : la carte mène à la page produit, où vit le bouton.
 export async function addToCart(page: Page, name: string): Promise<void> {
   await page.goto("/boutique");

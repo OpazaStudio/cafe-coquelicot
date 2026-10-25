@@ -8,6 +8,7 @@ import {
   productColors,
   productSizes,
   products,
+  type OrderStatus,
 } from "@/lib/db/schema";
 import { CARD_FEE_CENTS, COLISSIMO_FEE_CENTS, MONDIAL_RELAY_FEE_CENTS } from "@/lib/order-status";
 import {
@@ -17,9 +18,13 @@ import {
   createPendingOrder,
   generateOrderNumber,
   getOrderBySessionId,
+  getOrderWithItems,
   listBoardOrders,
   markOrderPaidBySession,
+  OrderStatusConflictError,
+  reconcilePaidSession,
   setItemPreparedQty,
+  setOrderStatusIfUnchanged,
   setPrepStatus,
   setTrackingNumber,
   updateOrderStatus,
@@ -36,6 +41,57 @@ let db: Db;
 beforeEach(async () => {
   db = await createTestDb();
 });
+
+function staleStatusDb(real: Db, orderId: string, status: OrderStatus): Db {
+  const withStaleStatus = (builder: object): object =>
+    new Proxy(builder, {
+      get(target, prop) {
+        if (prop === "then") {
+          return (
+            resolve: (rows: unknown) => unknown,
+            reject: (reason: unknown) => unknown,
+          ) =>
+            (target as PromiseLike<Record<string, unknown>[]>)
+              .then((rows) =>
+                rows.map((row) => (row.id === orderId ? { ...row, status } : row)),
+              )
+              .then(resolve, reject);
+        }
+        const value = Reflect.get(target, prop, target);
+        if (typeof value !== "function") return value;
+        return (...args: unknown[]) => {
+          const result = value.apply(target, args);
+          return typeof result === "object" && result !== null
+            ? withStaleStatus(result)
+            : result;
+        };
+      },
+    });
+
+  const wrapTx = (tx: object): object =>
+    new Proxy(tx, {
+      get(target, prop) {
+        const value = Reflect.get(target, prop, target);
+        if (typeof value !== "function") return value;
+        if (prop === "select") {
+          return (...args: unknown[]) => withStaleStatus(value.apply(target, args));
+        }
+        return value.bind(target);
+      },
+    });
+
+  return new Proxy(real, {
+    get(target, prop) {
+      const value = Reflect.get(target, prop, target);
+      if (typeof value !== "function") return value;
+      if (prop === "transaction") {
+        return (callback: (tx: object) => unknown, config?: unknown) =>
+          value.call(target, (tx: object) => callback(wrapTx(tx)), config);
+      }
+      return value.bind(target);
+    },
+  });
+}
 
 describe("generateOrderNumber", () => {
   it("suit le format CQ-AAMMJJ-XXXX", () => {
@@ -180,6 +236,19 @@ describe("createPendingOrder", () => {
 });
 
 describe("cycle de paiement Stripe", () => {
+  it("attachStripeSession refuse de rattacher une session à une commande qui n'est plus pending", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "cancelled");
+
+    await expect(
+      attachStripeSession(db, order.id, "cs_test_apres_annulation"),
+    ).rejects.toThrow("La commande n'est plus en attente de paiement.");
+
+    const [after] = await db.select().from(orders).where(eq(orders.id, order.id));
+    expect(after.status).toBe("cancelled");
+    expect(after.stripeSessionId).toBeNull();
+  });
+
   it("markOrderPaidBySession est idempotent", async () => {
     const { order } = await createPendingOrder(db, camille, [
       { slug: "rivage", qty: 1 },
@@ -210,6 +279,137 @@ describe("cycle de paiement Stripe", () => {
     await cancelOrderBySession(db, "cs_test_exp"); // expiré après paiement : ignoré
     const after = await getOrderBySessionId(db, "cs_test_exp");
     expect(after?.order.status).toBe("paid");
+  });
+
+  it("annule par metadata.orderId quand attachStripeSession a raté", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    const cancelled = await cancelOrderBySession(db, "cs_never_attached", order.id);
+    expect(cancelled?.id).toBe(order.id);
+    expect(cancelled?.stripeSessionId).toBe("cs_never_attached");
+    expect(cancelled?.status).toBe("cancelled");
+    const after = await getOrderBySessionId(db, "cs_never_attached");
+    expect(after?.order.status).toBe("cancelled");
+  });
+
+  it("cancelOrderBySession renvoie la ligne annulée puis null au rejeu", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_test_replay");
+    const first = await cancelOrderBySession(db, "cs_test_replay", order.id);
+    expect(first?.id).toBe(order.id);
+    expect(first?.status).toBe("cancelled");
+    await expect(cancelOrderBySession(db, "cs_test_replay", order.id)).resolves.toBeNull();
+  });
+
+  it("ignore un fallbackOrderId malformé sans casser la requête", async () => {
+    await expect(cancelOrderBySession(db, "cs_x", "pas-un-uuid")).resolves.toBeNull();
+  });
+
+  it("n'annule pas par fallback une commande qui a déjà une autre session", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_real");
+    await expect(cancelOrderBySession(db, "cs_autre", order.id)).resolves.toBeNull();
+    const after = await getOrderBySessionId(db, "cs_real");
+    expect(after?.order.status).toBe("pending");
+  });
+
+  it("n'annule pas par fallback une commande qui n'est plus pending", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await db.update(orders).set({ status: "paid" }).where(eq(orders.id, order.id));
+    await expect(cancelOrderBySession(db, "cs_late", order.id)).resolves.toBeNull();
+    const [after] = await db.select().from(orders).where(eq(orders.id, order.id));
+    expect(after.status).toBe("paid");
+    expect(after.stripeSessionId).toBeNull();
+  });
+});
+
+describe("reconcilePaidSession", () => {
+  it("distingue un rejeu d'un paiement encaissé sur commande annulée", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_r1");
+
+    const first = await reconcilePaidSession(db, "cs_r1", "pi_1");
+    expect(first.outcome).toBe("paid");
+    const replay = await reconcilePaidSession(db, "cs_r1", "pi_1");
+    expect(replay.outcome).toBe("replay");
+  });
+
+  it("signale paid_on_cancelled et laisse la commande annulée intacte", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_r2");
+    await cancelOrderBySession(db, "cs_r2");
+
+    const verdict = await reconcilePaidSession(db, "cs_r2", "pi_2");
+    expect(verdict.outcome).toBe("paid_on_cancelled");
+
+    const again = await reconcilePaidSession(db, "cs_r2", "pi_2");
+    expect(again.outcome).toBe("paid_on_cancelled");
+    const after = await getOrderWithItems(db, order.id);
+    expect(after?.order.status).toBe("cancelled");
+    expect(after?.order.stripePaymentIntent).toBeNull();
+  });
+
+  it("renvoie unknown pour une session inconnue", async () => {
+    await expect(reconcilePaidSession(db, "cs_jamais_vue", "pi_0")).resolves.toEqual({
+      outcome: "unknown",
+    });
+  });
+
+  it("rend la ligne annulée trouvée par fallbackOrderId sans y toucher", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await db.update(orders).set({ status: "cancelled" }).where(eq(orders.id, order.id));
+
+    const verdict = await reconcilePaidSession(db, "cs_r3", "pi_3", order.id);
+    expect(verdict.outcome).toBe("paid_on_cancelled");
+    if (verdict.outcome !== "paid_on_cancelled") throw new Error("attendu : paid_on_cancelled");
+    expect(verdict.order.id).toBe(order.id);
+    expect(verdict.order.number).toBe(order.number);
+
+    const [after] = await db.select().from(orders).where(eq(orders.id, order.id));
+    expect(after.status).toBe("cancelled");
+    expect(after.stripeSessionId).toBeNull();
+    expect(after.stripePaymentIntent).toBeNull();
+  });
+
+  it("renvoie unknown sur un fallbackOrderId malformé", async () => {
+    await expect(reconcilePaidSession(db, "cs_r4", "pi_4", "pas-un-uuid")).resolves.toEqual({
+      outcome: "unknown",
+    });
+  });
+
+  it("ne classe pas en replay une commande déjà payée sur une autre session", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_vraie");
+    await markOrderPaidBySession(db, "cs_vraie", "pi_vraie");
+
+    const verdict = await reconcilePaidSession(db, "cs_etrangere", "pi_etranger", order.id);
+    expect(verdict.outcome).toBe("unknown");
+    const [after] = await db.select().from(orders).where(eq(orders.id, order.id));
+    expect(after.stripeSessionId).toBe("cs_vraie");
+    expect(after.stripePaymentIntent).toBe("pi_vraie");
+  });
+
+  it("renvoie replay sur une commande encaissée puis annulée par la boutique", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_r6");
+    await markOrderPaidBySession(db, "cs_r6", "pi_6");
+    await updateOrderStatus(db, order.id, "cancelled");
+
+    const verdict = await reconcilePaidSession(db, "cs_r6", "pi_6");
+    expect(verdict.outcome).toBe("replay");
+    if (verdict.outcome !== "replay") throw new Error("attendu : replay");
+    expect(verdict.order.status).toBe("cancelled");
+    expect(verdict.order.stripePaymentIntent).toBe("pi_6");
+  });
+
+  it("renvoie replay pour une commande déjà en préparation ou expédiée", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await attachStripeSession(db, order.id, "cs_r5");
+    await db.update(orders).set({ status: "shipped" }).where(eq(orders.id, order.id));
+
+    const verdict = await reconcilePaidSession(db, "cs_r5", "pi_5");
+    expect(verdict.outcome).toBe("replay");
+    if (verdict.outcome !== "replay") throw new Error("attendu : replay");
+    expect(verdict.order.status).toBe("shipped");
   });
 });
 
@@ -392,6 +592,65 @@ describe("updateOrderStatus (machine d'états)", () => {
     const final = await updateOrderStatus(db, order.id, "picked_up");
     expect(final.prepStatus).toBe("done");
     expect(final.prepDoneAt).toEqual(t0);
+  });
+});
+
+describe("setOrderStatusIfUnchanged", () => {
+  it("pose le statut quand la valeur attendue correspond encore", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    const updated = await setOrderStatusIfUnchanged(db, order.id, "pending", "paid");
+    expect(updated?.status).toBe("paid");
+  });
+
+  it("renvoie null et n'écrit rien quand le statut a changé entre-temps", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "paid");
+    const second = await setOrderStatusIfUnchanged(db, order.id, "pending", "cancelled");
+    expect(second).toBeNull();
+    const after = await getOrderWithItems(db, order.id);
+    expect(after?.order.status).toBe("paid");
+  });
+});
+
+describe("updateOrderStatus (conflit de statut)", () => {
+  it("lève OrderStatusConflictError si la commande a changé de statut sous la transition", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "paid");
+    await expect(updateOrderStatus(staleStatusDb(db, order.id, "pending"), order.id, "cancelled"))
+      .rejects.toThrow(OrderStatusConflictError);
+    const after = await getOrderWithItems(db, order.id);
+    expect(after?.order.status).toBe("paid");
+  });
+
+  it("refuse une transition dont le statut de départ attendu ne correspond plus", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "paid");
+
+    await expect(
+      updateOrderStatus(db, order.id, "cancelled", false, "pending"),
+    ).rejects.toThrow(
+      "Cette commande est passée en « Payée » depuis l'affichage de cet écran, où elle " +
+        "était « En attente de paiement ». Votre demande n'a pas été appliquée : rechargez la page.",
+    );
+    const after = await getOrderWithItems(db, order.id);
+    expect(after?.order.status).toBe("paid");
+  });
+
+  it("tranche sur le statut attendu avant la machine d'états", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "cancelled");
+
+    await expect(
+      updateOrderStatus(db, order.id, "cancelled", false, "pending"),
+    ).rejects.toThrow(/rechargez la page/);
+  });
+
+  it("applique la transition quand le statut attendu correspond", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+
+    expect(
+      (await updateOrderStatus(db, order.id, "paid", false, "pending")).status,
+    ).toBe("paid");
   });
 });
 

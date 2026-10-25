@@ -20,6 +20,7 @@ const base: ProductRow = {
   imageBgColor: null,
   imageFrame: "1:1",
   active: true,
+  stockQty: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -87,7 +88,7 @@ describe("ProductForm", () => {
         action={async () => undefined}
         product={base}
         sizes={[
-          { id: "11111111-1111-1111-1111-111111111111", productId: "p1", label: "Petit", priceCents: 2900, sortOrder: 0, active: true, createdAt: new Date() },
+          { id: "11111111-1111-1111-1111-111111111111", productId: "p1", label: "Petit", priceCents: 2900, sortOrder: 0, active: true, stockQty: null, createdAt: new Date() },
         ]}
         images={[
           { id: "22222222-2222-2222-2222-222222222222", productId: "p1", sizeId: "11111111-1111-1111-1111-111111111111", colorId: null, path: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.webp", bgColor: null, alt: "De face", sortOrder: 0, createdAt: new Date() },
@@ -146,6 +147,75 @@ describe("ProductForm", () => {
   it("retombe sur le carré quand le produit n'a pas encore de format", () => {
     render(<ProductForm action={async () => undefined} submitLabel="Créer" />);
     expect((screen.getByLabelText("Format du cadre") as HTMLSelectElement).value).toBe("1:1");
+  });
+
+  it("expose un champ de stock par taille, en texte, et les unités retenues", () => {
+    const { container } = render(
+      <ProductForm
+        action={async () => undefined}
+        product={base}
+        sizes={[
+          { id: "11111111-1111-1111-1111-111111111111", productId: "p1", label: "Petit", priceCents: 2900, sortOrder: 0, active: true, stockQty: 3, createdAt: new Date() },
+          { id: "11111111-1111-1111-1111-111111111112", productId: "p1", label: "Grand", priceCents: 4200, sortOrder: 1, active: true, stockQty: null, createdAt: new Date() },
+        ]}
+        pendingBySizeId={new Map([["11111111-1111-1111-1111-111111111111", 2]])}
+        submitLabel="Enregistrer"
+      />,
+    );
+    const petit = screen.getByLabelText("Stock taille 1") as HTMLInputElement;
+    expect(petit.type).toBe("text");
+    expect(petit.inputMode).toBe("numeric");
+    expect(petit.value).toBe("3");
+    expect((screen.getByLabelText("Stock taille 2") as HTMLInputElement).value).toBe("");
+    expect(
+      screen.getByText("+ 2 retenues par des commandes en attente de paiement"),
+    ).toBeTruthy();
+    expect(screen.queryByText(/^dont /)).toBeNull();
+    expect(JSON.parse(hidden(container, "sizes")!.value)).toMatchObject([
+      { stockQty: "3", stockQtyInitial: "3" },
+      { stockQty: "", stockQtyInitial: "" },
+    ]);
+  });
+
+  it("n'offre le compteur du produit que lorsqu'il n'a aucune taille", () => {
+    const { container } = render(
+      <ProductForm
+        action={async () => undefined}
+        product={{ ...base, stockQty: 4 }}
+        pendingProductQty={1}
+        submitLabel="Enregistrer"
+      />,
+    );
+    const field = screen.getByLabelText("Stock du produit") as HTMLInputElement;
+    expect(field.name).toBe("stockQty");
+    expect(field.value).toBe("4");
+    expect(field.placeholder).toBe("Illimité");
+    expect(hidden(container, "stockQtyInitial")!.value).toBe("4");
+    expect(
+      screen.getByText("+ 1 retenue par des commandes en attente de paiement"),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Ajouter une taille" }));
+    expect(screen.queryByLabelText("Stock du produit")).toBeNull();
+    expect(hidden(container, "stockQtyInitial")).toBeNull();
+  });
+
+  it("garde la valeur initiale figée quand la saisie de stock change", () => {
+    const { container } = render(
+      <ProductForm
+        action={async () => undefined}
+        product={base}
+        sizes={[
+          { id: "11111111-1111-1111-1111-111111111111", productId: "p1", label: "Petit", priceCents: 2900, sortOrder: 0, active: true, stockQty: 3, createdAt: new Date() },
+        ]}
+        submitLabel="Enregistrer"
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("Stock taille 1"), { target: { value: "07" } });
+    expect(JSON.parse(hidden(container, "sizes")!.value)[0]).toMatchObject({
+      stockQty: "07",
+      stockQtyInitial: "3",
+    });
   });
 
   it("monte la barre d'outils de l'éditeur riche", async () => {

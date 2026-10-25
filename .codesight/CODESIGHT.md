@@ -2,16 +2,16 @@
 
 > **Stack:** next-app | drizzle | react | typescript
 
-> 3 routes | 10 models | 114 components | 48 lib files | 31 env vars | 6 middleware | 54% test coverage
-> **Token savings:** this file is ~8,500 tokens. Without it, AI exploration would cost ~69,700 tokens. **Saves ~61,100 tokens per conversation.**
-> **Last scanned:** 2026-10-22 08:37 — re-run after significant changes
+> 3 routes | 10 models | 115 components | 59 lib files | 31 env vars | 6 middleware | 62% test coverage
+> **Token savings:** this file is ~9,200 tokens. Without it, AI exploration would cost ~72,900 tokens. **Saves ~63,700 tokens per conversation.**
+> **Last scanned:** 2026-10-25 19:26 — re-run after significant changes
 
 ---
 
 # Routes
 
 - `POST` `/api/admin/product-image` → out: { error } [auth, payment, upload]
-- `POST` `/api/e2e/orders` → out: { error } [auth, db] ✓
+- `POST` `/api/e2e/orders` → out: { error } [auth, db, payment] ✓
 - `POST` `/api/stripe/webhook` [auth, payment]
 
 ---
@@ -33,6 +33,7 @@
 - imageBgColor: text
 - imageFrame: text (default, required)
 - active: boolean (default, required)
+- stockQty: integer
 
 ### product_sizes
 - id: uuid (pk)
@@ -41,6 +42,7 @@
 - priceCents: integer (required)
 - sortOrder: integer (default, required)
 - active: boolean (default, required)
+- stockQty: integer
 - _relations_: productId -> products.id
 
 ### product_colors
@@ -105,6 +107,9 @@
 - colorId: uuid (fk)
 - sizeLabelSnapshot: text
 - colorLabelSnapshot: text
+- stockReservedQty: integer (default, required)
+- stockReservedSizeId: uuid (fk)
+- stockReservedProductId: uuid (fk)
 - _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ### admin_users
@@ -138,7 +143,7 @@
 - **AdminSidebar** [client] — `app/(admin)/admin/(panel)/admin-sidebar.tsx`
 - **LabelButton** [client] — props: orderId, hasLabel — `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`
 - **CommandeDetailPage** — props: params — `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`
-- **StatusActions** [client] — props: orderId, status, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
+- **StatusActions** [client] — props: orderId, status, fulfillment, canRestock — `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`
 - **TrackingForm** [client] — props: orderId, trackingNumber, fulfillment — `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`
 - **KanbanBoard** [client] — props: orders — `app/(admin)/admin/(panel)/commandes/kanban-board.tsx`
 - **CommandesLoading** — `app/(admin)/admin/(panel)/commandes/loading.tsx`
@@ -162,7 +167,7 @@
 - **ImageUpload** [client] — props: value, bgColor, onChange, fallback, label, size — `app/(admin)/admin/(panel)/produits/image-upload.tsx`
 - **NouveauProduitPage** — `app/(admin)/admin/(panel)/produits/nouveau/page.tsx`
 - **ProduitsPage** — `app/(admin)/admin/(panel)/produits/page.tsx`
-- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
+- **ProductForm** [client] — props: action, product, initialSizes, initialColors, initialImages, pendingBySizeId, pendingProductQty, submitLabel — `app/(admin)/admin/(panel)/produits/product-form.tsx`
 - **RichEditor** [client] — props: value, onChange — `app/(admin)/admin/(panel)/produits/rich-editor.tsx`
 - **RevenueChartImpl** [client] — props: points — `app/(admin)/admin/(panel)/revenue-chart-impl.tsx`
 - **RevenueChart** [client] — props: data — `app/(admin)/admin/(panel)/revenue-chart.tsx`
@@ -228,6 +233,7 @@
 - **MentionsLegalesContent** — props: settings — `components/legal/mentions-legales.tsx`
 - **Logo** — props: className — `components/logo.tsx`
 - **MobileMenu** [client] — props: nav — `components/mobile-menu.tsx`
+- **ProductBadge** — props: soldOut, badge — `components/product-badge.tsx`
 - **ProductDetail** [client] — props: product — `components/product-detail.tsx`
 - **PurchaseTracking** [client] — props: transactionId, valueCents, shippingCents, items — `components/purchase-tracking.tsx`
 - **RelayPicker** [client] — props: value, onSelect — `components/relay-picker.tsx`
@@ -298,6 +304,22 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/cart/stock-caps.ts`
+  - function useCartStock: (items, ready) => CartStock
+  - function stockNotice: (stock) => string | null
+  - type LineStock
+  - type CartStock
+- `lib/checkout/abandon.ts`
+  - function abandonPendingOrder: (db, orderId) => Promise<AbandonVerdict>
+  - type AbandonHeldOutcome
+  - type AbandonVerdict
+- `lib/checkout/errors.ts` — class CheckoutError, class InsufficientStockError
+- `lib/checkout/reservation.ts`
+  - function readReservedOrderId: () => Promise<string | null>
+  - function rememberReservedOrder: (orderId, maxAgeSeconds) => Promise<void>
+  - function abandonReservedOrder: () => Promise<ReservationRelease | null>
+  - type ReservationRelease
+  - const RESERVATION_COOKIE
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -357,7 +379,7 @@
   - type ContactParse
   - type EmailContent
   - _...2 more_
-- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>
+- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>, function alertPaidOnCancelledOrder: (order) => Promise<void>
 - `lib/email/order.ts`
   - function buildOrderAckEmail: (order, items, templates, context) => EmailContent
   - function buildOrderShopEmail: (order, items, templates, context) => EmailContent
@@ -415,16 +437,17 @@
   - function shippingFeeFor: (fulfillment, fees) => number
   - function isShippingCountry: (code) => code is ShippingCountryCode
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
-  - function canTransition: (from, to, fulfillment) => boolean
-  - _...11 more_
+  - function staleStatusMessage: (actual, shown) => string
+  - _...12 more_
+- `lib/orders/paid-side-effects.ts` — function applyPaidSideEffects: (db, orderId) => Promise<void>
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items, fees) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
-  - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
-  - function getOrderBySessionId: (db, stripeSessionId) => Promise<
-  - _...11 more_
+  - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
+  - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
+  - _...15 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -450,13 +473,13 @@
   - const BUCKET
   - _...3 more_
 - `lib/products.ts`
+  - function resolveStockKey: (product, activeSizes, sizeId) => void
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - function getProductWithVariants: (db, id) => Promise<
-  - _...11 more_
+  - _...15 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -504,10 +527,26 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/stock/availability.ts`
+  - function cartAvailabilityFor: (db, lines, ownOrderId) => Promise<LineAvailability[]>
+  - type CartLine
+  - type LineAvailability
+- `lib/stock/key-order.ts`
+  - function stockKeyToken: (key) => string
+  - function reservedStockKey: (sizeId, productId) => StockKey;
+  - function reservedStockKey: (sizeId, productId) => StockKey | null;
+  - function reservedStockKey: (sizeId, productId) => StockKey | null
+  - function compareStockKeys: (a, b) => number
+  - type StockKeyTable
+  - _...1 more_
+- `lib/stock/release.ts` — function restockableUnits: (db, orderId) => Promise<number>, function releaseOrderStock: (tx, orderId) => Promise<number>
+- `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
+- `lib/stock/revalidate.ts` — function slugsOfOrder: (db, orderId) => Promise<string[]>, function revalidateAvailability: (orderIds, known?) => Promise<void>
 - `lib/storage.ts`
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<
   - function deleteImage: (path) => Promise<void>
+- `lib/stripe-session.ts` — function expireSessionForCancel: (stripeSessionId) => Promise<SessionGuard>, type SessionGuard
 - `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
 - `lib/uuid.ts` — function isUuid: (value) => value is string
 - `proxy.ts` — function proxy: (request) => void, const config
@@ -587,9 +626,9 @@
 
 ## Most Imported Files (change these carefully)
 
+- `tests/helpers/db.ts` — imported by **19** files
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
 - `tests/e2e/helpers.ts` — imported by **13** files
-- `tests/helpers/db.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
 - `lib/db/client.ts` — imported by **7** files
@@ -602,17 +641,17 @@
 - `components/legal/legal-value.tsx` — imported by **4** files
 - `components/legal/legal-page.tsx` — imported by **4** files
 - `lib/content/registry.ts` — imported by **4** files
+- `components/product-badge.tsx` — imported by **3** files
 - `lib/uuid.ts` — imported by **3** files
 - `lib/mondial-relay/types.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/contenu/actions.ts` — imported by **2** files
-- `app/(admin)/admin/(panel)/produits/image-upload.tsx` — imported by **2** files
 
 ## Import Map (who imports what)
 
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +14 more
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +13 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +8 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +8 more
 - `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `lib/db/client.ts` ← `lib/contact-submissions.ts`, `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts` +2 more
@@ -625,8 +664,8 @@
 
 # Test Coverage
 
-> **54%** of routes and models are covered by tests
-> 88 test files found
+> **62%** of routes and models are covered by tests
+> 105 test files found
 
 ## Covered Routes
 
@@ -635,6 +674,7 @@
 ## Covered Models
 
 - products
+- product_sizes
 - orders
 - admin_users
 - settings

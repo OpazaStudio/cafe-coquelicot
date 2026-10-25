@@ -22,6 +22,7 @@ pk: `id` (uuid)
 - `imageBgColor`: text
 - `imageFrame`: text _(default, required)_
 - `active`: boolean _(default, required)_
+- `stockQty`: integer
 
 ### product_sizes
 
@@ -33,6 +34,7 @@ pk: `id` (uuid) · fk: productId
 - `priceCents`: integer _(required)_
 - `sortOrder`: integer _(default, required)_
 - `active`: boolean _(default, required)_
+- `stockQty`: integer
 - _relations_: productId -> products.id
 
 ### product_colors
@@ -96,7 +98,7 @@ pk: `id` (uuid) · fk: relayPointId, stripeSessionId
 
 ### order_items
 
-pk: `id` (uuid) · fk: orderId, productId, sizeId, colorId
+pk: `id` (uuid) · fk: orderId, productId, sizeId, colorId, stockReservedSizeId, stockReservedProductId
 
 - `id`: uuid _(pk)_
 - `orderId`: uuid _(fk, required)_
@@ -109,6 +111,9 @@ pk: `id` (uuid) · fk: orderId, productId, sizeId, colorId
 - `colorId`: uuid _(fk)_
 - `sizeLabelSnapshot`: text
 - `colorLabelSnapshot`: text
+- `stockReservedQty`: integer _(default, required)_
+- `stockReservedSizeId`: uuid _(fk)_
+- `stockReservedProductId`: uuid _(fk)_
 - _relations_: orderId -> orders.id, productId -> products.id, sizeId -> productSizes.id, colorId -> productColors.id
 
 ### admin_users
@@ -150,7 +155,7 @@ pk: `id` (uuid)
 
 Read and edit these files when adding columns, creating migrations, or changing relations:
 
-- `tests/helpers/db.ts` — imported by **13** files
+- `tests/helpers/db.ts` — imported by **19** files
 - `lib/db/schema.ts` — imported by **7** files
 - `lib/db/client.ts` — imported by **7** files
 

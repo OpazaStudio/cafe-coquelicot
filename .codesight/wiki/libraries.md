@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**48 library files** across 32 modules
+**59 library files** across 36 modules
 
 ## Content (5 files)
 
@@ -18,7 +18,7 @@
 - `lib/email/contact.ts` — parseContactForm, buildShopEmail, buildAckEmail, ContactInput, ContactParse, EmailContent, …
 - `lib/email/order.ts` — buildOrderAckEmail, buildOrderShopEmail, OrderEmailOrder, OrderEmailItem, OrderEmailContext, EmailContent
 - `lib/email/resend.ts` — parseBcc, getMailer, ContactMailer
-- `lib/email/notify-order.ts` — notifyOrderPaid
+- `lib/email/notify-order.ts` — notifyOrderPaid, alertPaidOnCancelledOrder
 
 ## Mondial-relay (5 files)
 
@@ -27,6 +27,20 @@
 - `lib/mondial-relay/config.ts` — getMondialRelayConfig, DEFAULT_PARCEL_WEIGHT_GR
 - `lib/mondial-relay/xml.ts` — buildShipmentXml, parseShipmentResponse
 - `lib/mondial-relay/ensure-shipment.ts` — ensureRelayShipment
+
+## Stock (5 files)
+
+- `lib/stock/key-order.ts` — stockKeyToken, reservedStockKey, reservedStockKey, reservedStockKey, compareStockKeys, StockKeyTable, …
+- `lib/stock/availability.ts` — cartAvailabilityFor, CartLine, LineAvailability
+- `lib/stock/release.ts` — restockableUnits, releaseOrderStock
+- `lib/stock/reserve.ts` — reserveStock, StockReservation
+- `lib/stock/revalidate.ts` — slugsOfOrder, revalidateAvailability
+
+## Checkout (3 files)
+
+- `lib/checkout/reservation.ts` — readReservedOrderId, rememberReservedOrder, abandonReservedOrder, ReservationRelease, RESERVATION_COOKIE
+- `lib/checkout/abandon.ts` — abandonPendingOrder, AbandonHeldOutcome, AbandonVerdict
+- `lib/checkout/errors.ts` — CheckoutError, InsufficientStockError
 
 ## Db (3 files)
 
@@ -44,13 +58,14 @@
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession, getCurrentUser
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, Session, SESSION_COOKIE, SESSION_DURATION_MS
 
+## Cart (2 files)
+
+- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
+- `lib/cart/stock-caps.ts` — useCartStock, stockNotice, LineStock, CartStock
+
 ## Bg-tweak (1 files)
 
 - `lib/bg-tweak/state.ts` — isHex, isBgName, isSectionKey, decodeState, encodeState, contrastRatio, …
-
-## Cart (1 files)
-
-- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
 
 ## Contact-submissions.ts (1 files)
 
@@ -74,11 +89,15 @@
 
 ## Order-status.ts (1 files)
 
-- `lib/order-status.ts` — parseFeeInput, formatFeeInput, shippingFeeFor, isShippingCountry, statusTransitions, canTransition, …
+- `lib/order-status.ts` — parseFeeInput, formatFeeInput, shippingFeeFor, isShippingCountry, statusTransitions, staleStatusMessage, …
+
+## Orders (1 files)
+
+- `lib/orders/paid-side-effects.ts` — applyPaidSideEffects
 
 ## Orders.ts (1 files)
 
-- `lib/orders.ts` — generateOrderNumber, createPendingOrder, attachStripeSession, markOrderPaidBySession, cancelOrderBySession, getOrderBySessionId, …
+- `lib/orders.ts` — generateOrderNumber, createPendingOrder, attachStripeSession, markOrderPaidBySession, reconcilePaidSession, cancelOrderBySession, …
 
 ## Prep-status.ts (1 files)
 
@@ -94,7 +113,7 @@
 
 ## Products.ts (1 files)
 
-- `lib/products.ts` — queryActiveProducts, queryActiveVases, queryProductBySlug, getAllProductRows, getProductRow, getProductWithVariants, …
+- `lib/products.ts` — resolveStockKey, queryActiveProducts, queryActiveVases, queryProductBySlug, getAllProductRows, getProductRow, …
 
 ## Proxy.ts (1 files)
 
@@ -139,6 +158,10 @@
 ## Storage.ts (1 files)
 
 - `lib/storage.ts` — storageConfigured, uploadImage, deleteImage
+
+## Stripe-session.ts (1 files)
+
+- `lib/stripe-session.ts` — expireSessionForCancel, SessionGuard
 
 ## Stripe.ts (1 files)
 

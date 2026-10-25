@@ -51,7 +51,7 @@ export default async function ProduitsPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map(({ row: p, sizeCount, colorCount, fromCents }) => (
+            {list.map(({ row: p, sizeCount, colorCount, fromCents, soldOut, remaining }) => (
               <tr
                 key={p.id}
                 data-testid={`product-row-${p.slug}`}
@@ -81,9 +81,21 @@ export default async function ProduitsPage() {
                 </td>
                 <td className="px-4 py-3 text-muted">{p.badge ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <Pill tone={p.active ? "positive" : "neutral"}>
-                    {p.active ? "En ligne" : "Masqué"}
-                  </Pill>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {soldOut ? (
+                      <Pill tone="danger">Épuisé</Pill>
+                    ) : (
+                      <Pill tone={p.active ? "positive" : "neutral"}>
+                        {p.active ? "En ligne" : "Masqué"}
+                      </Pill>
+                    )}
+                    {soldOut && !p.active && <Pill tone="neutral">Masqué</Pill>}
+                    {!soldOut && remaining !== null && (
+                      <Pill tone="neutral">
+                        {remaining} restant{remaining > 1 ? "s" : ""}
+                      </Pill>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">

@@ -30,11 +30,10 @@
 
   /* Échelle z-index sémantique — jamais de valeur magique éparse.
      raised (stickers en flux) < sticky (header fixe) < overlay (bandeau cookie)
-     < skip-link (au-dessus du header au focus) < grain (calque papier, pointer-events:none). */
+     < grain (calque papier, pointer-events:none). */
   --z-raised: 10;
   --z-sticky: 100;
   --z-overlay: 1000;
-  --z-skip-link: 1100;
   --z-grain: 2000;
 
   /* Signal d'erreur — un rouge « danger » hors palette de marque (plus vif que le
@@ -65,38 +64,7 @@ a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
 ::selection { background: var(--burgundy); color: var(--linen); }
 
-/* ── Skip link ────────────────────────────────────────────────── */
-/* Première cible clavier : contourne le header fixe pour aller au contenu.
-   Pill de marque, masquée hors écran jusqu'au focus (glisse depuis le haut). */
-.skip-link {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: var(--z-skip-link);
-  padding: 12px 22px;
-  background: var(--burgundy);
-  color: var(--linen);
-  border-radius: 999px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 500;
-  transform: translateY(-160%);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.skip-link:focus-visible {
-  transform: translateY(0);
-  outline: 2px solid var(--linen);
-  outline-offset: 2px;
-}
-/* Conteneur ciblé par le skip link : focus programmatique sans halo sur la
-   région entière (le défilement vers le haut fait office de retour visuel). */
-main[tabindex]:focus {
-  outline: none;
-}
 @media (prefers-reduced-motion: reduce) {
-  .skip-link { transition: none; }
   .mobile-menu { transition: none; }
   .product-photo,
   .product-photo.is-active { transition: none; transform: none; }
@@ -467,6 +435,13 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   opacity: 0.55;
   cursor: not-allowed;
 }
+.btn--filled.is-sold-out,
+.btn--filled.is-sold-out:hover {
+  background: var(--fg);
+  color: var(--bg);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .btn__arrow {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -598,6 +573,21 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   font-weight: 500;
   border: 1px solid currentColor;
 }
+.product-card__badge--sold-out {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.product-card.is-sold-out .product-card__media svg {
+  opacity: 0.35;
+}
+.product-card.is-sold-out .product-media {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+.product-card.is-sold-out .product-card__price {
+  opacity: 0.6;
+}
 .product-card__name {
   font-family: var(--font-display);
   font-size: 34px;
@@ -647,6 +637,16 @@ section[data-bg="coffee-bean-2"] { --bg: var(--coffee-bean-2); --fg: var(--linen
   background: var(--burgundy);
   border-color: var(--burgundy);
   color: var(--linen);
+}
+.variant-option.is-sold-out,
+.variant-option.is-sold-out:hover {
+  border-color: var(--line);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.variant-option.is-sold-out.is-active,
+.variant-option.is-sold-out.is-active:hover {
+  border-color: var(--burgundy);
 }
 
 /* Page produit (/boutique/[slug]) — deux colonnes. */
@@ -1847,6 +1847,25 @@ button.product-card__add {
 .cart-line__remove:hover {
   color: var(--fg);
 }
+.cart-line__stock:empty,
+.cart-summary__alert:empty,
+.checkout-recap__stock:empty {
+  display: none;
+}
+.cart-line__stock {
+  margin: 8px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--danger-ink);
+}
+.cart-line.is-sold-out .cart-line__name,
+.cart-line.is-sold-out .cart-line__variant,
+.cart-line.is-sold-out .cart-line__unit,
+.cart-line.is-sold-out .cart-line__total {
+  opacity: 0.5;
+}
 
 .cart-summary {
   border: 1px solid var(--line);
@@ -1878,6 +1897,12 @@ button.product-card__add {
 }
 .cart-summary__cta {
   justify-content: center;
+}
+.cart-summary__alert {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger-ink);
 }
 
 /* Checkout */
@@ -1988,6 +2013,26 @@ button.product-card__add {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.checkout-recap__stock {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--danger-ink);
+}
+.checkout-recap__remove {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.checkout-recap__remove:hover {
+  color: var(--fg);
 }
 .checkout-error {
   margin: 0;
@@ -2116,6 +2161,10 @@ button.product-card__add {
 }
 .vase-suggest__add {
   align-self: start;
+}
+.vase-suggest__card.is-sold-out .vase-suggest__media,
+.vase-suggest__card.is-sold-out .vase-suggest__price {
+  opacity: 0.55;
 }
 
 /* ── Bandeau consentement cookies (RGPD/CNIL) ────────────────── */

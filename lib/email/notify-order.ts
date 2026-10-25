@@ -1,4 +1,6 @@
 import type { Db } from "@/lib/db/client";
+import type { OrderRow } from "@/lib/db/schema";
+import { formatEuros } from "@/lib/money";
 import { getOrderWithItems } from "@/lib/orders";
 import {
   DEFAULT_SETTINGS,
@@ -73,5 +75,39 @@ export async function notifyOrderPaid(db: Db, orderId: string): Promise<void> {
     }
   } catch (err) {
     console.error("[commande] exception réseau (confirmation client)", err);
+  }
+}
+
+export async function alertPaidOnCancelledOrder(order: OrderRow): Promise<void> {
+  const mailer = getMailer();
+  if (!mailer) return;
+
+  const { resend, to, from, bcc } = mailer;
+  const lines = [
+    `Stripe a encaissé un paiement sur la commande ${order.number}, qui était annulée.`,
+    "",
+    `Commande : ${order.number}`,
+    `Client : ${order.customerEmail}`,
+    `Total : ${formatEuros(order.totalCents)}`,
+    ...(order.stripeSessionId ? [`Session Stripe : ${order.stripeSessionId}`] : []),
+    "",
+    "Vérifiez le paiement dans Stripe, puis remboursez le client ou honorez la commande.",
+    "Rien n'a été modifié : la commande reste annulée dans le back-office.",
+  ];
+
+  try {
+    const alert = await resend.emails.send({
+      from,
+      bcc,
+      to: [to],
+      replyTo: order.customerEmail,
+      subject: `Commande annulée mais payée — ${order.number}`,
+      text: lines.join("\n"),
+    });
+    if (alert.error) {
+      console.error("[commande] échec d'envoi (alerte commande annulée payée)", alert.error);
+    }
+  } catch (err) {
+    console.error("[commande] exception réseau (alerte commande annulée payée)", err);
   }
 }

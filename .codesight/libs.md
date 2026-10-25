@@ -45,6 +45,22 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
+- `lib/cart/stock-caps.ts`
+  - function useCartStock: (items, ready) => CartStock
+  - function stockNotice: (stock) => string | null
+  - type LineStock
+  - type CartStock
+- `lib/checkout/abandon.ts`
+  - function abandonPendingOrder: (db, orderId) => Promise<AbandonVerdict>
+  - type AbandonHeldOutcome
+  - type AbandonVerdict
+- `lib/checkout/errors.ts` — class CheckoutError, class InsufficientStockError
+- `lib/checkout/reservation.ts`
+  - function readReservedOrderId: () => Promise<string | null>
+  - function rememberReservedOrder: (orderId, maxAgeSeconds) => Promise<void>
+  - function abandonReservedOrder: () => Promise<ReservationRelease | null>
+  - type ReservationRelease
+  - const RESERVATION_COOKIE
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -104,7 +120,7 @@
   - type ContactParse
   - type EmailContent
   - _...2 more_
-- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>
+- `lib/email/notify-order.ts` — function notifyOrderPaid: (db, orderId) => Promise<void>, function alertPaidOnCancelledOrder: (order) => Promise<void>
 - `lib/email/order.ts`
   - function buildOrderAckEmail: (order, items, templates, context) => EmailContent
   - function buildOrderShopEmail: (order, items, templates, context) => EmailContent
@@ -162,16 +178,17 @@
   - function shippingFeeFor: (fulfillment, fees) => number
   - function isShippingCountry: (code) => code is ShippingCountryCode
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
-  - function canTransition: (from, to, fulfillment) => boolean
-  - _...11 more_
+  - function staleStatusMessage: (actual, shown) => string
+  - _...12 more_
+- `lib/orders/paid-side-effects.ts` — function applyPaidSideEffects: (db, orderId) => Promise<void>
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
   - function createPendingOrder: (db, customer, items, fees) => Promise<
   - function attachStripeSession: (db, orderId, stripeSessionId) => Promise<void>
   - function markOrderPaidBySession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<OrderRow | null>
-  - function cancelOrderBySession: (db, stripeSessionId) => Promise<void>
-  - function getOrderBySessionId: (db, stripeSessionId) => Promise<
-  - _...11 more_
+  - function reconcilePaidSession: (db, stripeSessionId, stripePaymentIntent?, fallbackOrderId?) => Promise<PaidReconciliation>
+  - function cancelOrderBySession: (db, stripeSessionId, fallbackOrderId?) => Promise<OrderRow | null>
+  - _...15 more_
 - `lib/prep-status.ts`
   - function isPrepStatus: (value) => value is PrepStatus
   - function derivePrepStatus: (preparedTotal, totalQty) => Extract<PrepStatus, "todo" | "in_progress" | "ready">
@@ -197,13 +214,13 @@
   - const BUCKET
   - _...3 more_
 - `lib/products.ts`
+  - function resolveStockKey: (product, activeSizes, sizeId) => void
   - function queryActiveProducts: (db) => Promise<ShopProduct[]>
   - function queryActiveVases: (db) => Promise<ShopProduct[]>
   - function queryProductBySlug: (db, slug) => Promise<ShopProduct | null>
   - function getAllProductRows: () => Promise<ProductRow[]>
   - function getProductRow: (id) => Promise<ProductRow | null>
-  - function getProductWithVariants: (db, id) => Promise<
-  - _...11 more_
+  - _...15 more_
 - `lib/rate-limit.ts`
   - function createRateLimiter: ({...}, windowMs, }) => RateLimiter
   - type RateLimitResult
@@ -251,10 +268,26 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
+- `lib/stock/availability.ts`
+  - function cartAvailabilityFor: (db, lines, ownOrderId) => Promise<LineAvailability[]>
+  - type CartLine
+  - type LineAvailability
+- `lib/stock/key-order.ts`
+  - function stockKeyToken: (key) => string
+  - function reservedStockKey: (sizeId, productId) => StockKey;
+  - function reservedStockKey: (sizeId, productId) => StockKey | null;
+  - function reservedStockKey: (sizeId, productId) => StockKey | null
+  - function compareStockKeys: (a, b) => number
+  - type StockKeyTable
+  - _...1 more_
+- `lib/stock/release.ts` — function restockableUnits: (db, orderId) => Promise<number>, function releaseOrderStock: (tx, orderId) => Promise<number>
+- `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
+- `lib/stock/revalidate.ts` — function slugsOfOrder: (db, orderId) => Promise<string[]>, function revalidateAvailability: (orderIds, known?) => Promise<void>
 - `lib/storage.ts`
   - function storageConfigured: () => boolean
   - function uploadImage: (file) => Promise<
   - function deleteImage: (path) => Promise<void>
+- `lib/stripe-session.ts` — function expireSessionForCancel: (stripeSessionId) => Promise<SessionGuard>, type SessionGuard
 - `lib/stripe.ts` — function getStripe: () => Stripe, function getSiteUrl: () => string
 - `lib/uuid.ts` — function isUuid: (value) => value is string
 - `proxy.ts` — function proxy: (request) => void, const config

@@ -67,6 +67,7 @@ export default async function ProduitPage({
           priceCents: product.priceCents,
           imageUrls: [...new Set(imagePaths)].map(productImageUrl),
           sizes: product.sizes,
+          soldOut: product.soldOut,
           category: product.category,
           shippingFees: shippingFeesFromSettings(settings),
         })}

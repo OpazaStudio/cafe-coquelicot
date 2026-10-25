@@ -2,9 +2,9 @@
 
 ## Most Imported Files (change these carefully)
 
+- `tests/helpers/db.ts` — imported by **19** files
 - `app/(admin)/admin/(panel)/ui.tsx` — imported by **18** files
 - `tests/e2e/helpers.ts` — imported by **13** files
-- `tests/helpers/db.ts` — imported by **13** files
 - `lib/content/fields.ts` — imported by **8** files
 - `lib/db/schema.ts` — imported by **7** files
 - `lib/db/client.ts` — imported by **7** files
@@ -17,17 +17,17 @@
 - `components/legal/legal-value.tsx` — imported by **4** files
 - `components/legal/legal-page.tsx` — imported by **4** files
 - `lib/content/registry.ts` — imported by **4** files
+- `components/product-badge.tsx` — imported by **3** files
 - `lib/uuid.ts` — imported by **3** files
 - `lib/mondial-relay/types.ts` — imported by **3** files
 - `app/(admin)/admin/login/actions.ts` — imported by **2** files
 - `app/(admin)/admin/(panel)/contenu/actions.ts` — imported by **2** files
-- `app/(admin)/admin/(panel)/produits/image-upload.tsx` — imported by **2** files
 
 ## Import Map (who imports what)
 
+- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +14 more
 - `app/(admin)/admin/(panel)/ui.tsx` ← `app/(admin)/admin/(panel)/commandes/[id]/label-button.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/page.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/status-actions.tsx`, `app/(admin)/admin/(panel)/commandes/[id]/tracking-form.tsx`, `app/(admin)/admin/(panel)/commandes/orders-table.tsx` +13 more
 - `tests/e2e/helpers.ts` ← `tests/e2e/02-cart.spec.ts`, `tests/e2e/03-admin-auth.spec.ts`, `tests/e2e/04-admin-products.spec.ts`, `tests/e2e/05-checkout.spec.ts`, `tests/e2e/06-admin-kanban.spec.ts` +8 more
-- `tests/helpers/db.ts` ← `tests/unit/admin-users.test.ts`, `tests/unit/contact-submissions.test.ts`, `tests/unit/content-server.test.ts`, `tests/unit/content-table.test.ts`, `tests/unit/ensure-relay-shipment.test.ts` +8 more
 - `lib/content/fields.ts` ← `lib/content/pages/boutique.ts`, `lib/content/pages/checkout.ts`, `lib/content/pages/confirmation.ts`, `lib/content/pages/home.ts`, `lib/content/pages/panier.ts` +3 more
 - `lib/db/schema.ts` ← `lib/categories.ts`, `lib/db/admin-users.ts`, `lib/db/client.ts`, `lib/db/seed-data.ts`, `lib/order-status.ts` +2 more
 - `lib/db/client.ts` ← `lib/contact-submissions.ts`, `lib/db/admin-users.ts`, `lib/orders.ts`, `lib/products.ts`, `lib/stats.ts` +2 more

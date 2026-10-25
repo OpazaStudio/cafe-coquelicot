@@ -102,6 +102,14 @@ export function statusTransitions(
   return STATUS_TRANSITIONS[from];
 }
 
+export function staleStatusMessage(actual: OrderStatus, shown: OrderStatus): string {
+  return (
+    `Cette commande est passée en « ${STATUS_LABELS[actual]} » depuis l'affichage de ` +
+    `cet écran, où elle était « ${STATUS_LABELS[shown]} ». Votre demande n'a pas été ` +
+    `appliquée : rechargez la page.`
+  );
+}
+
 export function canTransition(
   from: OrderStatus,
   to: OrderStatus,

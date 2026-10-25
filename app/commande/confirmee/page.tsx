@@ -4,8 +4,10 @@ import { getDb } from "@/lib/db/client";
 import { composeItemName } from "@/lib/item-label";
 import {
   getOrderBySessionId,
-  markOrderPaidBySession,
+  reconcilePaidSession,
+  type PaidReconciliation,
 } from "@/lib/orders";
+import { applyPaidSideEffects } from "@/lib/orders/paid-side-effects";
 import { getStripe } from "@/lib/stripe";
 import { getPageContent } from "@/lib/content/server";
 import { getSettings, DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
@@ -33,6 +35,7 @@ export default async function ConfirmationPage({
   const sessionId = typeof raw === "string" ? raw : undefined;
 
   let data: Awaited<ReturnType<typeof getOrderBySessionId>> = null;
+  let verdict: PaidReconciliation | null = null;
   if (sessionId) {
     const db = await getDb();
     // Filet de sécurité sans webhook (dev local) : on interroge Stripe et on
@@ -40,7 +43,7 @@ export default async function ConfirmationPage({
     try {
       const session = await getStripe().checkout.sessions.retrieve(sessionId);
       if (session.payment_status === "paid") {
-        const paid = await markOrderPaidBySession(
+        verdict = await reconcilePaidSession(
           db,
           sessionId,
           typeof session.payment_intent === "string"
@@ -48,19 +51,8 @@ export default async function ConfirmationPage({
             : session.payment_intent?.id,
           session.metadata?.orderId,
         );
-        if (paid) {
-          try {
-            const { ensureRelayShipment } = await import("@/lib/mondial-relay/ensure-shipment");
-            await ensureRelayShipment(db, paid.id);
-          } catch (err) {
-            console.error("[mondial-relay] étiquette non générée (confirmation)", err);
-          }
-          try {
-            const { notifyOrderPaid } = await import("@/lib/email/notify-order");
-            await notifyOrderPaid(db, paid.id);
-          } catch (err) {
-            console.error("[commande] e-mails non envoyés (confirmation)", err);
-          }
+        if (verdict.outcome === "paid") {
+          await applyPaidSideEffects(db, verdict.order.id);
         }
       }
     } catch {
@@ -101,9 +93,13 @@ export default async function ConfirmationPage({
             colorLabelSnapshot: item.colorLabelSnapshot,
           })),
         }
-      : data
-        ? { kind: "pending", number: data.order.number }
-        : { kind: "notFound" };
+      : verdict?.outcome === "paid_on_cancelled"
+        ? { kind: "needsReview", number: verdict.order.number }
+        : data?.order.status === "cancelled"
+          ? { kind: "cancelled", number: data.order.number }
+          : data
+            ? { kind: "pending", number: data.order.number }
+            : { kind: "notFound" };
 
   return <ConfirmationView content={content} chrome={chrome} state={state} vars={vars} />;
 }

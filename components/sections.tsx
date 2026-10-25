@@ -12,6 +12,7 @@ import {
   ArrowRight, ArrowDiag,
 } from "./illustrations";
 import { ContactForm } from "./contact-form";
+import { ProductBadge } from "./product-badge";
 import { ManageCookiesButton } from "./consent/manage-cookies-button";
 import { CartLink } from "./cart-link";
 import { MobileMenu } from "./mobile-menu";
@@ -123,11 +124,14 @@ export function Shop({ bg, content, products }: SectionProps & { content: HomeCo
   );
 }
 
-function ProductCard({ slug, name, price, variant, badge, category, imagePath, imageBgColor }: ShopProduct) {
+function ProductCard({ slug, name, price, variant, badge, category, imagePath, imageBgColor, soldOut }: ShopProduct) {
   return (
-    <Link href={`/boutique/${slug}`} className="product-card">
+    <Link
+      href={`/boutique/${slug}`}
+      className={`product-card${soldOut ? " is-sold-out" : ""}`}
+    >
       <div className="product-card__media">
-        {badge && <span className="product-card__badge">{badge}</span>}
+        <ProductBadge soldOut={soldOut} badge={badge} />
         <ProductFigure
           category={category}
           variant={variant}
