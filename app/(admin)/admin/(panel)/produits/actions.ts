@@ -479,7 +479,10 @@ function refuseSizeChanges(
   }
 
   if (!existing.some((s) => s.active)) return null;
-  if (submitted.some((s) => s.active)) return null;
+  const known = new Set(existing.map((s) => s.id));
+  if (submitted.some((s) => s.active && (s.id === undefined || known.has(s.id)))) {
+    return null;
+  }
   if (submitted.length === 0 && typeof stockNumber(productEntry) === "number") {
     return null;
   }

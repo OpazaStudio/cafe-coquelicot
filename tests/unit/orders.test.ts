@@ -621,6 +621,37 @@ describe("updateOrderStatus (conflit de statut)", () => {
     const after = await getOrderWithItems(db, order.id);
     expect(after?.order.status).toBe("paid");
   });
+
+  it("refuse une transition dont le statut de départ attendu ne correspond plus", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "paid");
+
+    await expect(
+      updateOrderStatus(db, order.id, "cancelled", false, "pending"),
+    ).rejects.toThrow(
+      "Cette commande est passée en « Payée » depuis l'affichage de cet écran, où elle " +
+        "était « En attente de paiement ». Votre demande n'a pas été appliquée : rechargez la page.",
+    );
+    const after = await getOrderWithItems(db, order.id);
+    expect(after?.order.status).toBe("paid");
+  });
+
+  it("tranche sur le statut attendu avant la machine d'états", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+    await setOrderStatusIfUnchanged(db, order.id, "pending", "cancelled");
+
+    await expect(
+      updateOrderStatus(db, order.id, "cancelled", false, "pending"),
+    ).rejects.toThrow(/rechargez la page/);
+  });
+
+  it("applique la transition quand le statut attendu correspond", async () => {
+    const { order } = await createPendingOrder(db, camille, [{ slug: "rivage", qty: 1 }]);
+
+    expect(
+      (await updateOrderStatus(db, order.id, "paid", false, "pending")).status,
+    ).toBe("paid");
+  });
 });
 
 describe("statut de préparation (schéma)", () => {

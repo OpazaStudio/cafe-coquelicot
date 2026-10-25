@@ -35,6 +35,7 @@ import { orders } from "@/lib/db/schema";
 import {
   OrderStatusConflictError,
   attachStripeSession,
+  cancelOrderBySession,
   createPendingOrder,
   getOrderWithItems,
   updateOrderStatus,
@@ -45,9 +46,9 @@ const ALREADY_PAID_MESSAGE =
 const PAID_NOT_RECONCILED_MESSAGE =
   "Stripe a encaissé un paiement sur cette commande, mais la boutique n'a pas pu le rattacher : vérifiez la commande dans Stripe. Cette demande d'annulation n'a pas été appliquée.";
 const AWAITING_ASYNC_MESSAGE =
-  "Un paiement est en cours sur cette commande. Réessayez plus tard.";
+  "La session de paiement de cette commande porte un paiement asynchrone dont la boutique ne connaît pas l'issue : l'annulation n'a pas été appliquée.";
 const UNREACHABLE_MESSAGE =
-  "Stripe est injoignable : l'annulation n'a pas été appliquée.";
+  "La session de paiement n'a pas pu être fermée : le client pourrait encore payer cette commande, donc l'annulation n'a pas été appliquée.";
 
 let counter = 0;
 
@@ -87,6 +88,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.expireSessionForCancel.mockResolvedValue({ outcome: "no_session" });
 });
 
 afterEach(() => {
@@ -102,7 +104,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
       paymentIntent: "pi_test_cancel_paid",
     });
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: ALREADY_PAID_MESSAGE });
     expect(mocks.expireSessionForCancel).toHaveBeenCalledWith(sessionId);
@@ -119,7 +121,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
       paymentIntent: "pi_test_cancel_effects",
     });
 
-    await changeOrderStatus(order.id, "cancelled");
+    await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(mocks.applyPaidSideEffects).toHaveBeenCalledTimes(1);
     expect(mocks.applyPaidSideEffects).toHaveBeenCalledWith(order.id);
@@ -135,7 +137,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
 
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: ALREADY_PAID_MESSAGE });
     expect((await reload(order.id)).status).toBe("paid");
@@ -154,7 +156,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: PAID_NOT_RECONCILED_MESSAGE });
     expect((await reload(order.id)).status).toBe("cancelled");
@@ -183,7 +185,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: PAID_NOT_RECONCILED_MESSAGE });
     expect((await reload(order.id)).status).toBe("pending");
@@ -200,13 +202,13 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     errorSpy.mockRestore();
   });
 
-  it("refuse l'annulation quand Stripe est injoignable et journalise la commande, la session et la cause", async () => {
+  it("refuse l'annulation quand la session n'a pas pu être fermée, et journalise la commande, la session et la cause", async () => {
     const { order, sessionId } = await makeOrder();
     const refus = new Error("The provided key does not have the required permissions.");
     mocks.expireSessionForCancel.mockResolvedValue({ outcome: "unreachable", cause: refus });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: UNREACHABLE_MESSAGE });
     expect((await reload(order.id)).status).toBe("pending");
@@ -227,7 +229,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     const { order } = await makeOrder();
     mocks.expireSessionForCancel.mockResolvedValue({ outcome: "awaiting_async" });
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: AWAITING_ASYNC_MESSAGE });
     expect((await reload(order.id)).status).toBe("pending");
@@ -240,7 +242,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     mocks.expireSessionForCancel.mockResolvedValue({ outcome: "verdict_futur" });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: UNREACHABLE_MESSAGE });
     expect((await reload(order.id)).status).toBe("pending");
@@ -257,7 +259,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     const { order, sessionId } = await makeOrder();
     mocks.expireSessionForCancel.mockResolvedValue({ outcome: "expired" });
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toBeUndefined();
     expect(mocks.expireSessionForCancel).toHaveBeenCalledWith(sessionId);
@@ -269,7 +271,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     const { order } = await makeOrder({ withSession: false });
     mocks.expireSessionForCancel.mockResolvedValue({ outcome: "no_session" });
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toBeUndefined();
     expect(mocks.expireSessionForCancel).toHaveBeenCalledWith(null);
@@ -283,7 +285,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
       new OrderStatusConflictError("La commande a changé de statut, rechargez la page."),
     );
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toEqual({ error: "La commande a changé de statut, rechargez la page." });
     expect((await reload(order.id)).status).toBe("pending");
@@ -299,9 +301,11 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
       if (status === "preparing") await updateOrderStatus(db, order.id, "preparing");
       expect((await reload(order.id)).status).toBe(status);
 
-      const res = await changeOrderStatus(order.id, "cancelled");
+      const res = await changeOrderStatus(order.id, status, "cancelled");
 
-      expect(res).toBeUndefined();
+      expect(res).toEqual({
+        ok: "Commande annulée : le paiement déjà reçu n'est pas remboursé automatiquement.",
+      });
       expect(mocks.expireSessionForCancel).not.toHaveBeenCalled();
       expect((await reload(order.id)).status).toBe("cancelled");
     },
@@ -311,7 +315,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     const { order } = await makeOrder({ withSession: false });
     mocks.expireSessionForCancel.mockResolvedValue({ outcome: "no_session" });
 
-    const res = await changeOrderStatus(order.id, "cancelled");
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
     expect(res).toBeUndefined();
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
@@ -328,7 +332,7 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
     });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const res = await changeOrderStatus(order.id, "cancelled");
+      const res = await changeOrderStatus(order.id, "pending", "cancelled");
 
       expect(res).toBeUndefined();
       expect((await reload(order.id)).status).toBe("cancelled");
@@ -341,33 +345,160 @@ describe("changeOrderStatus : annulation depuis le back-office", () => {
 
   it("ne revalide pas le catalogue pour une transition autre que l'annulation", async () => {
     const { order } = await makeOrder();
+    mocks.expireSessionForCancel.mockResolvedValue({ outcome: "expired" });
 
-    const res = await changeOrderStatus(order.id, "paid");
+    const res = await changeOrderStatus(order.id, "pending", "paid");
 
     expect(res).toBeUndefined();
     expect(mocks.revalidatePath).not.toHaveBeenCalledWith("/boutique");
     expect(mocks.revalidatePath).not.toHaveBeenCalledWith("/boutique/rivage");
   });
 
-  it("n'appelle pas Stripe pour une transition autre que l'annulation", async () => {
-    const { order } = await makeOrder();
+  it("neutralise la session Stripe au passage manuel en payée", async () => {
+    const { order, sessionId } = await makeOrder();
+    mocks.expireSessionForCancel.mockResolvedValue({ outcome: "expired" });
 
-    const res = await changeOrderStatus(order.id, "paid");
+    const res = await changeOrderStatus(order.id, "pending", "paid");
 
     expect(res).toBeUndefined();
-    expect(mocks.expireSessionForCancel).not.toHaveBeenCalled();
+    expect(mocks.expireSessionForCancel).toHaveBeenCalledWith(sessionId);
     expect((await reload(order.id)).status).toBe("paid");
   });
 
+  it("passe en payée et prévient quand la session n'a pas pu être fermée, au lieu de refuser", async () => {
+    const { order, sessionId } = await makeOrder();
+    const refus = new Error("The provided key does not have the required permissions.");
+    mocks.expireSessionForCancel.mockResolvedValue({ outcome: "unreachable", cause: refus });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await changeOrderStatus(order.id, "pending", "paid");
+
+    expect(res).toEqual({
+      error:
+        "La commande est passée en « Payée », mais sa session de paiement n'a pas pu " +
+        "être fermée : le client peut encore la payer. Vérifiez cette commande dans " +
+        "Stripe, et ne remettez pas en stock les unités qu'elle réserve.",
+    });
+    expect((await reload(order.id)).status).toBe("paid");
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        cause: refus,
+      }),
+    );
+    errorSpy.mockRestore();
+  });
+
+  it("passe en payée et prévient pendant un paiement asynchrone", async () => {
+    const { order } = await makeOrder();
+    mocks.expireSessionForCancel.mockResolvedValue({ outcome: "awaiting_async" });
+
+    const res = await changeOrderStatus(order.id, "pending", "paid");
+
+    expect(res).toEqual({
+      error:
+        "La commande est passée en « Payée », mais sa session de paiement porte un " +
+        "paiement asynchrone dont la boutique ne connaît pas l'issue : s'il aboutit, " +
+        "Stripe encaissera en plus de ce que vous venez d'enregistrer. Ne remettez pas " +
+        "en stock les unités qu'elle réserve.",
+    });
+    expect((await reload(order.id)).status).toBe("paid");
+  });
+
+  it("signale le double encaissement quand Stripe avait déjà encaissé la session", async () => {
+    const { order, sessionId } = await makeOrder();
+    mocks.expireSessionForCancel.mockResolvedValue({
+      outcome: "already_paid",
+      paymentIntent: "pi_test_manuel",
+    });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await changeOrderStatus(order.id, "pending", "paid");
+
+    expect(res).toEqual({
+      error:
+        "La commande est passée en « Payée », mais Stripe avait déjà encaissé un " +
+        "paiement sur sa session, que la boutique n'a pas rattaché à la commande. Dans " +
+        "Stripe, ce paiement porte le numéro de cette commande. Si vous veniez " +
+        "d'encaisser autrement, elle est payée deux fois.",
+    });
+    const after = await reload(order.id);
+    expect(after.status).toBe("paid");
+    expect(after.stripePaymentIntent).toBeNull();
+    expect(mocks.applyPaidSideEffects).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        paymentIntent: "pi_test_manuel",
+      }),
+    );
+    errorSpy.mockRestore();
+  });
+
+  it("le webhook d'expiration ne peut plus annuler une commande déjà passée en payée", async () => {
+    const { order, sessionId } = await makeOrder();
+    mocks.expireSessionForCancel.mockImplementation(async () => {
+      await cancelOrderBySession(await getDb(), sessionId as string);
+      return { outcome: "expired" };
+    });
+
+    const res = await changeOrderStatus(order.id, "pending", "paid");
+
+    expect(res).toBeUndefined();
+    expect(mocks.expireSessionForCancel).toHaveBeenCalledWith(sessionId);
+    expect((await reload(order.id)).status).toBe("paid");
+    expectViewsRevalidated(order.id);
+  });
+
+  it("refuse une action déclenchée depuis un écran périmé", async () => {
+    const { order } = await makeOrder();
+    const db = await getDb();
+    await db
+      .update(orders)
+      .set({ status: "paid", stripePaymentIntent: "pi_test_perime" })
+      .where(eq(orders.id, order.id));
+
+    const res = await changeOrderStatus(order.id, "pending", "cancelled");
+
+    expect(res).toEqual({
+      error:
+        "Cette commande est passée en « Payée » depuis l'affichage de cet écran, où " +
+        "elle était « En attente de paiement ». Votre demande n'a pas été appliquée : rechargez la page.",
+    });
+    const after = await reload(order.id);
+    expect(after.status).toBe("paid");
+    expect(after.stripePaymentIntent).toBe("pi_test_perime");
+    expect(mocks.expireSessionForCancel).not.toHaveBeenCalled();
+    expectViewsRevalidated(order.id);
+  });
+
   it("renvoie une erreur sans consulter Stripe pour une commande inconnue", async () => {
-    const res = await changeOrderStatus(randomUUID(), "cancelled");
+    const res = await changeOrderStatus(randomUUID(), "pending", "cancelled");
 
     expect(res).toEqual({ error: "Commande introuvable." });
     expect(mocks.expireSessionForCancel).not.toHaveBeenCalled();
   });
 
+  it.each(["", "payee", "PAID", "pending "])(
+    "rejette un statut affiché hors énumération (%j) sans rien écrire",
+    async (from) => {
+      const { order } = await makeOrder();
+
+      const res = await changeOrderStatus(order.id, from, "cancelled");
+
+      expect(res).toEqual({ error: "Requête invalide." });
+      expect((await reload(order.id)).status).toBe("pending");
+      expect(mocks.expireSessionForCancel).not.toHaveBeenCalled();
+      expect(mocks.revalidatePath).not.toHaveBeenCalled();
+    },
+  );
+
   it("rejette une requête invalide sans rien rafraîchir", async () => {
-    const res = await changeOrderStatus("pas-un-uuid", "cancelled");
+    const res = await changeOrderStatus("pas-un-uuid", "pending", "cancelled");
 
     expect(res).toEqual({ error: "Requête invalide." });
     expect(mocks.expireSessionForCancel).not.toHaveBeenCalled();

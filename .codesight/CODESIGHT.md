@@ -4,7 +4,7 @@
 
 > 3 routes | 10 models | 115 components | 59 lib files | 31 env vars | 6 middleware | 62% test coverage
 > **Token savings:** this file is ~9,200 tokens. Without it, AI exploration would cost ~72,900 tokens. **Saves ~63,700 tokens per conversation.**
-> **Last scanned:** 2026-10-25 06:07 — re-run after significant changes
+> **Last scanned:** 2026-10-25 11:43 — re-run after significant changes
 
 ---
 
@@ -437,8 +437,8 @@
   - function shippingFeeFor: (fulfillment, fees) => number
   - function isShippingCountry: (code) => code is ShippingCountryCode
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
-  - function canTransition: (from, to, fulfillment) => boolean
-  - _...11 more_
+  - function staleStatusMessage: (actual, shown) => string
+  - _...12 more_
 - `lib/orders/paid-side-effects.ts` — function applyPaidSideEffects: (db, orderId) => Promise<void>
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void
@@ -665,7 +665,7 @@
 # Test Coverage
 
 > **62%** of routes and models are covered by tests
-> 104 test files found
+> 105 test files found
 
 ## Covered Routes
 

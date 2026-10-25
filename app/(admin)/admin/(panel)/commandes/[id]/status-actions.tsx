@@ -34,6 +34,7 @@ export function StatusActions({
     const to = String(formData.get("to"));
     return changeOrderStatus(
       orderId,
+      status,
       to,
       to === "cancelled" && formData.get("restock") === "on",
     );

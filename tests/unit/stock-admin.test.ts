@@ -17,6 +17,7 @@ vi.mock("@/lib/storage", () => ({
 
 import type { Db } from "@/lib/db/client";
 import { orderItems, orders, productSizes, products } from "@/lib/db/schema";
+import { createPendingOrder } from "@/lib/orders";
 import { releaseOrderStock } from "@/lib/stock/release";
 import { createTestDb } from "../helpers/db";
 
@@ -619,6 +620,40 @@ describe("stock depuis le back-office (logique, sans concurrence réelle)", () =
       "Taille « Moyen » : retirer la dernière taille active d'un produit à stock limité le remettrait en vente illimitée. Renseignez « Disponible à la vente » sur le produit, ou gardez une taille active.",
     );
     expect((await sizeRows(p.id)).map((s) => s.label)).toEqual(["Moyen", "Archive"]);
+  });
+
+  it("ne compte pas comme active une taille soumise qui n'existe plus en base", async () => {
+    const p = await makeProduct({ sizes: [{ label: "Petit", stockQty: 0 }] });
+    const fantome = "00000000-0000-4000-8000-0000000000ff";
+
+    const state = await submit(
+      p.id,
+      formFor([
+        {
+          id: p.sizes[0].id,
+          label: "Petit",
+          price: "30",
+          active: false,
+          stockQty: "0",
+          stockQtyInitial: "0",
+        },
+        { id: fantome, label: "Grand", price: "40", active: true },
+      ]),
+    );
+
+    expect(state?.errors?.sizes?.[0]).toBe(
+      "Taille « Petit » : impossible de désactiver la dernière taille active d'un produit à stock limité — le produit repasserait en vente illimitée. Gardez une taille active, ou passez son stock à « Illimité » (champ vide) d'abord.",
+    );
+    expect(
+      (await sizeRows(p.id)).map((s) => [s.label, s.active, s.stockQty]),
+    ).toEqual([["Petit", true, 0]]);
+    await expect(
+      createPendingOrder(
+        db,
+        { name: "Camille", email: "camille@exemple.fr", fulfillment: "retrait" },
+        [{ slug: "limite", qty: 3 }],
+      ),
+    ).rejects.toThrow("Choix de taille requis pour bouquet limite.");
   });
 
   it("laisse désactiver la dernière taille active quand son stock devient illimité", async () => {

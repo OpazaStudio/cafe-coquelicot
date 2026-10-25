@@ -23,6 +23,7 @@ import {
   DEFAULT_SHIPPING_FEES,
   MONDIAL_RELAY_FEE_CENTS,
   shippingFeeFor,
+  staleStatusMessage,
   type Fulfillment,
   type ShippingCountryCode,
   type ShippingFees,
@@ -553,6 +554,7 @@ export async function updateOrderStatus(
   orderId: string,
   to: OrderStatus,
   restock = false,
+  expectedFrom?: OrderStatus,
 ): Promise<OrderStatusChange> {
   return db.transaction(async (tx) => {
     const found = await tx
@@ -563,6 +565,11 @@ export async function updateOrderStatus(
       .limit(1);
     const order = found[0];
     if (!order) throw new Error("Commande introuvable.");
+    if (expectedFrom !== undefined && order.status !== expectedFrom) {
+      throw new OrderStatusConflictError(
+        staleStatusMessage(order.status, expectedFrom),
+      );
+    }
     if (!canTransition(order.status, to, order.fulfillment)) {
       throw new Error(
         `Transition impossible : ${order.status} → ${to}.`,

@@ -1,15 +1,19 @@
 // Base PGlite en mémoire, neuve pour chaque appel — isolation totale des tests.
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
+import type { Logger } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import type { Db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
 import { SEED_PRODUCTS, buildChildSeedRows } from "@/lib/db/seed-data";
 
-export async function createTestDb({ seed = true } = {}): Promise<Db> {
+export async function createTestDb({
+  seed = true,
+  logger,
+}: { seed?: boolean; logger?: Logger } = {}): Promise<Db> {
   const pglite = new PGlite();
-  const db = drizzle(pglite, { schema });
+  const db = drizzle(pglite, { schema, logger });
   await migrate(db, {
     migrationsFolder: path.join(process.cwd(), "lib", "db", "migrations"),
   });

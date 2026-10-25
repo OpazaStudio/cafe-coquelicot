@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 
 vi.mock("@/lib/stripe", () => ({
   getStripe: () => ({
@@ -39,6 +39,11 @@ import {
 } from "@/lib/stock/key-order";
 import { releaseOrderStock } from "@/lib/stock/release";
 import { createTestDb } from "../helpers/db";
+import {
+  collectStatements,
+  stockWriteOrder,
+  type LoggedStatement,
+} from "../helpers/sql-log";
 
 const camille = {
   name: "Camille Martin",
@@ -47,6 +52,9 @@ const camille = {
 };
 
 const SIZE_PETIT = "00000000-0000-4000-8000-00000000a001";
+const PRODUIT_NU = "00000000-0000-4000-8000-000000000001";
+const VERROU_A = "00000000-0000-4000-8000-0000000000a1";
+const VERROU_B = "00000000-0000-4000-8000-0000000000a2";
 const CREDIT_IMPOSSIBLE = "crédit impossible";
 const COMPENSATION_IMPOSSIBLE = "[checkout] compensation impossible";
 const STOCK_NON_LIBERE =
@@ -465,5 +473,105 @@ describe("reservedStockKey : table et id sur le même prédicat", () => {
     expect(stockKeyToken({ table: "product_sizes", id: SIZE })).not.toBe(
       stockKeyToken({ table: "products", id: SIZE }),
     );
+  });
+});
+
+describe("ordre de verrouillage des crédits (logique, sans concurrence réelle)", () => {
+  it("crédite les clés dans l'ordre trié, quel que soit l'ordre des lignes lues", async () => {
+    const statements: LoggedStatement[] = [];
+    db = await createTestDb({ seed: false, logger: collectStatements(statements) });
+    await db.insert(products).values({
+      id: PRODUIT_NU,
+      slug: "nu",
+      name: "bouquet nu",
+      description: "Édition limitée.",
+      priceCents: 4000,
+      category: "frais",
+      stockQty: 5,
+    });
+    const [avecTailles] = await db
+      .insert(products)
+      .values({
+        slug: "limite",
+        name: "bouquet limite",
+        description: "Édition limitée.",
+        priceCents: 4000,
+        category: "frais",
+      })
+      .returning({ id: products.id });
+    await db.insert(productSizes).values([
+      {
+        id: VERROU_A,
+        productId: avecTailles.id,
+        label: "Petit",
+        priceCents: 3000,
+        stockQty: 5,
+        sortOrder: 0,
+      },
+      {
+        id: VERROU_B,
+        productId: avecTailles.id,
+        label: "Grand",
+        priceCents: 4000,
+        stockQty: 5,
+        sortOrder: 1,
+      },
+    ]);
+    expect([PRODUIT_NU < VERROU_A, VERROU_A < VERROU_B]).toEqual([true, true]);
+    const [order] = await db
+      .insert(orders)
+      .values({
+        number: "CQ-VERROUS",
+        status: "pending",
+        customerName: camille.name,
+        customerEmail: camille.email,
+        fulfillment: camille.fulfillment,
+        subtotalCents: 3000,
+        totalCents: 3000,
+      })
+      .returning({ id: orders.id });
+    for (const line of [
+      { sizeId: null, productId: PRODUIT_NU },
+      { sizeId: VERROU_B, productId: null },
+      { sizeId: VERROU_A, productId: null },
+    ]) {
+      await db.insert(orderItems).values({
+        orderId: order.id,
+        nameSnapshot: "bouquet",
+        priceCentsSnapshot: 3000,
+        qty: 1,
+        stockReservedQty: 1,
+        stockReservedSizeId: line.sizeId,
+        stockReservedProductId: line.productId,
+      });
+    }
+
+    const read = await db
+      .select({
+        sizeId: orderItems.stockReservedSizeId,
+        productId: orderItems.stockReservedProductId,
+      })
+      .from(orderItems)
+      .where(and(eq(orderItems.orderId, order.id), gt(orderItems.stockReservedQty, 0)));
+    expect(
+      read.map((row) => row.sizeId ?? row.productId),
+      "La lecture des réservations rend déjà les clés triées : le test ne mettrait " +
+        "alors plus le tri à l'épreuve. Changer l'ordre d'insertion des lignes.",
+    ).toEqual([PRODUIT_NU, VERROU_B, VERROU_A]);
+
+    statements.length = 0;
+    await db.transaction((tx) => releaseOrderStock(tx, order.id));
+
+    expect(
+      stockWriteOrder(statements, [PRODUIT_NU, VERROU_A, VERROU_B]),
+      "releaseOrderStock a crédité hors de l'ordre de `compareStockKeys` : une " +
+        "libération et une réservation concurrentes prennent alors leurs verrous en " +
+        "sens inverse et s'interbloquent (40P01). Garder le `.sort(compareStockKeys)` " +
+        "avant la boucle d'UPDATE.",
+    ).toEqual([
+      `product_sizes:${VERROU_A}`,
+      `product_sizes:${VERROU_B}`,
+      `products:${PRODUIT_NU}`,
+    ]);
   });
 });

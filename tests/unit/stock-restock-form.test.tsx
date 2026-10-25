@@ -57,7 +57,7 @@ describe("case « remettre en stock » du formulaire de statut", () => {
     fireEvent.click(screen.getByRole("button", { name: "Annuler la commande" }));
 
     await waitFor(() =>
-      expect(mocks.changeOrderStatus).toHaveBeenCalledWith(ORDER_ID, "cancelled", true),
+      expect(mocks.changeOrderStatus).toHaveBeenCalledWith(ORDER_ID, "paid", "cancelled", true),
     );
   });
 
@@ -67,7 +67,7 @@ describe("case « remettre en stock » du formulaire de statut", () => {
     fireEvent.click(screen.getByRole("button", { name: "Annuler la commande" }));
 
     await waitFor(() =>
-      expect(mocks.changeOrderStatus).toHaveBeenCalledWith(ORDER_ID, "cancelled", false),
+      expect(mocks.changeOrderStatus).toHaveBeenCalledWith(ORDER_ID, "paid", "cancelled", false),
     );
   });
 
@@ -78,7 +78,7 @@ describe("case « remettre en stock » du formulaire de statut", () => {
     fireEvent.click(screen.getByRole("button", { name: "Passer en préparation" }));
 
     await waitFor(() =>
-      expect(mocks.changeOrderStatus).toHaveBeenCalledWith(ORDER_ID, "preparing", false),
+      expect(mocks.changeOrderStatus).toHaveBeenCalledWith(ORDER_ID, "paid", "preparing", false),
     );
   });
 

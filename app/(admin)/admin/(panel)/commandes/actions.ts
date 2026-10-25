@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod";
 import { verifySession } from "@/lib/auth/dal";
 import { type Db, getDb } from "@/lib/db/client";
-import { orderStatus, prepStatusEnum } from "@/lib/db/schema";
+import { orderStatus, prepStatusEnum, type OrderRow } from "@/lib/db/schema";
 import { ensureRelayShipment } from "@/lib/mondial-relay/ensure-shipment";
 import {
   getOrderWithItems,
@@ -15,11 +15,14 @@ import {
   updateOrderStatus,
 } from "@/lib/orders";
 import { applyPaidSideEffects } from "@/lib/orders/paid-side-effects";
+import { staleStatusMessage } from "@/lib/order-status";
+import { restockableUnits } from "@/lib/stock/release";
 import { revalidateAvailability } from "@/lib/stock/revalidate";
 import { expireSessionForCancel } from "@/lib/stripe-session";
 
 const InputSchema = z.object({
   orderId: z.uuid(),
+  from: z.enum(orderStatus.enumValues),
   to: z.enum(orderStatus.enumValues),
   restock: z.boolean(),
 });
@@ -34,14 +37,46 @@ const ALREADY_PAID_MESSAGE =
 const PAID_NOT_RECONCILED_MESSAGE =
   "Stripe a encaissé un paiement sur cette commande, mais la boutique n'a pas pu le rattacher : vérifiez la commande dans Stripe. Cette demande d'annulation n'a pas été appliquée.";
 const AWAITING_ASYNC_MESSAGE =
-  "Un paiement est en cours sur cette commande. Réessayez plus tard.";
+  "La session de paiement de cette commande porte un paiement asynchrone dont la boutique ne connaît pas l'issue : l'annulation n'a pas été appliquée.";
 const UNREACHABLE_MESSAGE =
-  "Stripe est injoignable : l'annulation n'a pas été appliquée.";
+  "La session de paiement n'a pas pu être fermée : le client pourrait encore payer cette commande, donc l'annulation n'a pas été appliquée.";
+const MANUAL_PAID_DOUBLE_MESSAGE =
+  "La commande est passée en « Payée », mais Stripe avait déjà encaissé un paiement sur sa session, que la boutique n'a pas rattaché à la commande. Dans Stripe, ce paiement porte le numéro de cette commande. Si vous veniez d'encaisser autrement, elle est payée deux fois.";
+const MANUAL_PAID_ASYNC_MESSAGE =
+  "La commande est passée en « Payée », mais sa session de paiement porte un paiement asynchrone dont la boutique ne connaît pas l'issue : s'il aboutit, Stripe encaissera en plus de ce que vous venez d'enregistrer. Ne remettez pas en stock les unités qu'elle réserve.";
+const MANUAL_PAID_UNREACHABLE_MESSAGE =
+  "La commande est passée en « Payée », mais sa session de paiement n'a pas pu être fermée : le client peut encore la payer. Vérifiez cette commande dans Stripe, et ne remettez pas en stock les unités qu'elle réserve.";
+const RESTOCK_ASYNC_MESSAGE =
+  "La session de paiement de cette commande porte un paiement asynchrone dont la boutique ne connaît pas l'issue : les unités ne peuvent pas repartir en vente tant qu'elle n'est pas tranchée.";
+const RESTOCK_UNREACHABLE_MESSAGE =
+  "La session de paiement n'a pas pu être fermée : sans la preuve qu'elle l'est, les unités ne peuvent pas repartir en vente. Rien n'a été modifié.";
+const UNATTACHED_PAYMENT_NOTE =
+  "Attention : Stripe a encaissé sur cette commande un paiement qui ne lui a jamais été rattaché. Dans Stripe, il porte le numéro de cette commande.";
 
-function restockMessage(units: number): string {
-  return units === 1
-    ? "Commande annulée : 1 unité est remise en stock."
-    : `Commande annulée : ${units} unités sont remises en stock.`;
+function cancelledPaidMessage(
+  restocked: number,
+  held: number,
+  viaStripe: boolean,
+  unattached: boolean,
+): string {
+  const refund = viaStripe
+    ? "le paiement reste encaissé chez Stripe et n'est pas remboursé automatiquement"
+    : "le paiement déjà reçu n'est pas remboursé automatiquement";
+  const stock =
+    restocked > 0
+      ? restocked === 1
+        ? "1 unité est remise en stock"
+        : `${restocked} unités sont remises en stock`
+      : held > 0
+        ? held === 1
+          ? "l'unité réservée n'est pas remise en stock"
+          : `les ${held} unités réservées ne sont pas remises en stock`
+        : null;
+  const sentence =
+    stock === null
+      ? `Commande annulée : ${refund}.`
+      : `Commande annulée : ${stock}, et ${refund}.`;
+  return unattached ? `${sentence} ${UNATTACHED_PAYMENT_NOTE}` : sentence;
 }
 
 function revalidateOrderViews(orderId: string) {
@@ -52,12 +87,10 @@ function revalidateOrderViews(orderId: string) {
 
 async function stripeCancellationRefusal(
   db: Db,
-  orderId: string,
+  order: OrderRow,
 ): Promise<StatusActionState> {
-  const found = await getOrderWithItems(db, orderId);
-  if (found?.order.status !== "pending") return undefined;
+  if (order.status !== "pending") return undefined;
 
-  const { order } = found;
   const sessionId = order.stripeSessionId;
   const guard = await expireSessionForCancel(sessionId);
   switch (guard.outcome) {
@@ -105,43 +138,150 @@ async function stripeCancellationRefusal(
   }
 }
 
+async function neutralizeAfterManualPaid(
+  order: OrderRow,
+): Promise<string | undefined> {
+  const sessionId = order.stripeSessionId;
+  const guard = await expireSessionForCancel(sessionId);
+  switch (guard.outcome) {
+    case "no_session":
+    case "expired":
+      return undefined;
+    case "already_paid":
+      console.error("[commande] paiement Stripe non rattaché après un passage manuel en payée", {
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        paymentIntent: guard.paymentIntent,
+      });
+      return MANUAL_PAID_DOUBLE_MESSAGE;
+    case "awaiting_async":
+      return MANUAL_PAID_ASYNC_MESSAGE;
+    case "unreachable":
+      console.error("[commande] session Stripe non fermée après un passage manuel en payée", {
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        cause: guard.cause,
+      });
+      return MANUAL_PAID_UNREACHABLE_MESSAGE;
+    default: {
+      const unhandled: never = guard;
+      console.error("[commande] verdict Stripe inattendu après un passage manuel en payée", {
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        verdict: unhandled,
+      });
+      return MANUAL_PAID_UNREACHABLE_MESSAGE;
+    }
+  }
+}
+
+type RestockCheck = { refusal?: StatusActionState; unattached?: boolean };
+
+async function stripeRestockRefusal(order: OrderRow): Promise<RestockCheck> {
+  const sessionId = order.stripeSessionId;
+  const guard = await expireSessionForCancel(sessionId);
+  switch (guard.outcome) {
+    case "no_session":
+    case "expired":
+      return {};
+    case "already_paid":
+      console.error(
+        "[commande] paiement Stripe non rattaché sur une commande remise en stock",
+        {
+          orderId: order.id,
+          stripeSessionId: sessionId,
+          paymentIntent: guard.paymentIntent,
+        },
+      );
+      return { unattached: true };
+    case "awaiting_async":
+      return { refusal: { error: RESTOCK_ASYNC_MESSAGE } };
+    case "unreachable":
+      console.error("[commande] session Stripe injoignable, remise en stock refusée", {
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        cause: guard.cause,
+      });
+      return { refusal: { error: RESTOCK_UNREACHABLE_MESSAGE } };
+    default: {
+      const unhandled: never = guard;
+      console.error("[commande] verdict Stripe inattendu, remise en stock refusée", {
+        orderId: order.id,
+        stripeSessionId: sessionId,
+        verdict: unhandled,
+      });
+      return { refusal: { error: RESTOCK_UNREACHABLE_MESSAGE } };
+    }
+  }
+}
+
 export async function changeOrderStatus(
   orderId: string,
+  from: string,
   to: string,
   restock = false,
 ): Promise<StatusActionState> {
   await verifySession();
-  const parsed = InputSchema.safeParse({ orderId, to, restock });
+  const parsed = InputSchema.safeParse({ orderId, from, to, restock });
   if (!parsed.success) {
     return { error: "Requête invalide." };
   }
-  const cancelling = parsed.data.to === "cancelled";
+  const { orderId: id, from: shown, to: target, restock: wanted } = parsed.data;
+  const cancelling = target === "cancelled";
+  const wasPaid = shown === "paid" || shown === "preparing";
   let restocked = 0;
+  let held = 0;
+  let viaStripe = false;
+  let unattached = false;
+  let warning: string | undefined;
   try {
     const db = await getDb();
-    if (cancelling) {
-      const refusal = await stripeCancellationRefusal(db, parsed.data.orderId);
-      if (refusal) {
+    const found = await getOrderWithItems(db, id);
+    if (found) {
+      const { order } = found;
+      if (order.status !== shown) {
         revalidateOrderViews(orderId);
-        return refusal;
+        return { error: staleStatusMessage(order.status, shown) };
+      }
+      viaStripe = order.stripePaymentIntent !== null;
+      if (cancelling) {
+        const refusal = await stripeCancellationRefusal(db, order);
+        if (refusal) {
+          revalidateOrderViews(orderId);
+          return refusal;
+        }
+        if (wanted && shown === "paid" && order.stripePaymentIntent === null) {
+          const check = await stripeRestockRefusal(order);
+          if (check.refusal) {
+            revalidateOrderViews(orderId);
+            return check.refusal;
+          }
+          unattached = check.unattached === true;
+        }
+        if (wasPaid) held = await restockableUnits(db, id);
       }
     }
-    const changed = await updateOrderStatus(
-      db,
-      parsed.data.orderId,
-      parsed.data.to,
-      parsed.data.restock,
-    );
+    const changed = await updateOrderStatus(db, id, target, wanted, shown);
     restocked = changed.restockedUnits;
+    if (target === "paid") {
+      warning = await neutralizeAfterManualPaid(changed);
+    }
     if (cancelling) {
-      await revalidateAvailability([parsed.data.orderId], db);
+      await revalidateAvailability([id], db);
     }
   } catch (err) {
     revalidateOrderViews(orderId);
     return { error: err instanceof Error ? err.message : "Erreur inconnue." };
   }
   revalidateOrderViews(orderId);
-  return restocked > 0 ? { ok: restockMessage(restocked) } : undefined;
+  if (warning !== undefined) {
+    return { error: warning };
+  }
+  if (cancelling && wasPaid) {
+    const message = cancelledPaidMessage(restocked, held, viaStripe, unattached);
+    return unattached ? { error: message } : { ok: message };
+  }
+  return undefined;
 }
 
 const ItemPrepSchema = z.object({

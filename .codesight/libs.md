@@ -178,8 +178,8 @@
   - function shippingFeeFor: (fulfillment, fees) => number
   - function isShippingCountry: (code) => code is ShippingCountryCode
   - function statusTransitions: (from, fulfillment) => OrderStatus[]
-  - function canTransition: (from, to, fulfillment) => boolean
-  - _...11 more_
+  - function staleStatusMessage: (actual, shown) => string
+  - _...12 more_
 - `lib/orders/paid-side-effects.ts` — function applyPaidSideEffects: (db, orderId) => Promise<void>
 - `lib/orders.ts`
   - function generateOrderNumber: (now) => void

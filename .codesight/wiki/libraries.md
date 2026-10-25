@@ -89,7 +89,7 @@
 
 ## Order-status.ts (1 files)
 
-- `lib/order-status.ts` — parseFeeInput, formatFeeInput, shippingFeeFor, isShippingCountry, statusTransitions, canTransition, …
+- `lib/order-status.ts` — parseFeeInput, formatFeeInput, shippingFeeFor, isShippingCountry, statusTransitions, staleStatusMessage, …
 
 ## Orders (1 files)
 

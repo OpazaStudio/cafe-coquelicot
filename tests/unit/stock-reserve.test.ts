@@ -10,7 +10,13 @@ import {
   products,
 } from "@/lib/db/schema";
 import { CheckoutError, createPendingOrder } from "@/lib/orders";
+import { reserveStock } from "@/lib/stock/reserve";
 import { createTestDb } from "../helpers/db";
+import {
+  collectStatements,
+  stockWriteOrder,
+  type LoggedStatement,
+} from "../helpers/sql-log";
 
 const camille = {
   name: "Camille Martin",
@@ -34,6 +40,9 @@ const SANS_TAILLE = "Ce produit n'a pas de taille (bouquet limite).";
 
 const SIZE_PETIT = "00000000-0000-4000-8000-00000000a001";
 const SIZE_GRAND = "00000000-0000-4000-8000-00000000a002";
+const PRODUIT_NU = "00000000-0000-4000-8000-000000000001";
+const VERROU_A = "00000000-0000-4000-8000-0000000000a1";
+const VERROU_B = "00000000-0000-4000-8000-0000000000a2";
 const COLOR_ROUGE = "00000000-0000-4000-8000-00000000c001";
 const COLOR_BLANC = "00000000-0000-4000-8000-00000000c002";
 
@@ -332,5 +341,88 @@ describe("réservation à la création de la commande (logique, sans concurrence
     expect(refused.message).toBe(REFUS_PETIT_1);
     expect(await stockOf(db, SIZE_PETIT)).toBe(5);
     expect(await countOrders(db)).toBe(0);
+  });
+});
+
+describe("ordre de verrouillage des décréments (logique, sans concurrence réelle)", () => {
+  it("décrémente les clés dans l'ordre trié, quel que soit l'ordre des lignes", async () => {
+    const statements: LoggedStatement[] = [];
+    db = await createTestDb({ seed: false, logger: collectStatements(statements) });
+    await db.insert(products).values({
+      id: PRODUIT_NU,
+      slug: "nu",
+      name: "bouquet nu",
+      description: "Édition limitée.",
+      priceCents: 4000,
+      category: "frais",
+      stockQty: 5,
+    });
+    const [avecTailles] = await db
+      .insert(products)
+      .values({
+        slug: "limite",
+        name: "bouquet limite",
+        description: "Édition limitée.",
+        priceCents: 4000,
+        category: "frais",
+      })
+      .returning({ id: products.id });
+    await db.insert(productSizes).values([
+      {
+        id: VERROU_A,
+        productId: avecTailles.id,
+        label: "Petit",
+        priceCents: 3000,
+        stockQty: 5,
+        sortOrder: 0,
+      },
+      {
+        id: VERROU_B,
+        productId: avecTailles.id,
+        label: "Grand",
+        priceCents: 4000,
+        stockQty: 5,
+        sortOrder: 1,
+      },
+    ]);
+    expect([PRODUIT_NU < VERROU_A, VERROU_A < VERROU_B]).toEqual([true, true]);
+
+    statements.length = 0;
+    await db.transaction((tx) =>
+      reserveStock(tx, [
+        {
+          productId: PRODUIT_NU,
+          sizeId: null,
+          qty: 1,
+          productName: "bouquet nu",
+          sizeLabel: null,
+        },
+        {
+          productId: avecTailles.id,
+          sizeId: VERROU_B,
+          qty: 1,
+          productName: "bouquet limite",
+          sizeLabel: "Grand",
+        },
+        {
+          productId: avecTailles.id,
+          sizeId: VERROU_A,
+          qty: 1,
+          productName: "bouquet limite",
+          sizeLabel: "Petit",
+        },
+      ]),
+    );
+
+    expect(
+      stockWriteOrder(statements, [PRODUIT_NU, VERROU_A, VERROU_B]),
+      "reserveStock a décrémenté hors de l'ordre de `compareStockKeys` : deux paniers " +
+        "concurrents prennent alors leurs verrous en sens inverse et s'interbloquent " +
+        "(40P01). Garder le `.sort(compareStockKeys)` avant la boucle d'UPDATE.",
+    ).toEqual([
+      `product_sizes:${VERROU_A}`,
+      `product_sizes:${VERROU_B}`,
+      `products:${PRODUIT_NU}`,
+    ]);
   });
 });
