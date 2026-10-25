@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart/cart-context";
+import { stockNotice, useCartStock } from "@/lib/cart/stock-caps";
 import { trackBeginCheckout } from "@/lib/analytics/gtag";
 import { composeItemName } from "@/lib/item-label";
 import { formatEuros } from "@/lib/money";
@@ -14,7 +15,8 @@ import { RelayPicker, type RelaySelection } from "./relay-picker";
 type ShippingMode = "mondial_relay" | "poste";
 
 export function CheckoutForm({ fees }: { fees: ShippingFees }) {
-  const { items, subtotalCents, ready } = useCart();
+  const { items, subtotalCents, ready, remove } = useCart();
+  const { stockByKey, blocked } = useCartStock(items, ready);
   const [mode, setMode] = useState<ShippingMode>("mondial_relay");
   const [relay, setRelay] = useState<RelaySelection | null>(null);
   const [hasCard, setHasCard] = useState(false);
@@ -191,14 +193,36 @@ export function CheckoutForm({ fees }: { fees: ShippingFees }) {
       <aside className="cart-summary">
         <h2 className="eyebrow">Votre commande</h2>
         <ul className="checkout-recap">
-          {items.map((i) => (
-            <li key={i.key} className="cart-summary__row">
-              <span>
-                {composeItemName(i.name, i.sizeLabel, i.colorLabel)} × {i.qty}
-              </span>
-              <span>{formatEuros(i.priceCents * i.qty)}</span>
-            </li>
-          ))}
+          {items.map((i) => {
+            const notice = stockNotice(stockByKey.get(i.key));
+            return (
+              <li key={i.key} className="cart-summary__row">
+                <span>
+                  {composeItemName(i.name, i.sizeLabel, i.colorLabel)} × {i.qty}{" "}
+                  <strong
+                    className="checkout-recap__stock"
+                    role="status"
+                    data-testid={`checkout-stock-${i.key}`}
+                  >
+                    {notice}
+                  </strong>
+                  {notice && (
+                    <>
+                      {" "}
+                      <button
+                        type="button"
+                        className="checkout-recap__remove"
+                        onClick={() => remove(i.key)}
+                      >
+                        Retirer
+                      </button>
+                    </>
+                  )}
+                </span>
+                <span>{formatEuros(i.priceCents * i.qty)}</span>
+              </li>
+            );
+          })}
         </ul>
         <div className="cart-summary__row">
           <span>Sous-total</span>
@@ -229,10 +253,16 @@ export function CheckoutForm({ fees }: { fees: ShippingFees }) {
 
         <button
           type="submit"
-          disabled={pending || !canSubmit}
+          disabled={pending || !canSubmit || blocked}
           className="btn btn--filled cart-summary__cta"
         >
-          {pending ? "Redirection…" : canSubmit ? "Payer avec Stripe" : "Choisissez un point relais"}{" "}
+          {pending
+            ? "Redirection…"
+            : blocked
+              ? "Ajustez votre panier"
+              : canSubmit
+                ? "Payer avec Stripe"
+                : "Choisissez un point relais"}{" "}
           <ArrowRight />
         </button>
         <p className="cart-summary__note">

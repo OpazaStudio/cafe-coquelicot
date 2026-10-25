@@ -3,6 +3,10 @@
 import { redirect } from "next/navigation";
 import * as z from "zod";
 import { abandonPendingOrder } from "@/lib/checkout/abandon";
+import {
+  abandonReservedOrder,
+  rememberReservedOrder,
+} from "@/lib/checkout/reservation";
 import { getDb, type Db } from "@/lib/db/client";
 import {
   attachStripeSession,
@@ -13,6 +17,8 @@ import { SHIPPING_LINE_LABELS } from "@/lib/order-status";
 import { composeItemName } from "@/lib/item-label";
 import { getSettings, shippingFeesFromSettings } from "@/lib/settings";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
+import { InsufficientStockError } from "@/lib/checkout/errors";
+import type { AbandonHeldOutcome } from "@/lib/checkout/abandon";
 import { CheckoutSchema, rawCheckoutValues, toCustomerInput } from "./schema";
 
 const ItemsSchema = z
@@ -31,6 +37,31 @@ export type CheckoutState = { error: string } | undefined;
 
 const CHECKOUT_SESSION_TTL_SECONDS = 35 * 60;
 
+function heldReservationMessage(
+  outcome: AbandonHeldOutcome,
+  item: string,
+): string {
+  switch (outcome) {
+    case "held_release_failed":
+      return (
+        `Une commande précédente retient encore « ${item} ». ` +
+        `Réessayez dans quelques instants, ou retirez-le du panier pour ` +
+        `commander le reste. Si cela persiste, contactez-nous.`
+      );
+    case "held_paid":
+      return (
+        `Un paiement pour « ${item} » vient d'être enregistré. ` +
+        `Vous allez recevoir un e-mail de confirmation. ` +
+        `Retirez-le du panier pour commander le reste.`
+      );
+    case "held_payment_pending":
+      return (
+        `Un paiement est en cours de confirmation pour « ${item} ». ` +
+        `Retirez-le du panier pour commander le reste.`
+      );
+  }
+}
+
 export async function startCheckout(
   _prev: CheckoutState,
   formData: FormData,
@@ -46,6 +77,8 @@ export async function startCheckout(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Saisie invalide." };
   }
+
+  const previous = await abandonReservedOrder();
 
   let checkoutUrl: string;
   let created: { db: Db; orderId: string } | undefined;
@@ -120,9 +153,23 @@ export async function startCheckout(
       return { error: "Stripe n'a pas renvoyé d'URL de paiement. Réessayez." };
     }
     await attachStripeSession(db, order.id, session.id);
+    await rememberReservedOrder(order.id, CHECKOUT_SESSION_TTL_SECONDS);
     checkoutUrl = session.url;
   } catch (err) {
     if (created) await abandonPendingOrder(created.db, created.orderId);
+    if (
+      err instanceof InsufficientStockError &&
+      previous !== null &&
+      previous.outcome !== "released" &&
+      previous.heldKeys.includes(err.stockKey)
+    ) {
+      return {
+        error: heldReservationMessage(
+          previous.outcome,
+          composeItemName(err.productName, err.sizeLabel),
+        ),
+      };
+    }
     if (err instanceof CheckoutError) {
       return { error: err.message };
     }

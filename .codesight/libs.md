@@ -45,8 +45,22 @@
   - function cartCount: (cart) => number
   - function cartSubtotalCents: (cart) => number
   - _...5 more_
-- `lib/checkout/abandon.ts` — function abandonPendingOrder: (db, orderId) => Promise<void>
-- `lib/checkout/errors.ts` — class CheckoutError
+- `lib/cart/stock-caps.ts`
+  - function useCartStock: (items, ready) => CartStock
+  - function stockNotice: (stock) => string | null
+  - type LineStock
+  - type CartStock
+- `lib/checkout/abandon.ts`
+  - function abandonPendingOrder: (db, orderId) => Promise<AbandonVerdict>
+  - type AbandonHeldOutcome
+  - type AbandonVerdict
+- `lib/checkout/errors.ts` — class CheckoutError, class InsufficientStockError
+- `lib/checkout/reservation.ts`
+  - function readReservedOrderId: () => Promise<string | null>
+  - function rememberReservedOrder: (orderId, maxAgeSeconds) => Promise<void>
+  - function abandonReservedOrder: () => Promise<ReservationRelease | null>
+  - type ReservationRelease
+  - const RESERVATION_COOKIE
 - `lib/contact-submissions.ts`
   - function saveContactSubmission: (db, input) => Promise<string>
   - function markSubmissionEmailSent: (db, id) => Promise<void>
@@ -254,7 +268,18 @@
   - type Kpis
   - type DayPoint
   - _...2 more_
-- `lib/stock/key-order.ts` — function compareStockKeys: (a, b) => number, type StockKeyTable
+- `lib/stock/availability.ts`
+  - function cartAvailabilityFor: (db, lines, ownOrderId) => Promise<LineAvailability[]>
+  - type CartLine
+  - type LineAvailability
+- `lib/stock/key-order.ts`
+  - function stockKeyToken: (key) => string
+  - function reservedStockKey: (sizeId, productId) => StockKey;
+  - function reservedStockKey: (sizeId, productId) => StockKey | null;
+  - function reservedStockKey: (sizeId, productId) => StockKey | null
+  - function compareStockKeys: (a, b) => number
+  - type StockKeyTable
+  - _...1 more_
 - `lib/stock/release.ts` — function releaseOrderStock: (tx, orderId) => Promise<void>
 - `lib/stock/reserve.ts` — function reserveStock: (tx, lines) => Promise<StockReservation[]>, type StockReservation
 - `lib/storage.ts`

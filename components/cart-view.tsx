@@ -3,12 +3,14 @@
 import Link from "next/link";
 import type { PanierContent } from "@/lib/content/pages/panier";
 import { useCart } from "@/lib/cart/cart-context";
+import { stockNotice, useCartStock } from "@/lib/cart/stock-caps";
 import { formatEuros } from "@/lib/money";
 import { ArrowRight } from "./illustrations";
 import { Lines } from "./content/text";
 
 export function CartView({ copy }: { copy: { empty: PanierContent["empty"]; summary: PanierContent["summary"] } }) {
   const { items, count, subtotalCents, ready, changeQty, remove } = useCart();
+  const { stockByKey, blocked } = useCartStock(items, ready);
 
   if (!ready) {
     return (
@@ -37,12 +39,27 @@ export function CartView({ copy }: { copy: { empty: PanierContent["empty"]; summ
           const variant = [item.sizeLabel, item.colorLabel]
             .filter(Boolean)
             .join(" · ");
+          const stock = stockByKey.get(item.key);
+          const notice = stockNotice(stock);
           return (
-            <li key={item.key} className="cart-line" data-testid={`cart-line-${item.key}`}>
+            <li
+              key={item.key}
+              className={`cart-line${
+                stock?.soldOut && !stock.sizeRequired ? " is-sold-out" : ""
+              }`}
+              data-testid={`cart-line-${item.key}`}
+            >
               <div className="cart-line__info">
                 <h3 className="cart-line__name">{item.name}</h3>
                 {variant && <p className="cart-line__variant">{variant}</p>}
                 <p className="cart-line__unit">{formatEuros(item.priceCents)} l&apos;unité</p>
+                <p
+                  className="cart-line__stock"
+                  role="status"
+                  data-testid={`cart-stock-${item.key}`}
+                >
+                  {notice}
+                </p>
               </div>
               <div className="cart-line__qty" aria-label={`Quantité pour ${item.name}`}>
                 <button
@@ -56,6 +73,7 @@ export function CartView({ copy }: { copy: { empty: PanierContent["empty"]; summ
                 <button
                   type="button"
                   onClick={() => changeQty(item.key, item.qty + 1)}
+                  disabled={stock?.atMax ?? false}
                   aria-label={`Augmenter la quantité de ${item.name}`}
                 >
                   +
@@ -88,9 +106,22 @@ export function CartView({ copy }: { copy: { empty: PanierContent["empty"]; summ
         <p className="cart-summary__note">
           <Lines text={copy.summary.note} />
         </p>
-        <Link href="/checkout" className="btn btn--filled cart-summary__cta">
-          {copy.summary.cta} <ArrowRight />
-        </Link>
+        <p className="cart-summary__alert" role="status" data-testid="cart-alert">
+          {blocked ? "Ajustez les quantités signalées pour continuer." : null}
+        </p>
+        {blocked ? (
+          <button
+            type="button"
+            disabled
+            className="btn btn--filled cart-summary__cta is-sold-out"
+          >
+            {copy.summary.cta} <ArrowRight />
+          </button>
+        ) : (
+          <Link href="/checkout" className="btn btn--filled cart-summary__cta">
+            {copy.summary.cta} <ArrowRight />
+          </Link>
+        )}
         <Link href="/boutique" className="link-arrow">
           {copy.summary.continue}
         </Link>

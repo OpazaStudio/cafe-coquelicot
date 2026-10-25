@@ -1,9 +1,15 @@
 import { and, eq, gte, isNull, or, sql } from "drizzle-orm";
-import { CheckoutError } from "@/lib/checkout/errors";
+import { InsufficientStockError } from "@/lib/checkout/errors";
 import type { Tx } from "@/lib/db/client";
 import { productSizes, products } from "@/lib/db/schema";
 import { composeItemName } from "@/lib/item-label";
-import { compareStockKeys, type StockKeyTable } from "@/lib/stock/key-order";
+import {
+  compareStockKeys,
+  reservedStockKey,
+  stockKeyToken,
+  type StockKey as StockKeyRef,
+  type StockKeyTable,
+} from "@/lib/stock/key-order";
 
 export type StockReservation = {
   orderItemIndex: number;
@@ -22,6 +28,21 @@ type StockKey = {
   lineIndexes: number[];
 };
 
+async function availableFor(tx: Tx, key: StockKeyRef): Promise<number | null> {
+  if (key.table === "product_sizes") {
+    const [row] = await tx
+      .select({ stockQty: productSizes.stockQty })
+      .from(productSizes)
+      .where(eq(productSizes.id, key.id));
+    return row?.stockQty ?? null;
+  }
+  const [row] = await tx
+    .select({ stockQty: products.stockQty })
+    .from(products)
+    .where(eq(products.id, key.id));
+  return row?.stockQty ?? null;
+}
+
 export async function reserveStock(
   tx: Tx,
   lines: Array<{
@@ -34,15 +55,15 @@ export async function reserveStock(
 ): Promise<StockReservation[]> {
   const keys = new Map<string, StockKey>();
   lines.forEach((line, index) => {
-    const table = line.sizeId ? "product_sizes" : "products";
-    const id = line.sizeId ?? line.productId;
-    const found = keys.get(`${table}:${id}`);
+    const { table, id } = reservedStockKey(line.sizeId, line.productId);
+    const token = stockKeyToken({ table, id });
+    const found = keys.get(token);
     if (found) {
       found.qty += line.qty;
       found.lineIndexes.push(index);
       return;
     }
-    keys.set(`${table}:${id}`, {
+    keys.set(token, {
       table,
       id,
       productId: line.productId,
@@ -85,10 +106,16 @@ export async function reserveStock(
     }
 
     if (decremented.length === 0) {
-      throw new CheckoutError(
+      const available = await availableFor(tx, key);
+      throw new InsufficientStockError(
         `Stock insuffisant pour ${composeItemName(key.productName, key.sizeLabel)} ` +
           `(${key.qty} demandé${key.qty > 1 ? "s" : ""}). ` +
-          `Réduisez la quantité ou retirez-le du panier.`,
+          (available === 0
+            ? `Retirez-le du panier.`
+            : `Réduisez la quantité ou retirez-le du panier.`),
+        stockKeyToken(key),
+        key.productName,
+        key.sizeLabel,
       );
     }
     if (decremented[0].stockQty === null) continue;

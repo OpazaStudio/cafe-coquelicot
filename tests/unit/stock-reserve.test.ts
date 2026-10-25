@@ -18,6 +18,9 @@ const camille = {
   fulfillment: "retrait" as const,
 };
 
+const REFUS_PETIT_1_EPUISE =
+  "Stock insuffisant pour bouquet limite — Petit (1 demandé). " +
+  "Retirez-le du panier.";
 const REFUS_PETIT_1 =
   "Stock insuffisant pour bouquet limite — Petit (1 demandé). " +
   "Réduisez la quantité ou retirez-le du panier.";
@@ -26,7 +29,7 @@ const REFUS_PETIT_2 =
   "Réduisez la quantité ou retirez-le du panier.";
 const REFUS_EPUISE_1 =
   "Stock insuffisant pour bouquet epuise (1 demandé). " +
-  "Réduisez la quantité ou retirez-le du panier.";
+  "Retirez-le du panier.";
 const SANS_TAILLE = "Ce produit n'a pas de taille (bouquet limite).";
 
 const SIZE_PETIT = "00000000-0000-4000-8000-00000000a001";
@@ -185,7 +188,7 @@ describe("réservation à la création de la commande (logique, sans concurrence
       createPendingOrder(db, camille, [{ slug: "limite", sizeId: SIZE_PETIT, qty: 1 }]),
     );
 
-    expect(refused.message).toBe(REFUS_PETIT_1);
+    expect(refused.message).toBe(REFUS_PETIT_1_EPUISE);
     expect(await stockOf(db, SIZE_PETIT)).toBe(0);
     expect(await countOrders(db)).toBe(0);
   });

@@ -32,7 +32,11 @@ import {
   reconcilePaidSession,
   updateOrderStatus,
 } from "@/lib/orders";
-import { compareStockKeys } from "@/lib/stock/key-order";
+import {
+  compareStockKeys,
+  reservedStockKey,
+  stockKeyToken,
+} from "@/lib/stock/key-order";
 import { releaseOrderStock } from "@/lib/stock/release";
 import { createTestDb } from "../helpers/db";
 
@@ -318,7 +322,9 @@ describe("libération (logique, sans concurrence réelle)", () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
 
     try {
-      await expect(abandonPendingOrder(db, order.id)).resolves.toBeUndefined();
+      await expect(abandonPendingOrder(db, order.id)).resolves.toEqual({
+        outcome: "released",
+      });
       expect(errors).not.toHaveBeenCalled();
     } finally {
       errors.mockRestore();
@@ -338,7 +344,10 @@ describe("libération (logique, sans concurrence réelle)", () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
 
     try {
-      await expect(abandonPendingOrder(db, order.id)).resolves.toBeUndefined();
+      await expect(abandonPendingOrder(db, order.id)).resolves.toEqual({
+        outcome: "held_release_failed",
+        heldKeys: [stockKeyToken({ table: "product_sizes", id: SIZE_PETIT })],
+      });
       expect(errors).toHaveBeenCalledWith(STOCK_NON_LIBERE, {
         orderId: order.id,
         stripeSessionId: null,
@@ -423,5 +432,38 @@ describe("ordre de verrouillage partagé par la réservation et la libération",
       { table: "products", id: "b" },
     ]);
     expect(compareStockKeys({ table: "products", id: "a" }, { table: "products", id: "a" })).toBe(0);
+  });
+});
+
+describe("reservedStockKey : table et id sur le même prédicat", () => {
+  const SIZE = "00000000-0000-4000-8000-00000000a0ff";
+  const PRODUIT = "00000000-0000-4000-8000-00000000b0ff";
+
+  it("la taille l'emporte sur le produit dès qu'elle est présente", () => {
+    expect(reservedStockKey(SIZE, PRODUIT)).toEqual({
+      table: "product_sizes",
+      id: SIZE,
+    });
+    expect(reservedStockKey(null, PRODUIT)).toEqual({
+      table: "products",
+      id: PRODUIT,
+    });
+  });
+
+  it("ne bascule pas de table pour une taille vide tout en gardant son id", () => {
+    expect(reservedStockKey("", PRODUIT)).toEqual({
+      table: "product_sizes",
+      id: "",
+    });
+  });
+
+  it("rend null quand ni taille ni produit ne sont connus", () => {
+    expect(reservedStockKey(null, null)).toBeNull();
+  });
+
+  it("le jeton distingue les deux tables à id égal", () => {
+    expect(stockKeyToken({ table: "product_sizes", id: SIZE })).not.toBe(
+      stockKeyToken({ table: "products", id: SIZE }),
+    );
   });
 });

@@ -1,7 +1,12 @@
 import { and, eq, gt, isNotNull, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/client";
 import { orderItems, productSizes, products } from "@/lib/db/schema";
-import { compareStockKeys, type StockKeyTable } from "@/lib/stock/key-order";
+import {
+  compareStockKeys,
+  reservedStockKey,
+  stockKeyToken,
+  type StockKeyTable,
+} from "@/lib/stock/key-order";
 
 type ReleaseKey = {
   table: StockKeyTable;
@@ -24,15 +29,15 @@ export async function releaseOrderStock(tx: Tx, orderId: string): Promise<void> 
 
   const keys = new Map<string, ReleaseKey>();
   for (const line of reserved) {
-    const table = line.sizeId ? "product_sizes" : "products";
-    const id = line.sizeId ?? line.productId;
-    if (!id) continue;
-    const found = keys.get(`${table}:${id}`);
+    const key = reservedStockKey(line.sizeId, line.productId);
+    if (key === null) continue;
+    const token = stockKeyToken(key);
+    const found = keys.get(token);
     if (found) {
       found.qty += line.qty;
       continue;
     }
-    keys.set(`${table}:${id}`, { table, id, qty: line.qty });
+    keys.set(token, { ...key, qty: line.qty });
   }
 
   const ordered = [...keys.values()].sort(compareStockKeys);

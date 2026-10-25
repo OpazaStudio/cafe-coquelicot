@@ -162,7 +162,7 @@ describe("POST /api/e2e/orders — variantes et stock", () => {
     expect(await res.json()).toEqual({
       error:
         "Stock insuffisant pour lagune — Grand (1 demandé). " +
-        "Réduisez la quantité ou retirez-le du panier.",
+        "Retirez-le du panier.",
     });
     const db = await getDb();
     expect(

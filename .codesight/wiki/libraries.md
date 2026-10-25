@@ -2,7 +2,7 @@
 
 > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
 
-**55 library files** across 36 modules
+**58 library files** across 36 modules
 
 ## Content (5 files)
 
@@ -28,17 +28,24 @@
 - `lib/mondial-relay/xml.ts` — buildShipmentXml, parseShipmentResponse
 - `lib/mondial-relay/ensure-shipment.ts` — ensureRelayShipment
 
+## Stock (4 files)
+
+- `lib/stock/key-order.ts` — stockKeyToken, reservedStockKey, reservedStockKey, reservedStockKey, compareStockKeys, StockKeyTable, …
+- `lib/stock/availability.ts` — cartAvailabilityFor, CartLine, LineAvailability
+- `lib/stock/reserve.ts` — reserveStock, StockReservation
+- `lib/stock/release.ts` — releaseOrderStock
+
+## Checkout (3 files)
+
+- `lib/checkout/reservation.ts` — readReservedOrderId, rememberReservedOrder, abandonReservedOrder, ReservationRelease, RESERVATION_COOKIE
+- `lib/checkout/abandon.ts` — abandonPendingOrder, AbandonHeldOutcome, AbandonVerdict
+- `lib/checkout/errors.ts` — CheckoutError, InsufficientStockError
+
 ## Db (3 files)
 
 - `lib/db/admin-users.ts` — normalizeEmail, findAdminByEmail, findAdminById, setAdminPassword, seedAdminUser, MIN_PASSWORD_LENGTH
 - `lib/db/client.ts` — seedIfEmpty, seedMissingProducts, getDb, Db, Tx
 - `lib/db/seed-data.ts` — buildChildSeedRows, SEED_PRODUCTS, HOME_PICKS
-
-## Stock (3 files)
-
-- `lib/stock/key-order.ts` — compareStockKeys, StockKeyTable
-- `lib/stock/reserve.ts` — reserveStock, StockReservation
-- `lib/stock/release.ts` — releaseOrderStock
 
 ## Analytics (2 files)
 
@@ -50,18 +57,14 @@
 - `lib/auth/dal.ts` — verifySession, checkCredentials, createSession, destroySession, getSession, getCurrentUser
 - `lib/auth/session.ts` — encryptSession, decryptSession, SessionPayload, Session, SESSION_COOKIE, SESSION_DURATION_MS
 
-## Checkout (2 files)
+## Cart (2 files)
 
-- `lib/checkout/abandon.ts` — abandonPendingOrder
-- `lib/checkout/errors.ts` — CheckoutError
+- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
+- `lib/cart/stock-caps.ts` — useCartStock, stockNotice, LineStock, CartStock
 
 ## Bg-tweak (1 files)
 
 - `lib/bg-tweak/state.ts` — isHex, isBgName, isSectionKey, decodeState, encodeState, contrastRatio, …
-
-## Cart (1 files)
-
-- `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
 
 ## Contact-submissions.ts (1 files)
 
