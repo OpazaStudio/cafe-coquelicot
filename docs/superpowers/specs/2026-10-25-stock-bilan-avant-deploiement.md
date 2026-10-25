@@ -8,22 +8,24 @@ Suite e2e : 6 échecs préexistants, dont 5 du même seed incomplet.
 
 ## 1. Ce qui bloque le déploiement
 
-### 1.1 Le droit d'écriture de la clé Stripe restreinte — à vérifier en premier
+**État au 2026-10-25 : il ne reste qu'un bloquant, le point 1.3.** Le point 1.1 était une erreur de ma part et le point 1.2 est résolu.
 
-`lib/stripe.ts` préfère `STRIPE_RESTRICTED_KEY`. Si cette clé n'a pas le droit **d'écriture sur les Checkout Sessions**, `sessions.expire` échoue, `retrieve` voit la session encore `open`, et le verdict devient `unreachable`. Ce n'est pas un cas rare : c'est le **chemin normal**.
+### 1.1 ~~Le droit d'écriture de la clé Stripe restreinte~~ — ERREUR DE MA PART, RETIRÉ le 2026-10-25
 
-Conséquences cumulées, back-office à moitié inutilisable :
-- chaque « Marquer payée » affiche un avertissement ;
-- **chaque annulation d'une commande en attente est refusée** ;
-- aucune unité d'une commande payée à la main ne peut être remise en stock.
+**Ce bloquant n'a jamais existé, et je l'ai propagé pendant dix tâches sans le vérifier.**
 
-Et un effet couplé : tant que cette permission manque, un vrai paiement Stripe arrivant sur une commande déjà marquée payée est absorbé en silence, **sans rattachement du paiement ni mail au client**.
+Le raisonnement fautif : je traitais `sessions.create` et `sessions.expire` comme pouvant relever de permissions distinctes sur une clé restreinte. La documentation Stripe dit le contraire, sur deux points qui suffisent :
 
-**Aucun test ne peut trancher ce point**, dans aucun mode : les permissions d'une clé restreinte se configurent par clé, et `rk_live` est un objet différent de la `rk_test` locale. Seule la lecture des permissions dans le tableau de bord Stripe le peut.
+- les permissions d'une clé restreinte sont **par ressource** — « vous sélectionnez les ressources Stripe auxquelles la clé peut accéder ainsi que les autorisations pour chaque ressource : Lecture, Écriture ou Aucune » ;
+- le niveau découle de la **méthode HTTP** : leur tableau donne `GET → lire`, `POST → écrire`, `DELETE → écrire`.
 
-**Et des paiements réussis ne le ferment pas.** C'est l'inférence naturelle, mais elle ne tient pas : encaisser prouve que la clé sait `sessions.create`, le bloquant porte sur `sessions.expire`, qui est une permission distincte sur une clé restreinte. La spécification e2e de paiement passe d'ailleurs en entier, carte comprise, sans rien dire du droit d'expirer.
+Créer une session est `POST /v1/checkout/sessions`, l'expirer est `POST /v1/checkout/sessions/:id/expire` : même ressource, même méthode, **donc la même permission d'écriture**. Des paiements réussis en production prouvent donc que la clé sait aussi expirer.
 
-**Deux vérifications, dans cet ordre.** D'abord dans Vercel : si `STRIPE_RESTRICTED_KEY` n'est **pas** définie pour la production, `getStripe()` retombe sur `STRIPE_SECRET_KEY` (`lib/stripe.ts:9`), une clé secrète a tous les droits, et **ce bloquant n'existe pas en production**. Si elle y est, alors dans Stripe en mode Live : page API keys, section *Restricted keys*, la clé correspondante, permission **Checkout Sessions** en **Write** et non Read.
+Ce que cela corrige dans tout ce document : le back-office n'est **pas** à moitié inutilisable, les annulations ne sont **pas** refusées, et le corollaire sur le paiement absorbé en silence par la branche `replay` redevient rare au lieu d'être aussi fréquent que le bloquant.
+
+Ce qui reste vrai : le verdict `unreachable` existe toujours dans le code et son traitement est correct — mais il ne se déclenchera que pour une vraie raison transitoire (Stripe réellement injoignable, ou une session dans un état non expirable), pas pour une question de permission. C'est d'ailleurs pourquoi la reformulation de ses messages tient : ils ne doivent pas affirmer « Stripe est injoignable » alors que la cause peut être autre.
+
+**La leçon, parce qu'elle vaut plus que le bloquant** : c'est exactement le défaut que j'ai reproché six fois aux implémenteurs de ce plan — affirmer au lieu de vérifier. L'hypothèse venait de mon propre document de conception, et personne ne l'a interrogée parce qu'aucun test ne pouvait la trancher. Il aurait fallu lire la documentation de Stripe, ce qui prenait deux minutes.
 
 ### 1.2 ~~La migration 0016 n'est pas appliquée~~ — FERMÉ le 2026-10-25
 
