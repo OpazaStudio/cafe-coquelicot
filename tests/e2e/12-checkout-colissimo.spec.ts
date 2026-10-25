@@ -1,13 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { addToCart, adminLogin, fillStripeCheckout } from "./helpers";
-
-async function neutralizeRelayWidget(page: import("@playwright/test").Page) {
-  for (const cdn of ["https://ajax.googleapis.com/**", "**/parcelshop-picker/**"]) {
-    await page.route(cdn, (route) =>
-      route.fulfill({ contentType: "application/javascript", body: "" }),
-    );
-  }
-}
+import {
+  addToCart,
+  adminLogin,
+  fillStripeCheckout,
+  neutralizeRelayWidget,
+} from "./helpers";
 
 test.describe("paiement Colissimo", () => {
   test.describe.configure({ mode: "serial" });
