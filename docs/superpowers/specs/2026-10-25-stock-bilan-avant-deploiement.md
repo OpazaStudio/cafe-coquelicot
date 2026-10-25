@@ -8,7 +8,16 @@ Suite e2e : 6 échecs préexistants, dont 5 du même seed incomplet.
 
 ## 1. Ce qui bloque le déploiement
 
-**État au 2026-10-25 : il ne reste qu'un bloquant, le point 1.3.** Le point 1.1 était une erreur de ma part et le point 1.2 est résolu.
+**État au 2026-10-25 : plus rien ne bloque la mise en ligne.** Le point 1.1 était une erreur de ma part, le point 1.2 est résolu, et le point 1.3 — mal classé par moi — ne bloque pas le **déploiement** mais l'**activation** du stock sur un produit.
+
+**Pourquoi la mise en ligne est sans risque tant qu'aucun compteur n'est posé.** Après la migration, tous les produits ont `stock_qty` à `NULL`, ce qui signifie illimité, et le code est alors entièrement dormant — vérifié dans le code, pas supposé :
+
+- `reserveStock` sort par `if (decremented[0].stockQty === null) continue;` (`lib/stock/reserve.ts:121`) : sur un compteur illimité, **aucune réservation n'est enregistrée**, `stock_reserved_qty` reste à 0 ;
+- l'`UPDATE` de décrément fait `stock_qty = stock_qty - n`, qui sur `NULL` rend `NULL` : le compteur ne bouge pas ;
+- la disponibilité du panier rend `maxQty: null` pour un compteur `NULL` (`lib/stock/availability.ts:91`), donc aucun plafond ;
+- `soldOut` vaut `stock_qty === 0`, et `NULL` n'est pas `0` : aucun badge « épuisé ».
+
+Rien n'étant jamais retenu, il n'y a rien que le webhook doive libérer. Le déploiement est donc inerte.
 
 ### 1.1 ~~Le droit d'écriture de la clé Stripe restreinte~~ — ERREUR DE MA PART, RETIRÉ le 2026-10-25
 
@@ -37,9 +46,13 @@ Le journal de migrations Supabase a été réparé le 2026-10-24 (10 lignes pour
 
 Le déploiement relancé sur le **même code** passe désormais, ce qui confirme le mécanisme : seule la base avait changé. La PR est verte et mergeable.
 
-### 1.3 Abonnement du webhook aux événements d'expiration
+### 1.3 Abonnement du webhook — bloque l'ACTIVATION, pas le déploiement
 
-Le code traite `checkout.session.expired` et `checkout.session.async_payment_failed`. Si l'endpoint Stripe n'y est pas abonné, **aucune réservation abandonnée ne sera jamais libérée** : le stock se videra sans une seule vente.
+Le code traite `checkout.session.expired` et `checkout.session.async_payment_failed`. Si l'endpoint Stripe n'y est pas abonné, **aucune réservation abandonnée ne sera jamais libérée** : chaque panier commencé puis délaissé retient son bouquet, et le compteur se vide sans une seule vente — en silence.
+
+**Mais cela ne devient vrai qu'à partir du moment où un compteur est posé sur un produit.** La règle de sûreté est donc simple : mettre en ligne quand on veut, et **ne renseigner « Disponible à la vente » sur aucun produit avant que l'abonnement soit en place**.
+
+Et même si un compteur était posé trop tôt, le cas resterait rattrapable à la main : annuler la commande depuis le back-office libère le stock par un chemin qui ne dépend pas du webhook. Il faudrait seulement s'en apercevoir.
 
 ---
 
