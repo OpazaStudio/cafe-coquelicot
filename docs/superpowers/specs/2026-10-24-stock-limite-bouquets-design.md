@@ -409,6 +409,22 @@ corriger dans le commit qui change les types.
 **15 tests échouent déjà** : 11 dus au seed incomplet, 4 à des tests de contenu —
 et non « 15 du seed ». Ne pas toucher à `seed-data.ts`.
 
+## Invariant de sécurité — le cookie de réservation (ajouté le 2026-10-25)
+
+Un examen de sécurité automatique a classé `abandonReservedOrder` en IDOR moyen : le cookie `coquelicot.reservation` ne porte qu'un id de commande, non signé, et cet id autorise à expirer la session Stripe de cette commande puis à l'annuler. Le correctif suggéré était une colonne `reservation_token` aléatoire, ou un cookie signé en HMAC.
+
+**Constat vérifié le 2026-10-25 : non exploitable en l'état, et le correctif n'a pas été appliqué.** L'attaque exige de posséder l'UUID d'une commande `pending` d'autrui, et aucune surface visible d'un visiteur n'en divulgue un :
+
+- les id de commande viennent de `uuid().primaryKey().defaultRandom()`, donc `gen_random_uuid()` — UUID v4, 122 bits, inénumérables ;
+- la vue de confirmation ne rend aucun id de commande ;
+- les mails impriment `order.number` et jamais l'UUID ;
+- le hook e2e est gardé trois fois (`E2E_TEST_HOOKS=1`, `DATABASE_URL` vide, absence de plateforme d'hébergement) et ne rend que les id des commandes qu'il crée lui-même ;
+- le cookie est `httpOnly`, `sameSite: "lax"`, et `secure` en production : illisible depuis un autre site.
+
+Autrement dit, l'UUID de la commande **est déjà** le jeton aléatoire que le correctif proposait d'ajouter. Le refus de migrer est un arbitrage : la colonne demanderait une migration de plus sur un projet dont le journal de migrations vient d'être réparé, et la variante HMAC demanderait un secret serveur, donc une variable d'environnement de plus avant mise en production.
+
+**Invariant à tenir, sous peine de rendre la faille vivante en silence.** L'id technique d'une commande ne doit jamais atteindre une surface visible d'un visiteur : ni rendu dans une page, ni imprimé dans un mail, ni placé dans une URL, ni exposé par une Server Action à un client. `order.number` existe précisément pour cela et c'est lui qui sert de référence humaine. Le jour où ce besoin apparaît — un lien « suivre ma commande », une référence au support — il faut **d'abord** introduire le jeton de réservation, puis seulement exposer l'id.
+
 ## Prérequis de déploiement
 
 **La migration doit être appliquée avant le déploiement du code.** Drizzle liste
