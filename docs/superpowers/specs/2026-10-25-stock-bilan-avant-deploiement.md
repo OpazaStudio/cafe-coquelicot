@@ -92,6 +92,10 @@ Ce que cela a coûté : une réservation est restée bloquée plus de deux heure
 
 **À retenir pour toute future destination** : vérifier l'URL avec un simple `curl -I` avant de l'enregistrer. Un 308 ou un 301 sur un endpoint de webhook est une panne, pas un détail.
 
+**Corrigé et vérifié le 2026-10-26.** L'URL a été remplacée par la forme `www`, et un renvoi manuel de l'événement en échec a rendu l'unité au compteur. **La chaîne complète est donc prouvée en production** : Stripe émet l'expiration, la livraison atteint le site, la signature est acceptée, la commande est annulée, le stock est recrédité, et la revalidation rend la bascule visible en boutique. C'est la seule vérification qu'aucun test ne pouvait produire — PGlite n'a qu'une connexion et aucune suite n'exerce une vraie session Stripe.
+
+Corollaire : cette panne touchait **tous** les événements, pas seulement l'expiration. `checkout.session.completed` échouait de la même façon depuis la création de la destination, et si les commandes payées ont quand même été traitées, c'est grâce au filet de la page de confirmation (§1.3). Les deux chemins sont réparés ensemble.
+
 ---
 
 ### 1.4 Hors stock, mais le dépôt est public : une adresse personnelle est en dur dans le code

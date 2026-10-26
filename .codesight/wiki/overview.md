@@ -43,4 +43,4 @@ Changes to these files have the widest blast radius across the codebase:
 - `VERCEL` — `app/api/e2e/orders/route.ts`
 
 ---
-_Back to [index.md](./index.md) · Generated 2026-10-25_
+_Back to [index.md](./index.md) · Generated 2026-10-26_
