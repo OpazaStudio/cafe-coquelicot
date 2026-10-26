@@ -61,7 +61,7 @@
 ## Cart (2 files)
 
 - `lib/cart/cart.ts` — cartItemKey, addItem, removeItem, setQty, cartCount, cartSubtotalCents, …
-- `lib/cart/stock-caps.ts` — useCartStock, stockNotice, LineStock, CartStock
+- `lib/cart/stock-caps.ts` — useCartStock, stockNotice, resolveAddCap, checkAddCap, addCapNotice, LineStock, …
 
 ## Bg-tweak (1 files)
 

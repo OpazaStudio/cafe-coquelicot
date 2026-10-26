@@ -1,14 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { trackAddToCart } from "@/lib/analytics/gtag";
 import { ProductDetail } from "@/components/product-detail";
+import { cartAvailability } from "@/app/panier/availability";
+import { ADD_CAP_TIMEOUT_MS, BUSY_LABEL_DELAY_MS } from "@/lib/cart/stock-caps";
 import type { ShopProduct } from "@/lib/products";
 
 vi.mock("@/lib/analytics/gtag", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/analytics/gtag")>()),
   trackAddToCart: vi.fn(),
 }));
+
+vi.mock("@/app/panier/availability", () => ({ cartAvailability: vi.fn() }));
 
 const solana: ShopProduct = {
   id: "p1",
@@ -49,6 +53,8 @@ const CART_KEY = "coquelicot.cart.v1";
 beforeEach(() => {
   window.localStorage.clear();
   vi.mocked(trackAddToCart).mockClear();
+  vi.mocked(cartAvailability).mockReset();
+  vi.mocked(cartAvailability).mockResolvedValue([]);
 });
 
 describe("ProductDetail", () => {
@@ -347,6 +353,7 @@ describe("ProductDetail — stock épuisé", () => {
     await cartReady();
     fireEvent.click(ctaButton("solana, épuisé"));
     expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(cartAvailability).not.toHaveBeenCalled();
     expect(window.localStorage.getItem(CART_KEY)).toBe("[]");
     expect(screen.queryByRole("link", { name: /Voir le panier/ })).toBeNull();
     expect(screen.getByRole("status").textContent).toBe("");
@@ -358,6 +365,7 @@ describe("ProductDetail — stock épuisé", () => {
     await cartReady();
     fireEvent.click(ctaButton("solana, épuisé"));
     expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(cartAvailability).not.toHaveBeenCalled();
     expect(window.localStorage.getItem(CART_KEY)).toBe("[]");
     expect(screen.getByRole("status").textContent).toBe("");
   });
@@ -388,5 +396,428 @@ describe("ProductDetail — stock épuisé", () => {
     const { container } = renderDetail({ ...partlySoldOut, badge: "Nouveau" });
     const badges = [...container.querySelectorAll(".product-page__media .product-card__badge")];
     expect(badges.map((b) => b.textContent)).toEqual(["Nouveau"]);
+  });
+});
+
+type Seed = { sizeId: string | null; colorId: string | null; qty: number };
+
+function seedCart(lines: Seed[]) {
+  window.localStorage.setItem(
+    CART_KEY,
+    JSON.stringify(
+      lines.map((line) => ({
+        slug: "solana",
+        name: "solana",
+        priceCents: 4200,
+        sizeId: line.sizeId,
+        colorId: line.colorId,
+        sizeLabel: line.sizeId === "s-g" ? "Grand" : "Petit",
+        colorLabel: line.colorId === "c-b" ? "Blanc" : "Naturel",
+        qty: line.qty,
+      })),
+    ),
+  );
+}
+
+function answers(maxQty: number | null, reason?: "size_required") {
+  vi.mocked(cartAvailability).mockResolvedValue([
+    { slug: "solana", sizeId: "s-g", maxQty, reason },
+  ]);
+}
+
+const bare: ShopProduct = { ...solana, sizes: [], colors: [], soldOut: false };
+
+function bareAnswers(maxQty: number | null, reason?: "size_required") {
+  vi.mocked(cartAvailability).mockResolvedValue([
+    { slug: "solana", sizeId: null, maxQty, reason },
+  ]);
+}
+
+function dropFocus() {
+  const sink = document.createElement("button");
+  document.body.appendChild(sink);
+  sink.focus();
+  sink.remove();
+}
+
+function deferred<T>() {
+  let settle!: (value: T) => void;
+  const promise = new Promise<T>((resolve) => {
+    settle = resolve;
+  });
+  return { promise, settle };
+}
+
+async function hydrated() {
+  await waitFor(() => expect(window.localStorage.getItem(CART_KEY)).not.toBeNull());
+}
+
+const stored = () =>
+  JSON.parse(window.localStorage.getItem(CART_KEY) ?? "[]") as Array<{
+    key: string;
+    qty: number;
+  }>;
+
+const notice = () => screen.getByTestId("product-notice");
+
+function clickAdd() {
+  fireEvent.click(screen.getByRole("button", { name: "Ajouter solana au panier" }));
+}
+
+async function pickGrandBlanc() {
+  fireEvent.click(screen.getByRole("button", { name: /^Grand/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Blanc" }));
+}
+
+describe("ProductDetail — plafond à l'ajout", () => {
+  it("déduit ce que le panier contient déjà, tous coloris confondus", async () => {
+    seedCart([{ sizeId: "s-g", colorId: "c-n", qty: 1 }]);
+    answers(1);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    await waitFor(() =>
+      expect(notice().textContent).toBe(
+        "Votre panier contient déjà tout ce qui reste disponible.",
+      ),
+    );
+    expect(stored()).toEqual([
+      expect.objectContaining({ key: "solana__s-g__c-n", qty: 1 }),
+    ]);
+    expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Ajouté ✓/)).toBeNull();
+    expect(screen.getByRole("link", { name: /Voir le panier/ })).toBeTruthy();
+  });
+
+  it("n'ajoute que la place restante quand le panier en contient déjà", async () => {
+    seedCart([{ sizeId: "s-g", colorId: "c-n", qty: 1 }]);
+    answers(3);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    await waitFor(() =>
+      expect(notice().textContent).toBe(
+        "Stock limité : 2 ajoutés au panier au lieu de 3.",
+      ),
+    );
+    expect(stored()).toEqual([
+      expect.objectContaining({ key: "solana__s-g__c-n", qty: 1 }),
+      expect.objectContaining({ key: "solana__s-g__c-b", qty: 2 }),
+    ]);
+    expect(trackAddToCart).toHaveBeenCalledWith(
+      expect.objectContaining({ qty: 2, colorLabel: "Blanc" }),
+    );
+  });
+
+  it("ajuste la quantité sur un panier vide et accorde le singulier", async () => {
+    answers(1);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    await waitFor(() =>
+      expect(notice().textContent).toBe(
+        "Stock limité : 1 ajouté au panier au lieu de 2.",
+      ),
+    );
+    expect(stored()).toEqual([
+      expect.objectContaining({ key: "solana__s-g__c-b", qty: 1 }),
+    ]);
+    expect(notice().className).toBe("product-page__notice");
+  });
+
+  it("n'ajoute rien quand la taille est devenue indisponible entre-temps", async () => {
+    answers(0);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    clickAdd();
+
+    await waitFor(() =>
+      expect(notice().textContent).toBe(
+        "Cet article n'est plus disponible : rien n'a été ajouté au panier.",
+      ),
+    );
+    expect(stored()).toEqual([]);
+    expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(screen.queryByRole("link", { name: /Voir le panier/ })).toBeNull();
+  });
+
+  it("renvoie vers la page plutôt que d'ajouter une ligne sans taille", async () => {
+    bareAnswers(0, "size_required");
+    renderDetail(bare);
+    await hydrated();
+    clickAdd();
+
+    await waitFor(() =>
+      expect(notice().textContent).toBe(
+        "Les tailles de cet article ont changé : rechargez la page pour en choisir une.",
+      ),
+    );
+    expect(stored()).toEqual([]);
+    expect(trackAddToCart).not.toHaveBeenCalled();
+    expect(cartAvailability).toHaveBeenCalledWith([{ slug: "solana", sizeId: null }]);
+  });
+
+  it("déduit le panier d'un produit nu, dont la clé de stock n'a pas de taille", async () => {
+    seedCart([{ sizeId: null, colorId: null, qty: 1 }]);
+    bareAnswers(1);
+    renderDetail(bare);
+    await hydrated();
+    clickAdd();
+
+    await waitFor(() =>
+      expect(notice().textContent).toBe(
+        "Votre panier contient déjà tout ce qui reste disponible.",
+      ),
+    );
+    expect(stored()).toEqual([expect.objectContaining({ key: "solana", qty: 1 })]);
+    expect(trackAddToCart).not.toHaveBeenCalled();
+  });
+
+  it("interroge le serveur sur le seul couple slug/taille sélectionné", async () => {
+    answers(null);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    clickAdd();
+
+    await waitFor(() => expect(stored().length).toBe(1));
+    expect(cartAvailability).toHaveBeenCalledWith([{ slug: "solana", sizeId: "s-g" }]);
+    expect(notice().className).toBe("sr-only");
+    expect(notice().textContent).toBe("solana ajouté au panier.");
+  });
+
+  it("ne plafonne pas une taille illimitée", async () => {
+    answers(null);
+    renderDetail(solana);
+    await hydrated();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    await waitFor(() => expect(stored()).toEqual([expect.objectContaining({ qty: 3 })]));
+    expect(notice().className).toBe("sr-only");
+    expect(notice().textContent).toBe("3 × solana ajouté au panier.");
+  });
+
+  it("ajoute sans plafonner quand la Server Action échoue", async () => {
+    vi.mocked(cartAvailability).mockRejectedValue(new Error("réseau coupé"));
+    renderDetail(solana);
+    await hydrated();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    await waitFor(() => expect(stored()).toEqual([expect.objectContaining({ qty: 2 })]));
+    expect(notice().className).toBe("sr-only");
+  });
+
+  it.each([
+    ["une réponse qui n'est pas un tableau", undefined],
+    ["une réponse vide", []],
+    ["une ligne qui vise une autre taille", [{ slug: "solana", sizeId: "s-p", maxQty: 0 }]],
+    ["un plafond non entier", [{ slug: "solana", sizeId: "s-g", maxQty: 0.5 }]],
+  ])("ajoute sans plafonner sur %s", async (_label, answer) => {
+    vi.mocked(cartAvailability).mockResolvedValue(
+      answer as unknown as Awaited<ReturnType<typeof cartAvailability>>,
+    );
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    await waitFor(() => expect(stored()).toEqual([expect.objectContaining({ qty: 2 })]));
+    expect(notice().className).toBe("sr-only");
+  });
+
+  it("monte la région live vide et unique avant tout clic", async () => {
+    answers(1);
+    renderDetail(solana);
+    await hydrated();
+
+    expect(screen.getAllByRole("status").length).toBe(1);
+    expect(notice().getAttribute("role")).toBe("status");
+    expect(notice().textContent).toBe("");
+  });
+
+  it("vide la région avant de réafficher le même message", async () => {
+    answers(0);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    clickAdd();
+    await waitFor(() => expect(notice().textContent).toMatch(/plus disponible/));
+
+    const live = notice();
+    clickAdd();
+    expect(live.textContent).toBe("");
+    await waitFor(() => expect(live.textContent).toMatch(/plus disponible/));
+    expect(notice()).toBe(live);
+  });
+
+  it("rend le focus au bouton que la désactivation lui a pris", async () => {
+    const gate = deferred<Awaited<ReturnType<typeof cartAvailability>>>();
+    vi.mocked(cartAvailability).mockReturnValue(gate.promise);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    const cta = screen.getByRole("button", { name: "Ajouter solana au panier" });
+    cta.focus();
+    expect(document.activeElement).toBe(cta);
+
+    clickAdd();
+    dropFocus();
+    expect(document.activeElement).toBe(document.body);
+
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 5 }]);
+    await waitFor(() => expect(document.activeElement).toBe(cta));
+  });
+
+  it("ne vole pas le focus parti ailleurs pendant la vérification", async () => {
+    const gate = deferred<Awaited<ReturnType<typeof cartAvailability>>>();
+    vi.mocked(cartAvailability).mockReturnValue(gate.promise);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    clickAdd();
+    const elsewhere = screen.getByRole("button", { name: "Augmenter la quantité" });
+    elsewhere.focus();
+
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 5 }]);
+    await waitFor(() => expect(stored().length).toBe(1));
+    expect(document.activeElement).toBe(elsewhere);
+  });
+
+  it("ignore un second clic tant que la vérification est en vol", async () => {
+    const gate = deferred<Awaited<ReturnType<typeof cartAvailability>>>();
+    vi.mocked(cartAvailability).mockReturnValue(gate.promise);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    clickAdd();
+    clickAdd();
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 5 }]);
+
+    await waitFor(() => expect(stored()).toEqual([expect.objectContaining({ qty: 1 })]));
+    expect(cartAvailability).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ProductDetail — bouton pendant la vérification", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const cta = () => screen.getByRole("button", { name: "Ajouter solana au panier" });
+
+  async function startSlowAdd() {
+    const gate = deferred<Awaited<ReturnType<typeof cartAvailability>>>();
+    vi.mocked(cartAvailability).mockReturnValue(gate.promise);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    clickAdd();
+    return gate;
+  }
+
+  it("désarme le bouton dès le premier instant, sans rien changer d'autre", async () => {
+    const gate = await startSlowAdd();
+
+    expect((cta() as HTMLButtonElement).disabled).toBe(true);
+    expect(cta().textContent).toContain("Ajouter au panier");
+    expect(cta().getAttribute("aria-busy")).toBeNull();
+    expect(cta().className).toContain("is-quiet");
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(BUSY_LABEL_DELAY_MS - 50); });
+    expect(cta().textContent).toContain("Ajouter au panier");
+    expect(cta().getAttribute("aria-busy")).toBeNull();
+
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 5 }]);
+    await waitFor(() => expect(cta().textContent).toBe("Ajouté ✓"));
+    expect(cta().className).not.toContain("is-quiet");
+  });
+
+  it("n'affiche jamais « Vérification… » sur une réponse rapide", async () => {
+    const gate = await startSlowAdd();
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 5 }]);
+    await act(async () => { await vi.advanceTimersByTimeAsync(BUSY_LABEL_DELAY_MS - 50); });
+
+    expect(cta().textContent).toBe("Ajouté ✓");
+    expect(cta().getAttribute("aria-busy")).toBeNull();
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(BUSY_LABEL_DELAY_MS * 4); });
+    expect(cta().textContent).toBe("Ajouté ✓");
+    expect(cta().getAttribute("aria-busy")).toBeNull();
+  });
+
+  it("affiche « Vérification… » passé le seuil, puis le retire", async () => {
+    const gate = await startSlowAdd();
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(BUSY_LABEL_DELAY_MS); });
+    expect(cta().textContent).toBe("Vérification…");
+    expect(cta().getAttribute("aria-busy")).toBe("true");
+    expect((cta() as HTMLButtonElement).disabled).toBe(true);
+    expect(cta().className).not.toContain("is-quiet");
+
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 5 }]);
+    await waitFor(() => expect(cta().textContent).toBe("Ajouté ✓"));
+    expect(cta().getAttribute("aria-busy")).toBeNull();
+    expect((cta() as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
+describe("ProductDetail — plafond à l'ajout, délai dépassé", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("ajoute la quantité demandée quand la vérification traîne", async () => {
+    const gate = deferred<Awaited<ReturnType<typeof cartAvailability>>>();
+    vi.mocked(cartAvailability).mockReturnValue(gate.promise);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+
+    expect(stored()).toEqual([]);
+    await vi.advanceTimersByTimeAsync(ADD_CAP_TIMEOUT_MS);
+    await waitFor(() => expect(stored()).toEqual([expect.objectContaining({ qty: 2 })]));
+    expect(notice().className).toBe("sr-only");
+  });
+
+  it("n'ajoute pas une seconde fois quand la réponse arrive après le délai", async () => {
+    const gate = deferred<Awaited<ReturnType<typeof cartAvailability>>>();
+    vi.mocked(cartAvailability).mockReturnValue(gate.promise);
+    renderDetail(solana);
+    await hydrated();
+    await pickGrandBlanc();
+    fireEvent.click(screen.getByRole("button", { name: "Augmenter la quantité" }));
+    clickAdd();
+    await vi.advanceTimersByTimeAsync(ADD_CAP_TIMEOUT_MS);
+    await waitFor(() => expect(stored()).toEqual([expect.objectContaining({ qty: 2 })]));
+
+    gate.settle([{ slug: "solana", sizeId: "s-g", maxQty: 1 }]);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(stored()).toEqual([expect.objectContaining({ qty: 2 })]);
+    expect(notice().className).toBe("sr-only");
   });
 });

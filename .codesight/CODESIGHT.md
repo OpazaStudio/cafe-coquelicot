@@ -3,8 +3,8 @@
 > **Stack:** next-app | drizzle | react | typescript
 
 > 3 routes | 10 models | 115 components | 59 lib files | 31 env vars | 6 middleware | 62% test coverage
-> **Token savings:** this file is ~9,200 tokens. Without it, AI exploration would cost ~72,900 tokens. **Saves ~63,700 tokens per conversation.**
-> **Last scanned:** 2026-10-26 08:01 — re-run after significant changes
+> **Token savings:** this file is ~9,200 tokens. Without it, AI exploration would cost ~72,900 tokens. **Saves ~63,600 tokens per conversation.**
+> **Last scanned:** 2026-10-26 10:59 — re-run after significant changes
 
 ---
 
@@ -307,8 +307,11 @@
 - `lib/cart/stock-caps.ts`
   - function useCartStock: (items, ready) => CartStock
   - function stockNotice: (stock) => string | null
+  - function resolveAddCap: (answer, items, line, asked) => AddCap
+  - function checkAddCap: (cartNow) => void
+  - function addCapNotice: (cap) => string | null
   - type LineStock
-  - type CartStock
+  - _...5 more_
 - `lib/checkout/abandon.ts`
   - function abandonPendingOrder: (db, orderId) => Promise<AbandonVerdict>
   - type AbandonHeldOutcome

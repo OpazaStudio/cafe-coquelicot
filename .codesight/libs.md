@@ -48,8 +48,11 @@
 - `lib/cart/stock-caps.ts`
   - function useCartStock: (items, ready) => CartStock
   - function stockNotice: (stock) => string | null
+  - function resolveAddCap: (answer, items, line, asked) => AddCap
+  - function checkAddCap: (cartNow) => void
+  - function addCapNotice: (cap) => string | null
   - type LineStock
-  - type CartStock
+  - _...5 more_
 - `lib/checkout/abandon.ts`
   - function abandonPendingOrder: (db, orderId) => Promise<AbandonVerdict>
   - type AbandonHeldOutcome

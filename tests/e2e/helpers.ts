@@ -29,6 +29,7 @@ export async function addToCart(page: Page, name: string): Promise<void> {
   await page
     .getByRole("button", { name: `Ajouter ${name} au panier` })
     .click();
+  await expect(page.getByRole("link", { name: /Voir le panier/ })).toBeVisible();
 }
 
 // Ouvre la page produit puis sélectionne taille/coloris avant d'ajouter.
@@ -49,6 +50,7 @@ export async function addVariantToCart(
   await page
     .getByRole("button", { name: `Ajouter ${name} au panier` })
     .click();
+  await expect(page.getByRole("link", { name: /Voir le panier/ })).toBeVisible();
 }
 
 /** Cherche le champ carte dans la page OU dans une iframe Stripe. */

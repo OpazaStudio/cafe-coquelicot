@@ -9,6 +9,7 @@ import Image from "next/image";
 import type { ShopColor, ShopImage, ShopProduct, ShopSize } from "@/lib/products";
 import { useCart } from "@/lib/cart/cart-context";
 import { MAX_QTY } from "@/lib/cart/cart";
+import { addCapNotice, checkAddCap, BUSY_LABEL_DELAY_MS } from "@/lib/cart/stock-caps";
 import { formatEuros } from "@/lib/money";
 import { productImageUrl } from "@/lib/product-image";
 import { productFrameStyle } from "@/lib/product-frame";
@@ -18,7 +19,7 @@ import { RichText } from "./rich-text";
 
 export function ProductDetail({ product }: { product: ShopProduct }) {
   const { name, desc, descRich, badge, sizes, colors, images, imageFrame } = product;
-  const { add } = useCart();
+  const { add, items } = useCart();
   const [size, setSize] = useState<ShopSize | null>(
     sizes.find((s) => !s.soldOut) ?? sizes[0] ?? null,
   );
@@ -26,12 +27,28 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   const [qty, setQty] = useState(1);
   // `added` : libellé transitoire « Ajouté ✓ » (repasse à false sur minuteur).
   // `hasAdded` : reste vrai une fois ajouté → le lien panier ne disparaît jamais
-  // sous le focus. `announce` : message vocal pour lecteurs d'écran (aria-live).
+  // sous le focus. `feedback` : message vocal pour lecteurs d'écran (aria-live),
+  // rendu visible quand le stock a plafonné l'ajout.
   const [added, setAdded] = useState(false);
   const [hasAdded, setHasAdded] = useState(false);
-  const [announce, setAnnounce] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState({ text: "", visible: false });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const busyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const itemsRef = useRef(items);
+  const addButton = useRef<HTMLButtonElement | null>(null);
+  const refocus = useRef(false);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => {
+    if (checking || !refocus.current) return;
+    refocus.current = false;
+    addButton.current?.focus();
+  }, [checking]);
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+    if (busyTimer.current) clearTimeout(busyTimer.current);
+  }, []);
 
   const views = useMemo(
     () => images.filter((i) => i.colorId === null || i.colorId === color?.id),
@@ -107,26 +124,48 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
   const priceCents = size?.priceCents ?? product.priceCents;
   const unavailable = size ? size.soldOut : product.soldOut;
 
-  function handleAdd() {
+  async function handleAdd() {
     if (unavailable) return;
-    add(
-      {
-        slug: product.slug,
-        name,
-        priceCents,
-        sizeId: size?.id ?? null,
-        colorId: color?.id ?? null,
-        sizeLabel: size?.label ?? null,
-        colorLabel: color?.label ?? null,
-      },
-      qty,
-    );
-    setAdded(true);
-    setHasAdded(true);
-    const unit = qty > 1 ? `${qty} × ` : "";
-    setAnnounce(`${unit}${name} ajouté au panier.`);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setAdded(false), 1600);
+    setChecking(true);
+    if (busyTimer.current) clearTimeout(busyTimer.current);
+    busyTimer.current = setTimeout(() => setBusy(true), BUSY_LABEL_DELAY_MS);
+    setFeedback({ text: "", visible: false });
+    const line = { slug: product.slug, sizeId: size?.id ?? null };
+    try {
+      const cap = await checkAddCap(() => itemsRef.current, line, qty);
+      if (cap.qty > 0) {
+        add(
+          {
+            slug: product.slug,
+            name,
+            priceCents,
+            sizeId: size?.id ?? null,
+            colorId: color?.id ?? null,
+            sizeLabel: size?.label ?? null,
+            colorLabel: color?.label ?? null,
+          },
+          cap.qty,
+        );
+        setAdded(true);
+        setHasAdded(true);
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => setAdded(false), 1600);
+      } else if (cap.reason === "none_left") {
+        setHasAdded(true);
+      }
+      const notice = addCapNotice(cap);
+      if (notice !== null) setFeedback({ text: notice, visible: true });
+      else {
+        const unit = cap.qty > 1 ? `${cap.qty} × ` : "";
+        setFeedback({ text: `${unit}${name} ajouté au panier.`, visible: false });
+      }
+    } finally {
+      if (busyTimer.current) clearTimeout(busyTimer.current);
+      busyTimer.current = null;
+      setBusy(false);
+      refocus.current = document.activeElement === document.body;
+      setChecking(false);
+    }
   }
 
   return (
@@ -299,13 +338,18 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
           </span>
           <button
             type="button"
-            className={`btn btn--filled${unavailable ? " is-sold-out" : ""}`}
-            onClick={handleAdd}
+            ref={addButton}
+            className={`btn btn--filled${unavailable ? " is-sold-out" : ""}${checking && !busy ? " is-quiet" : ""}`}
+            onClick={() => { void handleAdd(); }}
+            disabled={checking}
+            aria-busy={busy || undefined}
             aria-disabled={unavailable || undefined}
             aria-label={unavailable ? `${name}, épuisé` : `Ajouter ${name} au panier`}
           >
             {unavailable ? (
               <>Épuisé</>
+            ) : busy ? (
+              <>Vérification…</>
             ) : added ? (
               <>Ajouté ✓</>
             ) : (
@@ -318,8 +362,13 @@ export function ProductDetail({ product }: { product: ShopProduct }) {
             Voir le panier <ArrowRight />
           </Link>
         )}
-        <p className="sr-only" role="status" aria-live="polite">
-          {announce}
+        <p
+          className={feedback.visible ? "product-page__notice" : "sr-only"}
+          role="status"
+          aria-live="polite"
+          data-testid="product-notice"
+        >
+          {feedback.text}
         </p>
       </div>
     </div>
